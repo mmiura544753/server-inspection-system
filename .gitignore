@@ -1,0 +1,34 @@
+# 依存パッケージ
+node_modules/
+
+# 環境変数
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ビルド
+/client/build
+/client/dist
+
+# ログ
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# OS関連
+.DS_Store
+Thumbs.db
+
+# エディタ関連
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# その他
+.cache/
+coverage/

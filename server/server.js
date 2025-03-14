@@ -60,16 +60,22 @@ app.get('/api/customers/:id', async (req, res) => {
 // 顧客作成
 app.post('/api/customers', async (req, res) => {
   try {
+    console.log('受信したリクエストボディ:', req.body);
     const { customer_name } = req.body;
     
     if (!customer_name) {
+      console.log('顧客名が提供されていません');
       return res.status(400).json({ error: '顧客名は必須です' });
     }
+    
+    console.log('挿入しようとしている顧客名:', customer_name);
     
     const [result] = await pool.promise().query(
       'INSERT INTO customers (customer_name) VALUES (?)',
       [customer_name]
     );
+    
+    console.log('挿入結果:', result);
     
     res.status(201).json({
       id: result.insertId,
@@ -77,7 +83,7 @@ app.post('/api/customers', async (req, res) => {
       created_at: new Date()
     });
   } catch (err) {
-    console.error('顧客作成エラー:', err);
+    console.error('顧客作成エラーの詳細:', err);
     res.status(500).json({ error: '顧客の作成に失敗しました' });
   }
 });

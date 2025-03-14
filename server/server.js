@@ -9,7 +9,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ミドルウェア
-app.use(cors());
+// CORSの詳細設定
+app.use(cors({
+  origin: '*',  // 開発中は全てのオリジンを許可。本番環境では'http://localhost:3000'など具体的に設定
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// CORSのプリフライトリクエスト対応
+app.options('*', cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

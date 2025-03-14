@@ -3,6 +3,9 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+// 現在のURLを確認
+console.log('API Base URL:', API_BASE_URL);
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -37,14 +40,23 @@ export const customerAPI = {
   // 顧客を新規作成
   create: async (customerData) => {
     try {
+      console.log('API呼び出し - 顧客作成:', customerData);
+      console.log('使用URL:', `${API_BASE_URL}/customers`);
+      
       const response = await api.post('/customers', customerData);
+      console.log('API応答:', response);
+      
       return response.data;
     } catch (error) {
-      console.error('顧客作成エラー:', error);
+      console.error('顧客作成エラー（詳細）:', error);
+      if (error.response) {
+        console.error('サーバーレスポンス:', error.response.data);
+        console.error('ステータスコード:', error.response.status);
+      }
       throw error;
     }
   },
-  
+
   // 顧客を更新
   update: async (id, customerData) => {
     try {

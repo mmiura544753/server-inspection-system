@@ -52,20 +52,25 @@ const CustomerForm = () => {
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       setSubmitError(null);
-      
+
+      console.log('送信するデータ:', values);      
+
       if (isEditMode) {
         // 既存顧客の更新
-        await customerAPI.update(id, values);
+        const response = await customerAPI.update(id, values);
+        console.log('更新レスポンス:', response);
       } else {
         // 新規顧客の作成
-        await customerAPI.create(values);
+        const response = await customerAPI.create(values);
+        console.log('作成レスポンス:', response);
       }
-      
+
       // 成功したら顧客一覧ページに戻る
       navigate('/customers');
     } catch (err) {
-      setSubmitError(`顧客の${isEditMode ? '更新' : '作成'}に失敗しました。`);
-      console.error(`顧客${isEditMode ? '更新' : '作成'}エラー:`, err);
+      console.error('エラーの詳細:', err);
+      console.error('エラーレスポンス:', err.response ? err.response.data : 'レスポンスなし');
+      setSubmitError(`顧客の${isEditMode ? '更新' : '作成'}に失敗しました。${err.message}`);
     } finally {
       setSubmitting(false);
     }

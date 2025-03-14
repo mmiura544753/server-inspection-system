@@ -16,9 +16,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // データベース接続
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
+  user: process.env.DB_USER || 'server_inspector',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'server_inspection',
+  database: process.env.DB_NAME || 'server_inspection_db',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -126,4 +126,14 @@ app.delete('/api/customers/:id', async (req, res) => {
 // サーバー起動
 app.listen(PORT, () => {
   console.log(`サーバーが起動しました: http://localhost:${PORT}`);
+});
+
+// データベース接続テスト
+pool.getConnection((err, connection) => {
+  if (err) {
+    console.error('データベース接続エラー:', err);
+  } else {
+    console.log('データベースに正常に接続されました');
+    connection.release();
+  }
 });

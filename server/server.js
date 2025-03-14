@@ -138,9 +138,11 @@ app.delete('/api/customers/:id', async (req, res) => {
 });
 
 // サーバー起動
-app.listen(PORT, () => {
-  console.log(`サーバーが起動しました: http://localhost:${PORT}`);
-  console.log(`外部からのアクセス: http://10.150.10.229:${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  const host = server.address().address;
+  const port = server.address().port;
+  console.log(`サーバーが起動しました: http://${host}:${port}`);
+  console.log('全てのネットワークインターフェースでリッスン中');
 });
 
 // データベース接続テスト

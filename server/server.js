@@ -140,6 +140,7 @@ app.delete('/api/customers/:id', async (req, res) => {
 // サーバー起動
 app.listen(PORT, () => {
   console.log(`サーバーが起動しました: http://localhost:${PORT}`);
+  console.log(`外部からのアクセス: http://10.150.10.229:${PORT}`);
 });
 
 // データベース接続テスト

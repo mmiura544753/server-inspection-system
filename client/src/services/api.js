@@ -1,7 +1,9 @@
 // src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// サーバーの実際のIPアドレスとポートを指定
+const API_BASE_URL = 'http://10.150.10.229:5000/api';
 
 // 現在のURLを確認
 console.log('API Base URL:', API_BASE_URL);
@@ -12,6 +14,8 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+// デバッグログを追加
+console.log('API Base URL:', API_BASE_URL);
 
 // 顧客関連のAPI
 export const customerAPI = {

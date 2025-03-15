@@ -16,7 +16,6 @@ import CustomerDetails from "./components/customers/CustomerDetails";
 
 // 機器コンポーネント
 import DeviceList from "./components/devices/DeviceList";
-import DeviceList from "./components/devices/DeviceList";
 import DeviceForm from "./components/devices/DeviceForm";
 import DeviceDetails from "./components/devices/DeviceDetails";
 
@@ -42,7 +41,6 @@ function App() {
               <Route path="/customers/:id" element={<CustomerDetails />} />
 
               {/* 機器関連のルート */}
-              <Route path="/devices" element={<DeviceList />} />
               <Route path="/devices" element={<DeviceList />} />
               <Route path="/devices/new" element={<DeviceForm />} />
               <Route path="/devices/edit/:id" element={<DeviceForm />} />

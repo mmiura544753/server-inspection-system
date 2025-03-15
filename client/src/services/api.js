@@ -89,4 +89,75 @@ export const customerAPI = {
   },
 };
 
+// src/services/api.js に追加
+
+// 機器関連のAPI
+export const deviceAPI = {
+  // 機器一覧を取得
+  getAll: async () => {
+    try {
+      const response = await api.get("/devices");
+      return response.data;
+    } catch (error) {
+      console.error("機器一覧取得エラー:", error);
+      throw error;
+    }
+  },
+
+  // 機器詳細を取得
+  getById: async (id) => {
+    try {
+      const response = await api.get(`/devices/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`機器ID:${id}の取得エラー:`, error);
+      throw error;
+    }
+  },
+
+  // 顧客に紐づく機器一覧を取得
+  getByCustomerId: async (customerId) => {
+    try {
+      const response = await api.get(`/customers/${customerId}/devices`);
+      return response.data;
+    } catch (error) {
+      console.error(`顧客ID:${customerId}の機器一覧取得エラー:`, error);
+      throw error;
+    }
+  },
+
+  // 機器を新規作成
+  create: async (deviceData) => {
+    try {
+      const response = await api.post("/devices", deviceData);
+      return response.data;
+    } catch (error) {
+      console.error("機器作成エラー:", error);
+      throw error;
+    }
+  },
+
+  // 機器を更新
+  update: async (id, deviceData) => {
+    try {
+      const response = await api.put(`/devices/${id}`, deviceData);
+      return response.data;
+    } catch (error) {
+      console.error(`機器ID:${id}の更新エラー:`, error);
+      throw error;
+    }
+  },
+
+  // 機器を削除
+  delete: async (id) => {
+    try {
+      const response = await api.delete(`/devices/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`機器ID:${id}の削除エラー:`, error);
+      throw error;
+    }
+  },
+};
+
 export default api;

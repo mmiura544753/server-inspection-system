@@ -17,14 +17,6 @@ const Modal = ({ show, onClose, title, children, onConfirm }) => {
 
   if (!show) return null;
 
-  // モーダル背景クリック時に閉じる処理を追加
-  const handleBackdropClick = (e) => {
-    // モーダル自体ではなく背景がクリックされた場合のみ閉じる
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   return (
     <>
       <div

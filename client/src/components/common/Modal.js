@@ -26,56 +26,48 @@ const Modal = ({ show, onClose, title, children, onConfirm }) => {
   };
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={handleBackdropClick}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1050,
-      }}
-    >
-      <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">{title}</h5>
-            <button
-              type="button"
-              className="btn-close"
-              onClick={onClose}
-              aria-label="Close"
-            ></button>
-          </div>
-          <div className="modal-body">{children}</div>
-          <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-            >
-              <FaTimes className="me-2" />
-              キャンセル
-            </button>
-            {onConfirm && (
+    <>
+      <div
+        className="modal fade show"
+        style={{ display: "block" }}
+        tabIndex="-1"
+      >
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">{title}</h5>
               <button
                 type="button"
-                className="btn btn-primary"
-                onClick={onConfirm}
+                className="btn-close"
+                onClick={onClose}
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">{children}</div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={onClose}
               >
-                確認
+                <FaTimes className="me-2" />
+                キャンセル
               </button>
-            )}
+              {onConfirm && (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={onConfirm}
+                >
+                  確認
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <div className="modal-backdrop fade show"></div>
+    </>
   );
 };
 

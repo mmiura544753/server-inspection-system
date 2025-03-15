@@ -1,5 +1,5 @@
 // services/api/deviceAPI.js
-import api from './index';
+import api from "./index";
 
 export const deviceAPI = {
   // 機器一覧を取得
@@ -67,23 +67,24 @@ export const deviceAPI = {
       throw error;
     }
   },
-  
+
   // 機器エクスポート機能
-  exportData: async (format = 'csv') => {
+  exportData: async (format = "csv", encoding = "shift_jis") => {
     try {
-      console.log(`機器エクスポート開始: 形式=${format}`);
-      
+      console.log(
+        `機器エクスポート開始: 形式=${format}, エンコーディング=${encoding}`
+      );
       // 特殊なレスポンスタイプを指定してBlobを取得
       const response = await api.get(`/devices/export`, {
-        params: { format },
-        responseType: 'blob'
+        params: { format, encoding },
+        responseType: "blob",
       });
-      
-      console.log('機器エクスポート成功:', response);
+
+      console.log("機器エクスポート成功:", response);
       return response.data;
     } catch (error) {
       console.error("機器エクスポートエラー:", error);
-      
+
       // エラーが発生した場合、エラーメッセージを取得して表示
       if (error.response && error.response.data) {
         // Blobからテキストを抽出
@@ -92,7 +93,7 @@ export const deviceAPI = {
         try {
           // JSONにパースできるかチェック
           const json = JSON.parse(text);
-          errorMsg = json.error || json.message || '未知のエラーが発生しました';
+          errorMsg = json.error || json.message || "未知のエラーが発生しました";
         } catch {
           // JSONでない場合はそのまま表示
           errorMsg = text;
@@ -100,8 +101,8 @@ export const deviceAPI = {
         console.error("エクスポートエラー詳細:", errorMsg);
         throw new Error(errorMsg);
       }
-      
+
       throw error;
     }
-  }
+  },
 };

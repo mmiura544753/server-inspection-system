@@ -1,7 +1,14 @@
 // src/components/devices/DeviceList.js
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaPlus, FaEdit, FaTrash, FaEye, FaSearch, FaDownload } from "react-icons/fa";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaEye,
+  FaSearch,
+  FaDownload,
+} from "react-icons/fa";
 import { deviceAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
@@ -65,13 +72,16 @@ const DeviceList = () => {
     try {
       setExportError(null);
       // APIからBlobとしてCSVをダウンロード
-      const response = await deviceAPI.exportData('csv');
-      
+      const response = await deviceAPI.exportData("csv", encoding);
+
       // Blobからダウンロードリンクを作成
       const url = window.URL.createObjectURL(new Blob([response]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `device_list_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute(
+        "download",
+        `device_list_${new Date().toISOString().split("T")[0]}.csv`
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -115,13 +125,31 @@ const DeviceList = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h2">機器一覧</h1>
         <div>
-          <button 
-            onClick={handleExportCSV} 
+          <button
+            onClick={handleExportCSV}
             className="btn btn-success me-2"
             title="CSVエクスポート"
           >
             <FaDownload className="me-2" /> CSVエクスポート
           </button>
+          <ul className="dropdown-menu" aria-labelledby="exportDropdown">
+            <li>
+              <button
+                className="dropdown-item"
+                onClick={() => handleExportCSV("utf8")}
+              >
+                UTF-8でエクスポート
+              </button>
+            </li>
+            <li>
+              <button
+                className="dropdown-item"
+                onClick={() => handleExportCSV("shift_jis")}
+              >
+                SHIFT-JISでエクスポート
+              </button>
+            </li>
+          </ul>
           <Link to="/devices/new" className="btn btn-primary">
             <FaPlus className="me-2" /> 新規機器登録
           </Link>

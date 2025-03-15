@@ -8,7 +8,7 @@ const { Device, Customer } = require("../../models");
 // @route   GET /api/devices/export
 // @access  Public
 const exportDevicesToCsv = asyncHandler(async (req, res) => {
-  const encoding = req.query.encoding || "utf8"; // デフォルトはUTF-8、クエリパラメータで指定可能に
+  const encoding = req.query.encoding || "shift_jis";
 
   // 全ての機器情報を取得（顧客情報も含む）
   const devices = await Device.findAll({

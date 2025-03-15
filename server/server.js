@@ -1,23 +1,23 @@
 // server/server.js
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const dotenv = require('dotenv');
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const dotenv = require("dotenv");
 
 // 環境変数の読み込み
 dotenv.config();
 
 // ルーターのインポート
-const customerRoutes = require('./routes/customerRoutes');
-const deviceRoutes = require('./routes/deviceRoutes');
-const inspectionRoutes = require('./routes/inspectionRoutes');
-const inspectionItemRoutes = require('./routes/inspectionItemRoutes');
+const customerRoutes = require("./routes/customerRoutes");
+const deviceRoutes = require("./routes/deviceRoutes");
+const inspectionRoutes = require("./routes/inspectionRoutes");
+const inspectionItemRoutes = require("./routes/inspectionItemRoutes");
 
 // エラーハンドラーのインポート
-const { notFound, errorHandler } = require('./middleware/errorHandler');
+const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 // データベース接続
-const connectDB = require('./config/db');
+const { connectDB } = require("./config/db");
 connectDB();
 
 const app = express();
@@ -25,17 +25,17 @@ const app = express();
 // ミドルウェア
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 
 // ルート
-app.use('/api/customers', customerRoutes);
-app.use('/api/devices', deviceRoutes);
-app.use('/api/inspections', inspectionRoutes);
-app.use('/api/inspection-items', inspectionItemRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/devices", deviceRoutes);
+app.use("/api/inspections", inspectionRoutes);
+app.use("/api/inspection-items", inspectionItemRoutes);
 
 // 基本ルート
-app.get('/', (req, res) => {
-  res.send('API is running...');
+app.get("/", (req, res) => {
+  res.send("API is running...");
 });
 
 // エラーハンドリングミドルウェア

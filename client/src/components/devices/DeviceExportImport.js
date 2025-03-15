@@ -1,192 +1,82 @@
-// src/components/devices/DeviceExportImport.js
-import React, { useState } from 'react';
-import { FaFileDownload, FaFileUpload } from 'react-icons/fa';
-import Alert from '../common/Alert';
-import Modal from '../common/Modal';
-import axios from 'axios';
-import { API_BASE_URL } from '../../services/api';
+// server/controllers/device/deviceExportController.js
+const asyncHandler = require("express-async-handler");
+const { Parser } = require("json2csv");
+const iconv = require("iconv-lite");
+const { Device, Customer } = require("../../models");
 
-const DeviceExportImport = ({ onImportSuccess }) => {
-  const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [importError, setImportError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [importResult, setImportResult] = useState(null);
+// @desc    機器一覧のCSVエクスポート
+// @route   GET /api/devices/export
+// @access  Public
+const exportDevicesToCsv = asyncHandler(async (req, res) => {
+  const encoding = req.query.encoding || "shift_jis";
 
-  // CSVファイルのエクスポート処理
-  const handleExport = () => {
-    try {
-      // ダウンロードリンクの作成
-      const downloadUrl = `${API_BASE_URL}/devices/export`;
-      
-      // ファイル名の設定
-      const date = new Date();
-      const filename = `devices_export_${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}.csv`;
-      
-      // ダウンロードリンクを作成してクリック
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error('CSVのエクスポート中にエラーが発生しました:', err);
-    }
-  };
+  // 全ての機器情報を取得（顧客情報も含む）
+  const devices = await Device.findAll({
+    include: [
+      {
+        model: Customer,
+        as: "customer",
+        attributes: ["id", "customer_name"],
+      },
+    ],
+    order: [["device_name", "ASC"]],
+  });
 
-  // ファイル選択時の処理
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-    setImportError(null);
-  };
+  // レスポンス形式を調整（CSVに適した形式に変換）- 顧客ID、作成日時、更新日時を除外
+  const formattedDevices = devices.map((device) => {
+    return {
+      ID: device.id,
+      機器名: device.device_name,
+      顧客名: device.customer ? device.customer.customer_name : "",
+      モデル: device.model || "",
+      設置場所: device.location || "",
+      機器種別: device.device_type,
+      ハードウェアタイプ: device.hardware_type,
+    };
+  });
 
-  // CSVファイルのインポート処理
-  const handleImport = async () => {
-    if (!file) {
-      setImportError('ファイルを選択してください');
-      return;
-    }
+  // CSVフィールドの設定 - 日本語のヘッダーを使用
+  const fields = [
+    { label: "ID", value: "ID" },
+    { label: "機器名", value: "機器名" },
+    { label: "顧客名", value: "顧客名" },
+    { label: "モデル", value: "モデル" },
+    { label: "設置場所", value: "設置場所" },
+    { label: "機器種別", value: "機器種別" },
+    { label: "ハードウェアタイプ", value: "ハードウェアタイプ" },
+  ];
 
-    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
-      setImportError('CSVファイルを選択してください');
-      return;
-    }
+  // JSON to CSV Parserの設定
+  const json2csvParser = new Parser({ fields });
 
-    try {
-      setUploading(true);
-      setImportError(null);
+  // CSVに変換
+  const csv = json2csvParser.parse(formattedDevices);
 
-      const formData = new FormData();
-      formData.append('file', file);
+  // ファイル名の設定
+  const date = new Date();
+  const filename = `devices_export_${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, "0")}${date.getDate().toString().padStart(2, "0")}.csv`;
 
-      const response = await axios.post(`${API_BASE_URL}/devices/import`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+  // エンコーディングの処理
+  let outputData;
+  if (
+    encoding.toLowerCase() === "shift_jis" ||
+    encoding.toLowerCase() === "sjis"
+  ) {
+    // SHIFT-JISに変換
+    outputData = iconv.encode(csv, "Shift_JIS");
+    res.setHeader("Content-Type", "text/csv; charset=Shift_JIS");
+  } else {
+    outputData = csv;
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  }
 
-      setImportResult(response.data);
-      setShowModal(true);
-      
-      // 親コンポーネントに成功を通知
-      if (onImportSuccess && typeof onImportSuccess === 'function') {
-        onImportSuccess();
-      }
-    } catch (err) {
-      console.error('CSVのインポート中にエラーが発生しました:', err);
-      setImportError(
-        err.response?.data?.message || 
-        'CSVのインポート中にエラーが発生しました'
-      );
-    } finally {
-      setUploading(false);
-      setFile(null);
-      
-      // ファイル入力をリセット
-      const fileInput = document.getElementById('csvFile');
-      if (fileInput) {
-        fileInput.value = '';
-      }
-    }
-  };
+  // ヘッダーの設定
+  res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
-  return (
-    <div className="card mb-4">
-      <div className="card-header">
-        <h5 className="mb-0">CSVエクスポート/インポート</h5>
-      </div>
-      <div className="card-body">
-        <div className="row">
-          {/* エクスポート機能 */}
-          <div className="col-md-6 mb-3 mb-md-0">
-            <div className="d-grid">
-              <button 
-                className="btn btn-primary"
-                onClick={handleExport}
-              >
-                <FaFileDownload className="me-2" />
-                機器一覧をCSVでエクスポート
-              </button>
-            </div>
-          </div>
-          
-          {/* インポート機能 */}
-          <div className="col-md-6">
-            <div className="input-group mb-3">
-              <input
-                type="file"
-                className="form-control"
-                id="csvFile"
-                accept=".csv"
-                onChange={handleFileChange}
-                disabled={uploading}
-              />
-              <button
-                className="btn btn-success"
-                type="button"
-                onClick={handleImport}
-                disabled={!file || uploading}
-              >
-                <FaFileUpload className="me-2" />
-                {uploading ? 'インポート中...' : 'インポート'}
-              </button>
-            </div>
-            {importError && <Alert type="danger" message={importError} />}
-          </div>
-        </div>
-        
-        <div className="mt-3">
-          <small className="text-muted">
-            <strong>注意:</strong> CSVファイルのフォーマットは、機器名、顧客名、モデル、設置場所、機器種別、ハードウェアタイプのカラムが必要です。
-            既存の機器をIDで指定すると更新され、指定しないと新規作成されます。
-          </small>
-        </div>
-      </div>
-      
-      {/* インポート結果モーダル */}
-      <Modal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        title="インポート結果"
-      >
-        {importResult && (
-          <div>
-            <p>{importResult.message}</p>
-            
-            {importResult.errors && importResult.errors.length > 0 && (
-              <div className="alert alert-warning">
-                <h6>以下の行でエラーが発生しました：</h6>
-                <ul>
-                  {importResult.errors.map((error, idx) => (
-                    <li key={idx}>
-                      {error.row['機器名'] || 'No name'}: {error.error}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {importResult.importedDevices && importResult.importedDevices.length > 0 && (
-              <div>
-                <h6>インポートされた機器：</h6>
-                <ul>
-                  {importResult.importedDevices.slice(0, 10).map((device) => (
-                    <li key={device.id}>
-                      {device.device_name} ({device.customer_name})
-                    </li>
-                  ))}
-                  {importResult.importedDevices.length > 10 && (
-                    <li>...他 {importResult.importedDevices.length - 10} 件</li>
-                  )}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
-    </div>
-  );
+  // CSVデータを送信
+  res.send(outputData);
+});
+
+module.exports = {
+  exportDevicesToCsv,
 };
-
-export default DeviceExportImport;

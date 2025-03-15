@@ -58,36 +58,23 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
         }
         
         // 顧客名から顧客IDを取得または新規作成
-        let customerId = row['顧客ID'];
         let customer;
         
-        // 顧客IDが指定されている場合はその顧客を使用
-        if (customerId) {
-          customer = await Customer.findByPk(customerId);
-          if (!customer) {
-            results.errors.push({
-              row: row,
-              error: `指定された顧客ID: ${customerId} が存在しません`
-            });
-            continue;
-          }
-        } else {
-          // 顧客名から顧客を検索
-          customer = await Customer.findOne({
-            where: { customer_name: row['顧客名'] }
-          });
-          
-          // 顧客が存在しない場合は新規作成
-          if (!customer) {
-            customer = await Customer.create({
-              customer_name: row['顧客名']
-            }, { transaction: t });
-          }
-          
-          customerId = customer.id;
+        // 顧客名から顧客を検索
+        customer = await Customer.findOne({
+          where: { customer_name: row['顧客名'] }
+        });
+        
+        // 顧客が存在しない場合は新規作成
+        if (!customer) {
+          customer = await Customer.create({
+            customer_name: row['顧客名']
+          }, { transaction: t });
         }
         
-        // 既存のデバイスかどうかを確認
+        const customerId = customer.id;
+        
+        // 既存のデバイスかどうかを確認 (IDで判断)
         let device;
         if (row['ID']) {
           device = await Device.findByPk(row['ID']);

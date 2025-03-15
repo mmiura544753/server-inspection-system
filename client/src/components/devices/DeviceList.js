@@ -15,7 +15,6 @@ import Loading from "../common/Loading";
 import Alert from "../common/Alert";
 import Modal from "../common/Modal";
 
-
 const DeviceList = () => {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +28,7 @@ const DeviceList = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [showImportResultModal, setShowImportResultModal] = useState(false);
   const [importResult, setImportResult] = useState(null);
-  
+
   // ファイル入力用のref
   const fileInputRef = useRef(null);
 
@@ -112,8 +111,8 @@ const DeviceList = () => {
     if (!file) return;
 
     // CSVファイルか確認
-    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
-      setImportError('CSVファイルを選択してください');
+    if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
+      setImportError("CSVファイルを選択してください");
       return;
     }
 
@@ -128,22 +127,23 @@ const DeviceList = () => {
       // 結果を保存
       setImportResult(response.data);
       setShowImportResultModal(true);
-      
+
       // 成功メッセージの表示
-      setImportSuccess(`${response.data.importedRows}件のデータをインポートしました`);
-      
+      setImportSuccess(
+        `${response.data.importedRows}件のデータをインポートしました`
+      );
+
       // 機器リストを再読み込み
       fetchDevices();
     } catch (err) {
-      console.error('CSVインポートエラー:', err);
+      console.error("CSVインポートエラー:", err);
       setImportError(
-        err.response?.data?.message || 
-        'CSVのインポート中にエラーが発生しました'
+        err.response?.data?.message || "CSVのインポート中にエラーが発生しました"
       );
     } finally {
       setImportLoading(false);
       // ファイル入力をリセット
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
@@ -194,11 +194,11 @@ const DeviceList = () => {
             title="CSVインポート"
             disabled={importLoading}
           >
-            <FaUpload className="me-2" /> 
-            {importLoading ? 'インポート中...' : 'CSVインポート'}
+            <FaUpload className="me-2" />
+            {importLoading ? "インポート中..." : "CSVインポート"}
           </button>
-          <input 
-            type="file" 
+          <input
+            type="file"
             ref={fileInputRef}
             className="d-none"
             accept=".csv"
@@ -220,14 +220,17 @@ const DeviceList = () => {
         <div className="card-body">
           <h5 className="card-title">CSVインポート・エクスポートについて</h5>
           <p className="mb-0">
-            <strong>CSVエクスポート</strong>: 現在の機器一覧をSJIS形式のCSVファイルでダウンロードします。
+            <strong>CSVエクスポート</strong>:
+            現在の機器一覧をSJIS形式のCSVファイルでダウンロードします。
           </p>
           <p className="mb-0">
-            <strong>CSVインポート</strong>: CSVファイルから機器情報を一括登録します。ファイル形式はSJISエンコーディングが推奨です。
+            <strong>CSVインポート</strong>:
+            CSVファイルから機器情報を一括登録します。ファイル形式はSJISエンコーディングが推奨です。
           </p>
           <p className="small text-muted mt-2">
-            インポート用CSVのフォーマット: 機器名、顧客名、モデル、設置場所、機器種別、ハードウェアタイプのカラムが必要です。
-            IDが指定されている場合は更新、指定がない場合は新規作成されます。
+            インポート用CSVのフォーマット:
+            機器名、顧客名、モデル、設置場所、機器種別、ハードウェアタイプのカラムが必要です。
+            IDが指定されている場合は更新、指定がない場合は新規作成されます。存在しない顧客名の場合は自動的に新規顧客が作成されます。
           </p>
         </div>
       </div>
@@ -339,35 +342,38 @@ const DeviceList = () => {
         {importResult && (
           <div>
             <p>{importResult.message}</p>
-            
+
             {importResult.errors && importResult.errors.length > 0 && (
               <div className="alert alert-warning">
                 <h6>以下の行でエラーが発生しました：</h6>
                 <ul>
                   {importResult.errors.map((error, idx) => (
                     <li key={idx}>
-                      {error.row['機器名'] || 'No name'}: {error.error}
+                      {error.row["機器名"] || "No name"}: {error.error}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-            
-            {importResult.importedDevices && importResult.importedDevices.length > 0 && (
-              <div>
-                <h6>インポートされた機器：</h6>
-                <ul>
-                  {importResult.importedDevices.slice(0, 10).map((device) => (
-                    <li key={device.id}>
-                      {device.device_name} ({device.customer_name})
-                    </li>
-                  ))}
-                  {importResult.importedDevices.length > 10 && (
-                    <li>...他 {importResult.importedDevices.length - 10} 件</li>
-                  )}
-                </ul>
-              </div>
-            )}
+
+            {importResult.importedDevices &&
+              importResult.importedDevices.length > 0 && (
+                <div>
+                  <h6>インポートされた機器：</h6>
+                  <ul>
+                    {importResult.importedDevices.slice(0, 10).map((device) => (
+                      <li key={device.id}>
+                        {device.device_name} ({device.customer_name})
+                      </li>
+                    ))}
+                    {importResult.importedDevices.length > 10 && (
+                      <li>
+                        ...他 {importResult.importedDevices.length - 10} 件
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
           </div>
         )}
       </Modal>

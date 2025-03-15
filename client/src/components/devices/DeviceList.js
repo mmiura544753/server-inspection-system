@@ -68,11 +68,11 @@ const DeviceList = () => {
   };
 
   // CSVエクスポート機能
-  const handleExportCSV = async () => {
+  const handleExportCSV = async (encodingType = "utf8") => {
     try {
       setExportError(null);
       // APIからBlobとしてCSVをダウンロード
-      const response = await deviceAPI.exportData("csv", encoding);
+      const response = await deviceAPI.exportData("csv", encodingType);
 
       // Blobからダウンロードリンクを作成
       const url = window.URL.createObjectURL(new Blob([response]));

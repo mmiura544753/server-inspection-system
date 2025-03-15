@@ -242,6 +242,17 @@ export const inspectionItemAPI = {
     }
   },
 
+  // 点検項目詳細を取得
+  getById: async (id) => {
+    try {
+      const response = await api.get(`/inspection-items/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`点検項目ID:${id}の取得エラー:`, error);
+      throw error;
+    }
+  },
+
   // 機器ごとの点検項目を取得
   getByDeviceId: async (deviceId) => {
     try {
@@ -260,6 +271,28 @@ export const inspectionItemAPI = {
       return response.data;
     } catch (error) {
       console.error("点検項目作成エラー:", error);
+      throw error;
+    }
+  },
+
+  // 点検項目を更新
+  update: async (id, itemData) => {
+    try {
+      const response = await api.put(`/inspection-items/${id}`, itemData);
+      return response.data;
+    } catch (error) {
+      console.error(`点検項目ID:${id}の更新エラー:`, error);
+      throw error;
+    }
+  },
+
+  // 点検項目を削除
+  delete: async (id) => {
+    try {
+      const response = await api.delete(`/inspection-items/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`点検項目ID:${id}の削除エラー:`, error);
       throw error;
     }
   },

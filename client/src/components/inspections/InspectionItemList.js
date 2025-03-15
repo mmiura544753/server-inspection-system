@@ -1,16 +1,19 @@
 // src/components/inspections/InspectionItemList.js
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaPlus, FaSearch } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaSearch } from "react-icons/fa";
 import { inspectionItemAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
+import Modal from "../common/Modal";
 
 const InspectionItemList = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   // 点検項目データの取得
   const fetchItems = async () => {
@@ -31,6 +34,30 @@ const InspectionItemList = () => {
   useEffect(() => {
     fetchItems();
   }, []);
+
+  // 削除確認モーダルを表示
+  const handleDeleteClick = (item) => {
+    setItemToDelete(item);
+    setShowDeleteModal(true);
+  };
+
+  // 点検項目の削除処理
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      await inspectionItemAPI.delete(itemToDelete.id);
+
+      // 成功したら、リストから削除した項目を除外
+      setItems(items.filter((i) => i.id !== itemToDelete.id));
+
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+    } catch (err) {
+      setError("点検項目の削除に失敗しました。");
+      console.error("点検項目削除エラー:", err);
+    }
+  };
 
   // 検索フィルター
   const filteredItems = items.filter(
@@ -95,6 +122,7 @@ const InspectionItemList = () => {
                     <th>機器名</th>
                     <th>顧客名</th>
                     <th>作成日</th>
+                    <th>操作</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -105,6 +133,24 @@ const InspectionItemList = () => {
                       <td>{item.device_name}</td>
                       <td>{item.customer_name}</td>
                       <td>{formatDate(item.created_at)}</td>
+                      <td>
+                        <div className="action-buttons">
+                          <Link
+                            to={`/inspection-items/edit/${item.id}`}
+                            className="btn btn-sm btn-warning me-1"
+                            title="編集"
+                          >
+                            <FaEdit />
+                          </Link>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            title="削除"
+                            onClick={() => handleDeleteClick(item)}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -119,6 +165,20 @@ const InspectionItemList = () => {
             : "点検項目データがありません。"}
         </div>
       )}
+
+      {/* 削除確認モーダル */}
+      <Modal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="点検項目削除の確認"
+        onConfirm={handleDeleteConfirm}
+      >
+        <p>点検項目「{itemToDelete?.item_name}」を削除してもよろしいですか？</p>
+        <p className="text-danger">
+          削除すると、この点検項目を使用した過去の点検結果にも影響がある可能性があります。
+          この操作は元に戻せません。
+        </p>
+      </Modal>
     </div>
   );
 };

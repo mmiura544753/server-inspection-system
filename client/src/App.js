@@ -24,7 +24,7 @@ import InspectionList from "./components/inspections/InspectionList";
 import InspectionForm from "./components/inspections/InspectionForm";
 import InspectionDetails from "./components/inspections/InspectionDetails";
 
-// src/App.js - 点検項目マスタ関連ルートを追加
+// 点検項目マスタコンポーネント
 import InspectionItemList from "./components/inspections/InspectionItemList";
 import InspectionItemForm from "./components/inspections/InspectionItemForm";
 
@@ -71,6 +71,10 @@ function App() {
               />
               <Route
                 path="/inspection-items/new"
+                element={<InspectionItemForm />}
+              />
+              <Route
+                path="/inspection-items/edit/:id"
                 element={<InspectionItemForm />}
               />
 

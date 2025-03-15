@@ -1,6 +1,6 @@
 // src/components/inspections/InspectionItemForm.js
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { FaSave, FaTimes } from "react-icons/fa";
@@ -17,9 +17,17 @@ const InspectionItemSchema = Yup.object().shape({
 });
 
 const InspectionItemForm = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const isEditMode = !!id;
+
+  const [item, setItem] = useState({
+    device_id: "",
+    item_name: "",
+  });
   const [devices, setDevices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isEditMode);
+  const [deviceLoading, setDeviceLoading] = useState(true);
   const [error, setError] = useState(null);
   const [submitError, setSubmitError] = useState(null);
 
@@ -27,39 +35,70 @@ const InspectionItemForm = () => {
   useEffect(() => {
     const fetchDevices = async () => {
       try {
-        setLoading(true);
+        setDeviceLoading(true);
         const data = await deviceAPI.getAll();
         setDevices(data);
       } catch (err) {
         setError("機器データの取得に失敗しました。");
         console.error("機器一覧取得エラー:", err);
       } finally {
-        setLoading(false);
+        setDeviceLoading(false);
       }
     };
 
     fetchDevices();
   }, []);
 
+  // 編集モードの場合、既存点検項目データを取得
+  useEffect(() => {
+    const fetchItem = async () => {
+      try {
+        setLoading(true);
+        const data = await inspectionItemAPI.getById(id);
+        setItem({
+          device_id: data.device_id,
+          item_name: data.item_name,
+        });
+        setError(null);
+      } catch (err) {
+        setError("点検項目データの取得に失敗しました。");
+        console.error(`点検項目ID:${id}の取得エラー:`, err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isEditMode) {
+      fetchItem();
+    }
+  }, [id, isEditMode]);
+
   // フォーム送信処理
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       setSubmitError(null);
 
-      // 点検項目の作成
-      await inspectionItemAPI.create(values);
+      if (isEditMode) {
+        // 既存点検項目の更新
+        await inspectionItemAPI.update(id, values);
+      } else {
+        // 新規点検項目の作成
+        await inspectionItemAPI.create(values);
+      }
 
       // 成功したら点検項目一覧ページに戻る
       navigate("/inspection-items");
     } catch (err) {
-      setSubmitError("点検項目の作成に失敗しました。");
-      console.error("点検項目作成エラー:", err);
+      setSubmitError(
+        `点検項目の${isEditMode ? "更新" : "作成"}に失敗しました。`
+      );
+      console.error(`点検項目${isEditMode ? "更新" : "作成"}エラー:`, err);
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) {
+  if (loading || deviceLoading) {
     return <Loading />;
   }
 
@@ -67,19 +106,19 @@ const InspectionItemForm = () => {
     <div className="container py-4">
       <div className="card">
         <div className="card-header">
-          <h1 className="h3 mb-0">新規点検項目登録</h1>
+          <h1 className="h3 mb-0">
+            {isEditMode ? "点検項目の編集" : "新規点検項目登録"}
+          </h1>
         </div>
         <div className="card-body">
           {error && <Alert type="danger" message={error} />}
           {submitError && <Alert type="danger" message={submitError} />}
 
           <Formik
-            initialValues={{
-              device_id: "",
-              item_name: "",
-            }}
+            initialValues={item}
             validationSchema={InspectionItemSchema}
             onSubmit={handleSubmit}
+            enableReinitialize
           >
             {({ isSubmitting }) => (
               <Form className="form-container">

@@ -103,7 +103,19 @@ const DeviceList = () => {
         device.model.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // 以下はレンダリング部分
+  // 時刻フォーマット関数
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const options = {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+    return new Date(dateString).toLocaleString("ja-JP", options);
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -130,8 +142,103 @@ const DeviceList = () => {
       {error && <Alert type="danger" message={error} />}
       {exportError && <Alert type="danger" message={exportError} />}
 
-      {/* 以下の部分は変更なし */}
-      {/* ... */}
+      {/* 検索フォーム */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="input-group">
+            <span className="input-group-text">
+              <FaSearch />
+            </span>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="機器名、顧客名、モデルで検索..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 機器一覧テーブル */}
+      {filteredDevices.length > 0 ? (
+        <div className="card">
+          <div className="card-body">
+            <div className="table-responsive">
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>機器名</th>
+                    <th>顧客</th>
+                    <th>種別</th>
+                    <th>ハードウェア</th>
+                    <th>設置場所</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredDevices.map((device) => (
+                    <tr key={device.id}>
+                      <td>{device.id}</td>
+                      <td>{device.device_name}</td>
+                      <td>{device.customer_name}</td>
+                      <td>{device.device_type}</td>
+                      <td>{device.hardware_type}</td>
+                      <td>{device.location || "-"}</td>
+                      <td>
+                        <div className="action-buttons">
+                          <Link
+                            to={`/devices/${device.id}`}
+                            className="btn btn-sm btn-info"
+                            title="詳細"
+                          >
+                            <FaEye />
+                          </Link>
+                          <Link
+                            to={`/devices/edit/${device.id}`}
+                            className="btn btn-sm btn-warning"
+                            title="編集"
+                          >
+                            <FaEdit />
+                          </Link>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            title="削除"
+                            onClick={() => handleDeleteClick(device)}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="alert alert-info">
+          {searchTerm
+            ? "検索条件に一致する機器はありません。"
+            : "機器データがありません。"}
+        </div>
+      )}
+
+      {/* 削除確認モーダル */}
+      <Modal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="機器削除の確認"
+        onConfirm={handleDeleteConfirm}
+      >
+        <p>機器「{deviceToDelete?.device_name}」を削除してもよろしいですか？</p>
+        <p className="text-danger">
+          削除すると、この機器に関連するすべての点検データも削除されます。
+          この操作は元に戻せません。
+        </p>
+      </Modal>
     </div>
   );
 };

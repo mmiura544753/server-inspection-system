@@ -7,13 +7,13 @@ const {
   createDevice,
   updateDevice,
   deleteDevice
-} = require('../controllers/deviceController');
+} = require('../controllers/device');
 const { 
   getInspectionItemsByDeviceId 
-} = require('../controllers/inspectionItemController');
+} = require('../controllers/inspectionItem');
 const {
   getInspectionsByDeviceId
-} = require('../controllers/inspectionController');
+} = require('../controllers/inspection');
 
 // /api/devices
 router.route('/')

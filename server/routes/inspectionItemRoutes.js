@@ -7,7 +7,7 @@ const {
   createInspectionItem,
   updateInspectionItem,
   deleteInspectionItem
-} = require('../controllers/inspectionItemController');
+} = require('../controllers/inspectionItem');
 
 // /api/inspection-items
 router.route('/')

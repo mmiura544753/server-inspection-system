@@ -1,60 +1,75 @@
 // server/models/Inspection.js
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const Device = require('./Device');
+const InspectionResult = require('./InspectionResult');
 
-// 点検結果のスキーマ
-const inspectionResultSchema = mongoose.Schema({
-  inspection_item_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'InspectionItem',
-    required: [true, '点検項目IDは必須です']
-  },
-  status: {
-    type: String,
-    required: [true, '結果ステータスは必須です'],
-    enum: ['正常', '異常']
-  },
-  checked_at: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-// 点検スキーマ
-const inspectionSchema = mongoose.Schema({
-  inspection_date: {
-    type: Date,
-    required: [true, '点検日は必須です']
-  },
-  start_time: {
-    type: String
-  },
-  end_time: {
-    type: String
-  },
-  inspector_name: {
-    type: String,
-    required: [true, '点検者名は必須です'],
-    trim: true,
-    maxLength: [50, '点検者名は50文字以内で入力してください']
+// 点検モデル
+const Inspection = sequelize.define('Inspection', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
   },
   device_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Device',
-    required: [true, '機器IDは必須です']
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: Device,
+      key: 'id'
+    },
+    validate: {
+      notNull: { msg: '機器IDは必須です' }
+    }
+  },
+  inspection_date: {
+    type: DataTypes.DATEONLY,
+    allowNull: false,
+    validate: {
+      notNull: { msg: '点検日は必須です' }
+    }
+  },
+  start_time: {
+    type: DataTypes.TIME,
+    allowNull: true
+  },
+  end_time: {
+    type: DataTypes.TIME,
+    allowNull: true
+  },
+  inspector_name: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: '点検者名は必須です' },
+      len: { args: [1, 50], msg: '点検者名は50文字以内で入力してください' }
+    }
   },
   status: {
-    type: String,
-    default: '完了',
-    enum: ['準備中', '進行中', '完了']
-  },
-  results: [inspectionResultSchema]
-}, {
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    type: DataTypes.ENUM('準備中', '進行中', '完了'),
+    allowNull: false,
+    defaultValue: '完了',
+    validate: {
+      isIn: {
+        args: [['準備中', '進行中', '完了']],
+        msg: '無効な点検ステータスです'
+      }
+    }
   }
+}, {
+  tableName: 'inspections',
+  timestamps: true,
+  underscored: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at'
 });
 
-const Inspection = mongoose.model('Inspection', inspectionSchema);
+// リレーションシップの定義
+Inspection.belongsTo(Device, { foreignKey: 'device_id', as: 'device' });
+Device.hasMany(Inspection, { foreignKey: 'device_id', as: 'inspections' });
+
+// 点検結果との関連付け
+Inspection.hasMany(InspectionResult, { foreignKey: 'inspection_id', as: 'results' });
+InspectionResult.belongsTo(Inspection, { foreignKey: 'inspection_id', as: 'inspection' });
 
 module.exports = Inspection;

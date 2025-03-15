@@ -1,25 +1,44 @@
 // server/models/InspectionItem.js
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const Device = require('./Device');
 
-const inspectionItemSchema = mongoose.Schema({
+// 点検項目モデル
+const InspectionItem = sequelize.define('InspectionItem', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
   device_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Device',
-    required: [true, '機器IDは必須です']
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: Device,
+      key: 'id'
+    },
+    validate: {
+      notNull: { msg: '機器IDは必須です' }
+    }
   },
   item_name: {
-    type: String,
-    required: [true, '点検項目名は必須です'],
-    trim: true,
-    maxLength: [255, '点検項目名は255文字以内で入力してください']
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: '点検項目名は必須です' },
+      len: { args: [1, 255], msg: '点検項目名は255文字以内で入力してください' }
+    }
   }
 }, {
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at'
-  }
+  tableName: 'inspection_items',
+  timestamps: true,
+  underscored: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at'
 });
 
-const InspectionItem = mongoose.model('InspectionItem', inspectionItemSchema);
+// リレーションシップの定義
+InspectionItem.belongsTo(Device, { foreignKey: 'device_id', as: 'device' });
+Device.hasMany(InspectionItem, { foreignKey: 'device_id', as: 'inspection_items' });
 
 module.exports = InspectionItem;

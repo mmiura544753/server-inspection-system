@@ -7,8 +7,8 @@ const {
   createCustomer,
   updateCustomer,
   deleteCustomer
-} = require('../controllers/customerController');
-const { getDevicesByCustomerId } = require('../controllers/deviceController');
+} = require('../controllers/customer');
+const { getDevicesByCustomerId } = require('../controllers/device');
 
 // /api/customers
 router.route('/')

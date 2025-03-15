@@ -1,45 +1,80 @@
 // server/models/Device.js
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const Customer = require('./Customer');
 
-const deviceSchema = mongoose.Schema({
+// 機器モデル
+const Device = sequelize.define('Device', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
   customer_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Customer',
-    required: [true, '顧客IDは必須です']
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: Customer,
+      key: 'id'
+    },
+    validate: {
+      notNull: { msg: '顧客IDは必須です' }
+    }
   },
   device_name: {
-    type: String,
-    required: [true, '機器名は必須です'],
-    trim: true,
-    maxLength: [100, '機器名は100文字以内で入力してください']
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: '機器名は必須です' },
+      len: { args: [1, 100], msg: '機器名は100文字以内で入力してください' }
+    }
   },
   model: {
-    type: String,
-    trim: true,
-    maxLength: [50, 'モデル名は50文字以内で入力してください']
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    validate: {
+      len: { args: [0, 50], msg: 'モデル名は50文字以内で入力してください' }
+    }
   },
   location: {
-    type: String,
-    trim: true,
-    maxLength: [100, '設置場所は100文字以内で入力してください']
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    validate: {
+      len: { args: [0, 100], msg: '設置場所は100文字以内で入力してください' }
+    }
   },
   device_type: {
-    type: String,
-    required: [true, '機器種別は必須です'],
-    enum: ['サーバ', 'UPS', 'ネットワーク機器', 'その他']
+    type: DataTypes.ENUM('サーバ', 'UPS', 'ネットワーク機器', 'その他'),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: '機器種別は必須です' },
+      isIn: {
+        args: [['サーバ', 'UPS', 'ネットワーク機器', 'その他']],
+        msg: '無効な機器種別です'
+      }
+    }
   },
   hardware_type: {
-    type: String,
-    required: [true, 'ハードウェアタイプは必須です'],
-    enum: ['物理', 'VM']
+    type: DataTypes.ENUM('物理', 'VM'),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: 'ハードウェアタイプは必須です' },
+      isIn: {
+        args: [['物理', 'VM']],
+        msg: '無効なハードウェアタイプです'
+      }
+    }
   }
 }, {
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at'
-  }
+  tableName: 'devices',
+  timestamps: true,
+  underscored: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at'
 });
 
-const Device = mongoose.model('Device', deviceSchema);
+// リレーションシップの定義
+Device.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
+Customer.hasMany(Device, { foreignKey: 'customer_id', as: 'devices' });
 
 module.exports = Device;

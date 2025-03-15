@@ -1,20 +1,31 @@
 // server/models/Customer.js
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const customerSchema = mongoose.Schema({
+// 顧客モデル
+const Customer = sequelize.define('Customer', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
   customer_name: {
-    type: String,
-    required: [true, '顧客名は必須です'],
-    trim: true,
-    maxLength: [100, '顧客名は100文字以内で入力してください']
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: '顧客名は必須です' },
+      len: { args: [1, 100], msg: '顧客名は100文字以内で入力してください' }
+    }
   }
 }, {
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at'
-  }
+  // テーブル名をcustomersに指定
+  tableName: 'customers',
+  // created_atとupdated_atカラムを自動生成
+  timestamps: true,
+  // カラム名をスネークケースに変換
+  underscored: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at'
 });
-
-const Customer = mongoose.model('Customer', customerSchema);
 
 module.exports = Customer;

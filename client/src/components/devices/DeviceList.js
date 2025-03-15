@@ -1,5 +1,5 @@
 // src/components/devices/DeviceList.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   FaPlus,
@@ -8,20 +8,30 @@ import {
   FaEye,
   FaSearch,
   FaDownload,
+  FaUpload,
 } from "react-icons/fa";
 import { deviceAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
 import Modal from "../common/Modal";
 
+
 const DeviceList = () => {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [exportError, setExportError] = useState(null);
+  const [importError, setImportError] = useState(null);
+  const [importSuccess, setImportSuccess] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deviceToDelete, setDeviceToDelete] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [showImportResultModal, setShowImportResultModal] = useState(false);
+  const [importResult, setImportResult] = useState(null);
+  
+  // ファイル入力用のref
+  const fileInputRef = useRef(null);
 
   // 機器一覧データの取得
   const fetchDevices = async () => {
@@ -91,6 +101,52 @@ const DeviceList = () => {
     }
   };
 
+  // ファイル選択ダイアログを開く
+  const handleImportClick = () => {
+    fileInputRef.current.click();
+  };
+
+  // ファイル選択時の処理
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // CSVファイルか確認
+    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+      setImportError('CSVファイルを選択してください');
+      return;
+    }
+
+    try {
+      setImportError(null);
+      setImportSuccess(null);
+      setImportLoading(true);
+
+      // deviceAPI経由でインポート実行
+      const response = await deviceAPI.importData(file);
+
+      // 結果を保存
+      setImportResult(response.data);
+      setShowImportResultModal(true);
+      
+      // 成功メッセージの表示
+      setImportSuccess(`${response.data.importedRows}件のデータをインポートしました`);
+      
+      // 機器リストを再読み込み
+      fetchDevices();
+    } catch (err) {
+      console.error('CSVインポートエラー:', err);
+      setImportError(
+        err.response?.data?.message || 
+        'CSVのインポート中にエラーが発生しました'
+      );
+    } finally {
+      setImportLoading(false);
+      // ファイル入力をリセット
+      e.target.value = '';
+    }
+  };
+
   // 検索フィルター
   const filteredDevices = devices.filter(
     (device) =>
@@ -125,7 +181,6 @@ const DeviceList = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h2">機器一覧</h1>
         <div>
-          {/* エクスポートボタンを1つだけにする */}
           <button
             onClick={handleExportCSV}
             className="btn btn-success me-2"
@@ -133,6 +188,22 @@ const DeviceList = () => {
           >
             <FaDownload className="me-2" /> CSVエクスポート
           </button>
+          <button
+            onClick={handleImportClick}
+            className="btn btn-info me-2"
+            title="CSVインポート"
+            disabled={importLoading}
+          >
+            <FaUpload className="me-2" /> 
+            {importLoading ? 'インポート中...' : 'CSVインポート'}
+          </button>
+          <input 
+            type="file" 
+            ref={fileInputRef}
+            className="d-none"
+            accept=".csv"
+            onChange={handleFileChange}
+          />
           <Link to="/devices/new" className="btn btn-primary">
             <FaPlus className="me-2" /> 新規機器登録
           </Link>
@@ -141,6 +212,25 @@ const DeviceList = () => {
 
       {error && <Alert type="danger" message={error} />}
       {exportError && <Alert type="danger" message={exportError} />}
+      {importError && <Alert type="danger" message={importError} />}
+      {importSuccess && <Alert type="success" message={importSuccess} />}
+
+      {/* インポート注意事項 */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <h5 className="card-title">CSVインポート・エクスポートについて</h5>
+          <p className="mb-0">
+            <strong>CSVエクスポート</strong>: 現在の機器一覧をSJIS形式のCSVファイルでダウンロードします。
+          </p>
+          <p className="mb-0">
+            <strong>CSVインポート</strong>: CSVファイルから機器情報を一括登録します。ファイル形式はSJISエンコーディングが推奨です。
+          </p>
+          <p className="small text-muted mt-2">
+            インポート用CSVのフォーマット: 機器名、顧客名、モデル、設置場所、機器種別、ハードウェアタイプのカラムが必要です。
+            IDが指定されている場合は更新、指定がない場合は新規作成されます。
+          </p>
+        </div>
+      </div>
 
       {/* 検索フォーム */}
       <div className="card mb-4">
@@ -238,6 +328,48 @@ const DeviceList = () => {
           削除すると、この機器に関連するすべての点検データも削除されます。
           この操作は元に戻せません。
         </p>
+      </Modal>
+
+      {/* インポート結果モーダル */}
+      <Modal
+        show={showImportResultModal}
+        onClose={() => setShowImportResultModal(false)}
+        title="インポート結果"
+      >
+        {importResult && (
+          <div>
+            <p>{importResult.message}</p>
+            
+            {importResult.errors && importResult.errors.length > 0 && (
+              <div className="alert alert-warning">
+                <h6>以下の行でエラーが発生しました：</h6>
+                <ul>
+                  {importResult.errors.map((error, idx) => (
+                    <li key={idx}>
+                      {error.row['機器名'] || 'No name'}: {error.error}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {importResult.importedDevices && importResult.importedDevices.length > 0 && (
+              <div>
+                <h6>インポートされた機器：</h6>
+                <ul>
+                  {importResult.importedDevices.slice(0, 10).map((device) => (
+                    <li key={device.id}>
+                      {device.device_name} ({device.customer_name})
+                    </li>
+                  ))}
+                  {importResult.importedDevices.length > 10 && (
+                    <li>...他 {importResult.importedDevices.length - 10} 件</li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
     </div>
   );

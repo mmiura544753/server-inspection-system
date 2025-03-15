@@ -105,4 +105,50 @@ export const deviceAPI = {
       throw error;
     }
   },
+
+  // CSVファイルからデータをインポート
+  importData: async (file) => {
+    try {
+      console.log("機器インポート開始");
+      
+      // FormDataの作成
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      // POSTリクエストの実行
+      const response = await api.post("/devices/import", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      console.log("機器インポート成功:", response);
+      return response.data;
+    } catch (error) {
+      console.error("機器インポートエラー:", error);
+      
+      // エラーが発生した場合、エラーメッセージを取得して表示
+      if (error.response && error.response.data) {
+        if (error.response.data instanceof Blob) {
+          // Blobからテキストを抽出
+          const text = await new Response(error.response.data).text();
+          let errorMsg;
+          try {
+            // JSONにパースできるかチェック
+            const json = JSON.parse(text);
+            errorMsg = json.error || json.message || "未知のエラーが発生しました";
+          } catch {
+            // JSONでない場合はそのまま表示
+            errorMsg = text;
+          }
+          console.error("インポートエラー詳細:", errorMsg);
+          throw new Error(errorMsg);
+        } else {
+          throw new Error(error.response.data.message || "未知のエラーが発生しました");
+        }
+      }
+      
+      throw error;
+    }
+  }
 };

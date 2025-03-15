@@ -325,7 +325,70 @@ app.delete("/api/devices/:id", async (req, res) => {
   }
 });
 
-// server.js に追加
+// 点検項目マスタ関連のAPI
+
+// 点検項目一覧取得
+app.get("/api/inspection-items", async (req, res) => {
+  try {
+    const [rows] = await pool.promise().query(`
+      SELECT i.*, d.device_name, c.customer_name 
+      FROM inspection_items i
+      JOIN devices d ON i.device_id = d.id
+      JOIN customers c ON d.customer_id = c.id
+      ORDER BY i.id
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error("点検項目一覧取得エラー:", err);
+    res.status(500).json({ error: "点検項目データの取得に失敗しました" });
+  }
+});
+
+// 機器ごとの点検項目取得
+app.get("/api/devices/:deviceId/inspection-items", async (req, res) => {
+  try {
+    const [rows] = await pool.promise().query(
+      `
+      SELECT * FROM inspection_items 
+      WHERE device_id = ?
+      ORDER BY id
+    `,
+      [req.params.deviceId]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("機器別点検項目取得エラー:", err);
+    res.status(500).json({ error: "点検項目データの取得に失敗しました" });
+  }
+});
+
+// 点検項目作成
+app.post("/api/inspection-items", async (req, res) => {
+  try {
+    const { device_id, item_name } = req.body;
+
+    if (!device_id || !item_name) {
+      return res.status(400).json({ error: "機器IDと項目名は必須です" });
+    }
+
+    const [result] = await pool
+      .promise()
+      .query(
+        "INSERT INTO inspection_items (device_id, item_name) VALUES (?, ?)",
+        [device_id, item_name]
+      );
+
+    res.status(201).json({
+      id: result.insertId,
+      device_id,
+      item_name,
+      created_at: new Date(),
+    });
+  } catch (err) {
+    console.error("点検項目作成エラー:", err);
+    res.status(500).json({ error: "点検項目の作成に失敗しました" });
+  }
+});
 
 // 点検一覧取得
 app.get("/api/inspections", async (req, res) => {
@@ -424,11 +487,9 @@ app.post("/api/inspections", async (req, res) => {
       !Array.isArray(results) ||
       results.length === 0
     ) {
-      return res
-        .status(400)
-        .json({
-          error: "点検日、点検者名、および少なくとも1つの点検結果は必須です",
-        });
+      return res.status(400).json({
+        error: "点検日、点検者名、および少なくとも1つの点検結果は必須です",
+      });
     }
 
     // トランザクション開始

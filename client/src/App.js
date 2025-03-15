@@ -19,6 +19,11 @@ import DeviceList from "./components/devices/DeviceList";
 import DeviceForm from "./components/devices/DeviceForm";
 import DeviceDetails from "./components/devices/DeviceDetails";
 
+// 点検コンポーネント
+import InspectionList from "./components/inspections/InspectionList";
+import InspectionForm from "./components/inspections/InspectionForm";
+import InspectionDetails from "./components/inspections/InspectionDetails";
+
 // その他のページ
 import Home from "./components/Home";
 import NotFound from "./components/NotFound";
@@ -45,6 +50,15 @@ function App() {
               <Route path="/devices/new" element={<DeviceForm />} />
               <Route path="/devices/edit/:id" element={<DeviceForm />} />
               <Route path="/devices/:id" element={<DeviceDetails />} />
+
+              {/* 点検関連のルート */}
+              <Route path="/inspections" element={<InspectionList />} />
+              <Route path="/inspections/new" element={<InspectionForm />} />
+              <Route
+                path="/inspections/edit/:id"
+                element={<InspectionForm />}
+              />
+              <Route path="/inspections/:id" element={<InspectionDetails />} />
 
               {/* 404ページ */}
               <Route path="*" element={<NotFound />} />

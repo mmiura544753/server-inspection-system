@@ -331,10 +331,12 @@ app.delete("/api/devices/:id", async (req, res) => {
 app.get("/api/inspections", async (req, res) => {
   try {
     const [rows] = await pool.promise().query(`
-      SELECT i.*, d.device_name, c.customer_name 
+      SELECT i.*, ir.device_id, d.device_name, c.customer_name 
       FROM inspections i
-      JOIN devices d ON i.device_id = d.id
+      JOIN inspection_results ir ON i.id = ir.inspection_id
+      JOIN devices d ON ir.device_id = d.id
       JOIN customers c ON d.customer_id = c.id
+      GROUP BY i.id
       ORDER BY i.inspection_date DESC
     `);
     res.json(rows);
@@ -350,10 +352,8 @@ app.get("/api/inspections/:id", async (req, res) => {
     // 点検基本情報を取得
     const [inspections] = await pool.promise().query(
       `
-      SELECT i.*, d.device_name, c.customer_name 
+      SELECT i.* 
       FROM inspections i
-      JOIN devices d ON i.device_id = d.id
-      JOIN customers c ON d.customer_id = c.id
       WHERE i.id = ?
     `,
       [req.params.id]
@@ -366,9 +366,11 @@ app.get("/api/inspections/:id", async (req, res) => {
     // 点検結果の詳細を取得
     const [results] = await pool.promise().query(
       `
-      SELECT * FROM inspection_results 
-      WHERE inspection_id = ?
-      ORDER BY id
+      SELECT ir.*, d.device_name 
+      FROM inspection_results ir
+      JOIN devices d ON ir.device_id = d.id
+      WHERE ir.inspection_id = ?
+      ORDER BY ir.id
     `,
       [req.params.id]
     );
@@ -391,10 +393,12 @@ app.get("/api/devices/:deviceId/inspections", async (req, res) => {
   try {
     const [rows] = await pool.promise().query(
       `
-      SELECT i.*, d.device_name 
+      SELECT i.*, ir.device_id, d.device_name 
       FROM inspections i
-      JOIN devices d ON i.device_id = d.id
-      WHERE i.device_id = ?
+      JOIN inspection_results ir ON i.id = ir.inspection_id
+      JOIN devices d ON ir.device_id = d.id
+      WHERE ir.device_id = ?
+      GROUP BY i.id
       ORDER BY i.inspection_date DESC
     `,
       [req.params.deviceId]
@@ -410,20 +414,21 @@ app.get("/api/devices/:deviceId/inspections", async (req, res) => {
 // 点検作成
 app.post("/api/inspections", async (req, res) => {
   try {
-    const {
-      device_id,
-      inspection_date,
-      inspector_name,
-      inspection_type,
-      status,
-      note,
-      results,
-    } = req.body;
+    const { inspection_date, start_time, end_time, inspector_name, results } =
+      req.body;
 
-    if (!device_id || !inspection_date || !inspector_name || !inspection_type) {
+    if (
+      !inspection_date ||
+      !inspector_name ||
+      !results ||
+      !Array.isArray(results) ||
+      results.length === 0
+    ) {
       return res
         .status(400)
-        .json({ error: "機器ID、点検日、点検者名、点検種別は必須です" });
+        .json({
+          error: "点検日、点検者名、および少なくとも1つの点検結果は必須です",
+        });
     }
 
     // トランザクション開始
@@ -433,31 +438,21 @@ app.post("/api/inspections", async (req, res) => {
     try {
       // 点検基本情報を登録
       const [inspection] = await connection.query(
-        "INSERT INTO inspections (device_id, inspection_date, inspector_name, inspection_type, status, note) VALUES (?, ?, ?, ?, ?, ?)",
-        [
-          device_id,
-          inspection_date,
-          inspector_name,
-          inspection_type,
-          status || "完了",
-          note || "",
-        ]
+        "INSERT INTO inspections (inspection_date, start_time, end_time, inspector_name) VALUES (?, ?, ?, ?)",
+        [inspection_date, start_time || null, end_time || null, inspector_name]
       );
 
       const inspectionId = inspection.insertId;
 
-      // 点検結果の詳細があれば登録
-      if (results && Array.isArray(results) && results.length > 0) {
-        const resultValues = results.map((result) => [
-          inspectionId,
-          result.check_item,
-          result.result,
-          result.comment || "",
-        ]);
+      // 点検結果を登録
+      for (const result of results) {
+        if (!result.device_id || !result.check_item || !result.status) {
+          throw new Error("点検結果には機器ID、確認項目、ステータスが必要です");
+        }
 
         await connection.query(
-          "INSERT INTO inspection_results (inspection_id, check_item, result, comment) VALUES ?",
-          [resultValues]
+          "INSERT INTO inspection_results (inspection_id, device_id, check_item, status) VALUES (?, ?, ?, ?)",
+          [inspectionId, result.device_id, result.check_item, result.status]
         );
       }
 
@@ -466,13 +461,11 @@ app.post("/api/inspections", async (req, res) => {
 
       res.status(201).json({
         id: inspectionId,
-        device_id,
         inspection_date,
+        start_time,
+        end_time,
         inspector_name,
-        inspection_type,
-        status: status || "完了",
-        note: note || "",
-        results: results || [],
+        results,
       });
     } catch (err) {
       // エラー発生時はロールバック
@@ -483,26 +476,18 @@ app.post("/api/inspections", async (req, res) => {
     }
   } catch (err) {
     console.error("点検作成エラー:", err);
-    res.status(500).json({ error: "点検の作成に失敗しました" });
+    res.status(500).json({ error: "点検の作成に失敗しました: " + err.message });
   }
 });
 
 // 点検更新
 app.put("/api/inspections/:id", async (req, res) => {
   try {
-    const {
-      inspection_date,
-      inspector_name,
-      inspection_type,
-      status,
-      note,
-      results,
-    } = req.body;
+    const { inspection_date, start_time, end_time, inspector_name, results } =
+      req.body;
 
-    if (!inspection_date || !inspector_name || !inspection_type) {
-      return res
-        .status(400)
-        .json({ error: "点検日、点検者名、点検種別は必須です" });
+    if (!inspection_date || !inspector_name) {
+      return res.status(400).json({ error: "点検日、点検者名は必須です" });
     }
 
     // トランザクション開始
@@ -512,13 +497,12 @@ app.put("/api/inspections/:id", async (req, res) => {
     try {
       // 点検基本情報を更新
       const [result] = await connection.query(
-        "UPDATE inspections SET inspection_date = ?, inspector_name = ?, inspection_type = ?, status = ?, note = ? WHERE id = ?",
+        "UPDATE inspections SET inspection_date = ?, start_time = ?, end_time = ?, inspector_name = ? WHERE id = ?",
         [
           inspection_date,
+          start_time || null,
+          end_time || null,
           inspector_name,
-          inspection_type,
-          status,
-          note,
           req.params.id,
         ]
       );
@@ -537,17 +521,18 @@ app.put("/api/inspections/:id", async (req, res) => {
 
       // 新しい点検結果を登録
       if (results && Array.isArray(results) && results.length > 0) {
-        const resultValues = results.map((result) => [
-          req.params.id,
-          result.check_item,
-          result.result,
-          result.comment || "",
-        ]);
+        for (const result of results) {
+          if (!result.device_id || !result.check_item || !result.status) {
+            throw new Error(
+              "点検結果には機器ID、確認項目、ステータスが必要です"
+            );
+          }
 
-        await connection.query(
-          "INSERT INTO inspection_results (inspection_id, check_item, result, comment) VALUES ?",
-          [resultValues]
-        );
+          await connection.query(
+            "INSERT INTO inspection_results (inspection_id, device_id, check_item, status) VALUES (?, ?, ?, ?)",
+            [req.params.id, result.device_id, result.check_item, result.status]
+          );
+        }
       }
 
       // トランザクションをコミット
@@ -556,10 +541,9 @@ app.put("/api/inspections/:id", async (req, res) => {
       res.json({
         id: parseInt(req.params.id),
         inspection_date,
+        start_time,
+        end_time,
         inspector_name,
-        inspection_type,
-        status,
-        note,
         results: results || [],
       });
     } catch (err) {
@@ -571,7 +555,7 @@ app.put("/api/inspections/:id", async (req, res) => {
     }
   } catch (err) {
     console.error(`点検ID:${req.params.id}の更新エラー:`, err);
-    res.status(500).json({ error: "点検の更新に失敗しました" });
+    res.status(500).json({ error: "点検の更新に失敗しました: " + err.message });
   }
 });
 

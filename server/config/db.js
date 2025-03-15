@@ -1,5 +1,5 @@
 // server/config/db.js
-const { Sequelize } = require('sequelize');
+const { Sequelize } = require("sequelize");
 
 // データベース接続設定
 const sequelize = new Sequelize(
@@ -9,16 +9,16 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT || 3306,
-    dialect: 'mariadb',
+    dialect: "mariadb",
     dialectOptions: {
-      timezone: 'Asia/Tokyo',
+      useUTC: false, // UTCに変換せずにそのまま扱う
     },
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    logging: process.env.NODE_ENV === "development" ? console.log : false,
     pool: {
       max: 5,
       min: 0,
       acquire: 30000,
-      idle: 10000
+      idle: 10000,
     },
   }
 );
@@ -27,16 +27,19 @@ const sequelize = new Sequelize(
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log('MariaDBに接続しました');
-    
+    console.log("MariaDBに接続しました");
+
     // 開発環境の場合のみ、モデルと一致するようにテーブルを同期
-    if (process.env.NODE_ENV === 'development' && process.env.DB_SYNC === 'true') {
-      console.log('データベースのテーブルを同期しています...');
+    if (
+      process.env.NODE_ENV === "development" &&
+      process.env.DB_SYNC === "true"
+    ) {
+      console.log("データベースのテーブルを同期しています...");
       await sequelize.sync({ alter: true });
-      console.log('データベースの同期が完了しました');
+      console.log("データベースの同期が完了しました");
     }
   } catch (error) {
-    console.error('データベース接続エラー:', error.message);
+    console.error("データベース接続エラー:", error.message);
     process.exit(1);
   }
 };

@@ -7,7 +7,9 @@ const Footer = () => {
   return (
     <footer className="app-footer">
       <div className="container">
-        <p className="m-0">© {currentYear} Zukosha Co., Ltd.</p>
+        <p className="m-0">
+          © {currentYear} Zukosha Co., Ltd. All rights reserved.
+        </p>
       </div>
     </footer>
   );

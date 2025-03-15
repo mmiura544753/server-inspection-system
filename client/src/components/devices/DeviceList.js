@@ -6,6 +6,7 @@ import { deviceAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
 import Modal from "../common/Modal";
+import DeviceExportImport from "./DeviceExportImport";
 
 const DeviceList = () => {
   const [devices, setDevices] = useState([]);
@@ -59,6 +60,12 @@ const DeviceList = () => {
     }
   };
 
+  // CSVインポート成功時のハンドラー
+  const handleImportSuccess = () => {
+    // 機器一覧を再取得
+    fetchDevices();
+  };
+
   // 検索フィルター
   const filteredDevices = devices.filter(
     (device) =>
@@ -98,6 +105,9 @@ const DeviceList = () => {
       </div>
 
       {error && <Alert type="danger" message={error} />}
+
+      {/* CSVエクスポート/インポートコンポーネント */}
+      <DeviceExportImport onImportSuccess={handleImportSuccess} />
 
       {/* 検索フォーム */}
       <div className="card mb-4">

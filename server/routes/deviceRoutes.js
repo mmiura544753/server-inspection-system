@@ -6,7 +6,9 @@ const {
   getDeviceById,
   createDevice,
   updateDevice,
-  deleteDevice
+  deleteDevice,
+  exportDevicesToCsv,
+  importDevicesFromCsv
 } = require('../controllers/device');
 const { 
   getInspectionItemsByDeviceId 
@@ -14,11 +16,20 @@ const {
 const {
   getInspectionsByDeviceId
 } = require('../controllers/inspection');
+const upload = require('../middleware/upload');
 
 // /api/devices
 router.route('/')
   .get(getDevices)
   .post(createDevice);
+
+// /api/devices/export - CSVエクスポート
+router.route('/export')
+  .get(exportDevicesToCsv);
+
+// /api/devices/import - CSVインポート
+router.route('/import')
+  .post(upload.single('file'), importDevicesFromCsv);
 
 // /api/devices/:id
 router.route('/:id')

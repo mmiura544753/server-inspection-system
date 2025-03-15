@@ -3,6 +3,8 @@ const { getDevices, getDeviceById, getDevicesByCustomerId } = require('./deviceC
 const { createDevice } = require('./deviceCreateController');
 const { updateDevice } = require('./deviceUpdateController');
 const { deleteDevice } = require('./deviceDeleteController');
+const { exportDevicesToCsv } = require('./deviceExportController');
+const { importDevicesFromCsv } = require('./deviceImportController');
 
 // 全ての機器コントローラー関数をエクスポート
 module.exports = {
@@ -11,5 +13,7 @@ module.exports = {
   getDevicesByCustomerId,
   createDevice,
   updateDevice,
-  deleteDevice
+  deleteDevice,
+  exportDevicesToCsv,
+  importDevicesFromCsv
 };

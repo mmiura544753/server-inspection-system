@@ -156,6 +156,34 @@ export const deviceAPI = {
       throw error;
     }
   },
+
+  // CSVエクスポート用メソッドを追加
+  exportCSV: async () => {
+    try {
+      const response = await api.get("/devices/export", {
+        responseType: "blob", // レスポンスをBlobとして扱う
+      });
+      return response.data;
+    } catch (error) {
+      console.error("機器CSVエクスポートエラー:", error);
+      throw error;
+    }
+  },
+
+  // CSVインポート用メソッドを追加
+  importCSV: async (formData) => {
+    try {
+      const response = await api.post("/devices/import", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("機器CSVインポートエラー:", error);
+      throw error;
+    }
+  },
 };
 
 // src/services/api.js に追加

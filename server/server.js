@@ -541,82 +541,35 @@ app.post("/api/inspections", async (req, res) => {
   }
 });
 
-// 点検更新
-app.put("/api/inspections/:id", async (req, res) => {
+// 点検項目を更新
+app.put("/api/inspection-items/:id", async (req, res) => {
   try {
-    const { inspection_date, start_time, end_time, inspector_name, results } =
-      req.body;
+    const { device_id, item_name } = req.body;
 
-    if (!inspection_date || !inspector_name) {
-      return res.status(400).json({ error: "点検日、点検者名は必須です" });
+    if (!device_id || !item_name) {
+      return res.status(400).json({ error: "機器IDと項目名は必須です" });
     }
 
-    // トランザクション開始
-    const connection = await pool.promise().getConnection();
-    await connection.beginTransaction();
-
-    try {
-      // 点検基本情報を更新
-      const [result] = await connection.query(
-        "UPDATE inspections SET inspection_date = ?, start_time = ?, end_time = ?, inspector_name = ? WHERE id = ?",
-        [
-          inspection_date,
-          start_time || null,
-          end_time || null,
-          inspector_name,
-          req.params.id,
-        ]
+    const [result] = await pool
+      .promise()
+      .query(
+        "UPDATE inspection_items SET device_id = ?, item_name = ? WHERE id = ?",
+        [device_id, item_name, req.params.id]
       );
 
-      if (result.affectedRows === 0) {
-        await connection.rollback();
-        connection.release();
-        return res.status(404).json({ error: "点検データが見つかりません" });
-      }
-
-      // 既存の点検結果を削除
-      await connection.query(
-        "DELETE FROM inspection_results WHERE inspection_id = ?",
-        [req.params.id]
-      );
-
-      // 新しい点検結果を登録
-      if (results && Array.isArray(results) && results.length > 0) {
-        for (const result of results) {
-          if (!result.device_id || !result.check_item || !result.status) {
-            throw new Error(
-              "点検結果には機器ID、確認項目、ステータスが必要です"
-            );
-          }
-
-          await connection.query(
-            "INSERT INTO inspection_results (inspection_id, device_id, check_item, status) VALUES (?, ?, ?, ?)",
-            [req.params.id, result.device_id, result.check_item, result.status]
-          );
-        }
-      }
-
-      // トランザクションをコミット
-      await connection.commit();
-
-      res.json({
-        id: parseInt(req.params.id),
-        inspection_date,
-        start_time,
-        end_time,
-        inspector_name,
-        results: results || [],
-      });
-    } catch (err) {
-      // エラー発生時はロールバック
-      await connection.rollback();
-      throw err;
-    } finally {
-      connection.release();
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "点検項目が見つかりません" });
     }
+
+    res.json({
+      id: parseInt(req.params.id),
+      device_id,
+      item_name,
+      updated_at: new Date(),
+    });
   } catch (err) {
-    console.error(`点検ID:${req.params.id}の更新エラー:`, err);
-    res.status(500).json({ error: "点検の更新に失敗しました: " + err.message });
+    console.error(`点検項目ID:${req.params.id}の更新エラー:`, err);
+    res.status(500).json({ error: "点検項目の更新に失敗しました" });
   }
 });
 

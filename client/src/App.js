@@ -14,8 +14,11 @@ import CustomerList from "./components/customers/CustomerList";
 import CustomerForm from "./components/customers/CustomerForm";
 import CustomerDetails from "./components/customers/CustomerDetails";
 
-// src/App.js に機器関連のルートを追加
+// 機器コンポーネント
 import DeviceList from "./components/devices/DeviceList";
+import DeviceList from "./components/devices/DeviceList";
+import DeviceForm from "./components/devices/DeviceForm";
+import DeviceDetails from "./components/devices/DeviceDetails";
 
 // その他のページ
 import Home from "./components/Home";
@@ -40,11 +43,10 @@ function App() {
 
               {/* 機器関連のルート */}
               <Route path="/devices" element={<DeviceList />} />
-              {/* 後で追加する機器関連のルート
+              <Route path="/devices" element={<DeviceList />} />
               <Route path="/devices/new" element={<DeviceForm />} />
               <Route path="/devices/edit/:id" element={<DeviceForm />} />
               <Route path="/devices/:id" element={<DeviceDetails />} />
-              */}
 
               {/* 404ページ */}
               <Route path="*" element={<NotFound />} />

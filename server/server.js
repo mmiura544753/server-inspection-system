@@ -573,45 +573,34 @@ app.put("/api/inspection-items/:id", async (req, res) => {
   }
 });
 
-// 点検削除
-app.delete("/api/inspections/:id", async (req, res) => {
+// 点検項目を削除
+app.delete("/api/inspection-items/:id", async (req, res) => {
   try {
-    // トランザクション開始
-    const connection = await pool.promise().getConnection();
-    await connection.beginTransaction();
-
-    try {
-      // 関連する点検結果を削除
-      await connection.query(
-        "DELETE FROM inspection_results WHERE inspection_id = ?",
+    // 削除前に関連する点検結果があるか確認
+    const [checkResults] = await pool
+      .promise()
+      .query(
+        "SELECT COUNT(*) as count FROM inspection_results WHERE inspection_item_id = ?",
         [req.params.id]
       );
 
-      // 点検基本情報を削除
-      const [result] = await connection.query(
-        "DELETE FROM inspections WHERE id = ?",
-        [req.params.id]
-      );
-
-      if (result.affectedRows === 0) {
-        await connection.rollback();
-        connection.release();
-        return res.status(404).json({ error: "点検データが見つかりません" });
-      }
-
-      // トランザクションをコミット
-      await connection.commit();
-
-      res.json({ message: "点検データが削除されました" });
-    } catch (err) {
-      // エラー発生時はロールバック
-      await connection.rollback();
-      throw err;
-    } finally {
-      connection.release();
+    if (checkResults[0].count > 0) {
+      return res.status(400).json({
+        error: "この点検項目は既に点検結果で使用されているため削除できません",
+      });
     }
+
+    const [result] = await pool
+      .promise()
+      .query("DELETE FROM inspection_items WHERE id = ?", [req.params.id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "点検項目が見つかりません" });
+    }
+
+    res.json({ message: "点検項目が削除されました" });
   } catch (err) {
-    console.error(`点検ID:${req.params.id}の削除エラー:`, err);
-    res.status(500).json({ error: "点検の削除に失敗しました" });
+    console.error(`点検項目ID:${req.params.id}の削除エラー:`, err);
+    res.status(500).json({ error: "点検項目の削除に失敗しました" });
   }
 });

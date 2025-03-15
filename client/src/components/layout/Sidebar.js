@@ -6,6 +6,7 @@ import {
   FaServer,
   FaClipboardCheck,
   FaChartBar,
+  FaList,
 } from "react-icons/fa";
 
 const Sidebar = () => {

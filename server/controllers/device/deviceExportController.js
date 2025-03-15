@@ -28,13 +28,10 @@ const exportDevicesToCsv = asyncHandler(async (req, res) => {
       id: device.id,
       device_name: device.device_name,
       customer_name: device.customer ? device.customer.customer_name : "",
-      customer_id: device.customer_id,
       model: device.model || "",
       location: device.location || "",
       device_type: device.device_type,
       hardware_type: device.hardware_type,
-      created_at: device.created_at,
-      updated_at: device.updated_at,
     };
   });
 
@@ -43,13 +40,10 @@ const exportDevicesToCsv = asyncHandler(async (req, res) => {
     { label: "ID", value: "id" },
     { label: "機器名", value: "device_name" },
     { label: "顧客名", value: "customer_name" },
-    { label: "顧客ID", value: "customer_id" },
     { label: "モデル", value: "model" },
     { label: "設置場所", value: "location" },
     { label: "機器種別", value: "device_type" },
     { label: "ハードウェアタイプ", value: "hardware_type" },
-    { label: "作成日時", value: "created_at" },
-    { label: "更新日時", value: "updated_at" },
   ];
 
   // JSON to CSV Parserの設定

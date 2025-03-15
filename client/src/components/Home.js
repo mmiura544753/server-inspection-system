@@ -1,7 +1,13 @@
 // src/components/Home.js
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaUsers, FaServer, FaClipboardCheck, FaChartBar } from 'react-icons/fa';
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  FaUsers,
+  FaServer,
+  FaClipboardCheck,
+  FaChartBar,
+  FaList,
+} from "react-icons/fa";
 
 const Home = () => {
   return (
@@ -10,8 +16,7 @@ const Home = () => {
         <div className="container-fluid">
           <h1 className="display-5 fw-bold">サーバー点検管理システム</h1>
           <p className="col-md-8 fs-4">
-            サーバーやネットワーク機器の点検作業を効率的に管理するシステムです。
-            顧客情報、機器情報、点検結果を一元管理できます。
+            サーバーやネットワーク機器の点検作業を効率的に管理するシステムです。顧客情報、機器情報、点検結果を一元管理できます。
           </p>
         </div>
       </div>
@@ -21,15 +26,24 @@ const Home = () => {
           <div className="h-100 p-5 text-white bg-primary rounded-3">
             <h2>点検作業を開始</h2>
             <p>新しい点検作業を開始するか、進行中の点検作業を確認します。</p>
-            <Link to="/inspections" className="btn btn-outline-light">点検作業へ</Link>
+            <Link to="/inspections" className="btn btn-outline-light">
+              点検作業へ
+            </Link>
           </div>
         </div>
         <div className="col-md-6">
           <div className="h-100 p-5 bg-light border rounded-3">
             <h2>マスタ管理</h2>
             <p>顧客情報や機器情報などのマスタデータを管理します。</p>
-            <Link to="/customers" className="btn btn-outline-primary me-2">顧客管理</Link>
-            <Link to="/devices" className="btn btn-outline-secondary">機器管理</Link>
+            <Link to="/customers" className="btn btn-outline-primary me-2">
+              顧客管理
+            </Link>
+            <Link to="/devices" className="btn btn-outline-secondary me-2">
+              機器管理
+            </Link>
+            <Link to="/inspection-items" className="btn btn-outline-info">
+              点検項目
+            </Link>
           </div>
         </div>
       </div>
@@ -40,7 +54,9 @@ const Home = () => {
             <div className="card-body">
               <FaUsers className="fs-1 text-primary mb-3" />
               <h5 className="card-title">顧客管理</h5>
-              <Link to="/customers" className="btn btn-sm btn-primary">一覧を見る</Link>
+              <Link to="/customers" className="btn btn-sm btn-primary">
+                一覧を見る
+              </Link>
             </div>
           </div>
         </div>
@@ -49,7 +65,9 @@ const Home = () => {
             <div className="card-body">
               <FaServer className="fs-1 text-success mb-3" />
               <h5 className="card-title">機器管理</h5>
-              <Link to="/devices" className="btn btn-sm btn-success">一覧を見る</Link>
+              <Link to="/devices" className="btn btn-sm btn-success">
+                一覧を見る
+              </Link>
             </div>
           </div>
         </div>
@@ -58,7 +76,9 @@ const Home = () => {
             <div className="card-body">
               <FaClipboardCheck className="fs-1 text-info mb-3" />
               <h5 className="card-title">点検作業</h5>
-              <Link to="/inspections" className="btn btn-sm btn-info">一覧を見る</Link>
+              <Link to="/inspections" className="btn btn-sm btn-info">
+                一覧を見る
+              </Link>
             </div>
           </div>
         </div>
@@ -67,7 +87,24 @@ const Home = () => {
             <div className="card-body">
               <FaChartBar className="fs-1 text-warning mb-3" />
               <h5 className="card-title">レポート</h5>
-              <Link to="/reports" className="btn btn-sm btn-warning">一覧を見る</Link>
+              <Link to="/reports" className="btn btn-sm btn-warning">
+                一覧を見る
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 追加の行 - 点検項目管理カード */}
+      <div className="row mt-4">
+        <div className="col-md-3">
+          <div className="card text-center">
+            <div className="card-body">
+              <FaList className="fs-1 text-info mb-3" />
+              <h5 className="card-title">点検項目</h5>
+              <Link to="/inspection-items" className="btn btn-sm btn-info">
+                一覧を見る
+              </Link>
             </div>
           </div>
         </div>

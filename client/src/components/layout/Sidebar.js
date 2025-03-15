@@ -1,7 +1,12 @@
 // src/components/layout/Sidebar.js
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { FaUsers, FaServer, FaClipboardCheck, FaChartBar } from 'react-icons/fa';
+import React from "react";
+import { NavLink } from "react-router-dom";
+import {
+  FaUsers,
+  FaServer,
+  FaClipboardCheck,
+  FaChartBar,
+} from "react-icons/fa";
 
 const Sidebar = () => {
   return (
@@ -9,22 +14,42 @@ const Sidebar = () => {
       <nav>
         <ul>
           <li>
-            <NavLink to="/customers" className={({ isActive }) => isActive ? 'sidebar-active' : ''}>
+            <NavLink
+              to="/customers"
+              className={({ isActive }) => (isActive ? "sidebar-active" : "")}
+            >
               <FaUsers className="me-2" /> 顧客管理
             </NavLink>
           </li>
           <li>
-            <NavLink to="/devices" className={({ isActive }) => isActive ? 'sidebar-active' : ''}>
+            <NavLink
+              to="/devices"
+              className={({ isActive }) => (isActive ? "sidebar-active" : "")}
+            >
               <FaServer className="me-2" /> 機器管理
             </NavLink>
           </li>
           <li>
-            <NavLink to="/inspections" className={({ isActive }) => isActive ? 'sidebar-active' : ''}>
+            <NavLink
+              to="/inspection-items"
+              className={({ isActive }) => (isActive ? "sidebar-active" : "")}
+            >
+              <FaList className="me-2" /> 点検項目マスタ
+            </NavLink>
+          </li>{" "}
+          <li>
+            <NavLink
+              to="/inspections"
+              className={({ isActive }) => (isActive ? "sidebar-active" : "")}
+            >
               <FaClipboardCheck className="me-2" /> 点検作業
             </NavLink>
           </li>
           <li>
-            <NavLink to="/reports" className={({ isActive }) => isActive ? 'sidebar-active' : ''}>
+            <NavLink
+              to="/reports"
+              className={({ isActive }) => (isActive ? "sidebar-active" : "")}
+            >
               <FaChartBar className="me-2" /> レポート
             </NavLink>
           </li>

@@ -24,6 +24,10 @@ import InspectionList from "./components/inspections/InspectionList";
 import InspectionForm from "./components/inspections/InspectionForm";
 import InspectionDetails from "./components/inspections/InspectionDetails";
 
+// src/App.js - 点検項目マスタ関連ルートを追加
+import InspectionItemList from "./components/inspections/InspectionItemList";
+import InspectionItemForm from "./components/inspections/InspectionItemForm";
+
 // その他のページ
 import Home from "./components/Home";
 import NotFound from "./components/NotFound";
@@ -59,6 +63,16 @@ function App() {
                 element={<InspectionForm />}
               />
               <Route path="/inspections/:id" element={<InspectionDetails />} />
+
+              {/* 点検項目マスタ関連のルート */}
+              <Route
+                path="/inspection-items"
+                element={<InspectionItemList />}
+              />
+              <Route
+                path="/inspection-items/new"
+                element={<InspectionItemForm />}
+              />
 
               {/* 404ページ */}
               <Route path="*" element={<NotFound />} />

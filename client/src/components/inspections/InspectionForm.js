@@ -4,7 +4,11 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage, FieldArray } from "formik";
 import * as Yup from "yup";
 import { FaSave, FaTimes, FaPlus, FaTrash } from "react-icons/fa";
-import { inspectionAPI, deviceAPI } from "../../services/api";
+import {
+  inspectionAPI,
+  deviceAPI,
+  inspectionItemAPI,
+} from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
 
@@ -16,11 +20,11 @@ const InspectionSchema = Yup.object().shape({
     .max(50, "点検者名は50文字以内で入力してください"),
   start_time: Yup.string(),
   end_time: Yup.string(),
+  device_id: Yup.number().required("機器の選択は必須です"),
   results: Yup.array()
     .of(
       Yup.object().shape({
-        device_id: Yup.number().required("機器の選択は必須です"),
-        check_item: Yup.string().required("確認項目は必須です"),
+        inspection_item_id: Yup.number().required("点検項目の選択は必須です"),
         status: Yup.string().required("結果ステータスは必須です"),
       })
     )
@@ -37,15 +41,11 @@ const InspectionForm = () => {
     start_time: "",
     end_time: "",
     inspector_name: "",
-    results: [
-      {
-        device_id: "",
-        check_item: "",
-        status: "正常",
-      },
-    ],
+    device_id: "",
+    results: [],
   });
   const [devices, setDevices] = useState([]);
+  const [inspectionItems, setInspectionItems] = useState([]);
   const [loading, setLoading] = useState(isEditMode);
   const [deviceLoading, setDeviceLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -81,10 +81,30 @@ const InspectionForm = () => {
           .toISOString()
           .split("T")[0];
 
+        // 機器IDは最初の結果から取得
+        const deviceId =
+          data.results && data.results.length > 0
+            ? data.results[0].device_id
+            : "";
+
+        // 結果データの整形
+        const formattedResults = data.results.map((result) => ({
+          inspection_item_id: result.inspection_item_id || "",
+          status: result.status,
+        }));
+
         setInspection({
           ...data,
           inspection_date: formattedDate,
+          device_id: deviceId,
+          results: formattedResults,
         });
+
+        // 選択された機器の点検項目を取得
+        if (deviceId) {
+          fetchInspectionItems(deviceId);
+        }
+
         setError(null);
       } catch (err) {
         setError("点検データの取得に失敗しました。");
@@ -98,6 +118,21 @@ const InspectionForm = () => {
       fetchInspection();
     }
   }, [id, isEditMode]);
+
+  // 機器が選択されたら、その機器の点検項目を取得
+  const fetchInspectionItems = async (deviceId) => {
+    if (!deviceId) {
+      setInspectionItems([]);
+      return;
+    }
+
+    try {
+      const data = await inspectionItemAPI.getByDeviceId(deviceId);
+      setInspectionItems(data);
+    } catch (err) {
+      console.error(`機器ID:${deviceId}の点検項目取得エラー:`, err);
+    }
+  };
 
   // フォーム送信処理
   const handleSubmit = async (values, { setSubmitting }) => {
@@ -144,7 +179,7 @@ const InspectionForm = () => {
             onSubmit={handleSubmit}
             enableReinitialize
           >
-            {({ values, isSubmitting }) => (
+            {({ values, isSubmitting, setFieldValue }) => (
               <Form className="form-container">
                 <div className="row mb-3">
                   <div className="col-md-4">
@@ -223,6 +258,39 @@ const InspectionForm = () => {
                   />
                 </div>
 
+                <div className="mb-3">
+                  <label
+                    htmlFor="device_id"
+                    className="form-label required-label"
+                  >
+                    機器
+                  </label>
+                  <Field
+                    as="select"
+                    id="device_id"
+                    name="device_id"
+                    className="form-select"
+                    onChange={async (e) => {
+                      const deviceId = e.target.value;
+                      setFieldValue("device_id", deviceId);
+                      setFieldValue("results", []); // 機器変更時は結果をクリア
+                      await fetchInspectionItems(deviceId);
+                    }}
+                  >
+                    <option value="">機器を選択してください</option>
+                    {devices.map((device) => (
+                      <option key={device.id} value={device.id}>
+                        {device.device_name} ({device.customer_name})
+                      </option>
+                    ))}
+                  </Field>
+                  <ErrorMessage
+                    name="device_id"
+                    component="div"
+                    className="text-danger"
+                  />
+                </div>
+
                 <h3 className="h5 mt-4">点検結果</h3>
                 <ErrorMessage
                   name="results"
@@ -230,130 +298,67 @@ const InspectionForm = () => {
                   className="text-danger"
                 />
 
-                <FieldArray name="results">
-                  {({ push, remove }) => (
-                    <div>
-                      {values.results && values.results.length > 0 ? (
-                        values.results.map((result, index) => (
-                          <div key={index} className="card mb-3">
-                            <div className="card-body">
-                              <div className="d-flex justify-content-between mb-3">
-                                <h6 className="card-subtitle">
-                                  点検項目 #{index + 1}
-                                </h6>
-                                {values.results.length > 1 && (
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-danger"
-                                    onClick={() => remove(index)}
-                                  >
-                                    <FaTrash /> 削除
-                                  </button>
-                                )}
-                              </div>
+                {values.device_id && inspectionItems.length > 0 ? (
+                  <FieldArray name="results">
+                    {({ push, remove }) => (
+                      <div className="table-responsive">
+                        <table className="table table-bordered">
+                          <thead>
+                            <tr>
+                              <th>点検項目</th>
+                              <th width="150">結果</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {inspectionItems.map((item, index) => {
+                              // この点検項目が既に結果リストに含まれているか確認
+                              const resultIndex = values.results.findIndex(
+                                (r) => r.inspection_item_id === item.id
+                              );
 
-                              <div className="row mb-3">
-                                <div className="col-md-6">
-                                  <label
-                                    htmlFor={`results.${index}.device_id`}
-                                    className="form-label required-label"
-                                  >
-                                    機器
-                                  </label>
-                                  <Field
-                                    as="select"
-                                    id={`results.${index}.device_id`}
-                                    name={`results.${index}.device_id`}
-                                    className="form-select"
-                                  >
-                                    <option value="">
-                                      機器を選択してください
-                                    </option>
-                                    {devices.map((device) => (
-                                      <option key={device.id} value={device.id}>
-                                        {device.device_name} (
-                                        {device.customer_name})
-                                      </option>
-                                    ))}
-                                  </Field>
-                                  <ErrorMessage
-                                    name={`results.${index}.device_id`}
-                                    component="div"
-                                    className="text-danger"
-                                  />
-                                </div>
+                              // 含まれていなければ追加
+                              if (resultIndex === -1) {
+                                push({
+                                  inspection_item_id: item.id,
+                                  status: "正常",
+                                });
+                              }
 
-                                <div className="col-md-6">
-                                  <label
-                                    htmlFor={`results.${index}.status`}
-                                    className="form-label required-label"
-                                  >
-                                    結果
-                                  </label>
-                                  <Field
-                                    as="select"
-                                    id={`results.${index}.status`}
-                                    name={`results.${index}.status`}
-                                    className="form-select"
-                                  >
-                                    <option value="正常">正常</option>
-                                    <option value="異常">異常</option>
-                                  </Field>
-                                  <ErrorMessage
-                                    name={`results.${index}.status`}
-                                    component="div"
-                                    className="text-danger"
-                                  />
-                                </div>
-                              </div>
+                              // 現在の結果インデックスを再計算
+                              const currentIndex = values.results.findIndex(
+                                (r) => r.inspection_item_id === item.id
+                              );
 
-                              <div className="mb-0">
-                                <label
-                                  htmlFor={`results.${index}.check_item`}
-                                  className="form-label required-label"
-                                >
-                                  確認項目
-                                </label>
-                                <Field
-                                  as="textarea"
-                                  id={`results.${index}.check_item`}
-                                  name={`results.${index}.check_item`}
-                                  className="form-control"
-                                  placeholder="確認項目を入力"
-                                  rows="2"
-                                />
-                                <ErrorMessage
-                                  name={`results.${index}.check_item`}
-                                  component="div"
-                                  className="text-danger"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="alert alert-warning">
-                          少なくとも1つの点検結果を追加してください。
-                        </div>
-                      )}
-
-                      <button
-                        type="button"
-                        className="btn btn-success mb-4"
-                        onClick={() =>
-                          push({
-                            device_id: "",
-                            check_item: "",
-                            status: "正常",
-                          })
-                        }
-                      >
-                        <FaPlus className="me-2" />
-                        点検項目を追加
-                      </button>
-                    </div>
-                  )}
-                </FieldArray>
+                              return (
+                                <tr key={item.id}>
+                                  <td>{item.item_name}</td>
+                                  <td>
+                                    {currentIndex !== -1 && (
+                                      <Field
+                                        as="select"
+                                        name={`results.${currentIndex}.status`}
+                                        className="form-select"
+                                      >
+                                        <option value="正常">正常</option>
+                                        <option value="異常">異常</option>
+                                      </Field>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </FieldArray>
+                ) : (
+                  <div className="alert alert-warning">
+                    {values.device_id
+                      ? "選択された機器に点検項目がありません。先に点検項目を登録してください。"
+                      : "機器を選択してください。"}
+                  </div>
+                )}
 
                 <div className="mt-4 d-flex justify-content-between">
                   <Link to="/inspections" className="btn btn-secondary">

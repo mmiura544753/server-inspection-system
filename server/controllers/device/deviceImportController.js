@@ -1,8 +1,9 @@
-// server/controllers/device/deviceImportController.js - 簡易版
+// server/controllers/device/deviceImportController.js - sequelize問題修正版
 
 const asyncHandler = require('express-async-handler');
 const csvParse = require('csv-parse/sync');
-const { Device, Customer, sequelize } = require('../../models');
+const { Device, Customer } = require('../../models');
+const { sequelize } = require('../../config/db'); // 正しくsequelizeをインポート
 
 // @desc    CSVからの機器一覧のインポート
 // @route   POST /api/devices/import
@@ -54,8 +55,21 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
     // 顧客キャッシュ (顧客名 -> 顧客オブジェクト)
     const customerCache = {};
     
+    // トランザクション確認
+    if (!sequelize) {
+      console.error('sequelizeオブジェクトが初期化されていません');
+      res.status(500);
+      throw new Error('データベース接続が初期化されていません');
+    }
+    
+    console.log('sequelizeオブジェクト状態:', {
+      availableInModels: !!Device.sequelize,
+      importedDirectly: !!sequelize
+    });
+    
     // トランザクションを開始
     const t = await sequelize.transaction();
+    console.log('トランザクション開始成功:', !!t);
     
     try {
       console.log(`${records.length}行の処理を開始`);

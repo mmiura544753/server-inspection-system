@@ -1,4 +1,4 @@
-// src/components/inspections/InspectionItemList.js
+// src/components/inspectionItems/InspectionItemList.js
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaDownload, FaUpload } from "react-icons/fa";

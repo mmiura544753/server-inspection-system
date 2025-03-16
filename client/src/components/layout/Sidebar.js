@@ -29,7 +29,7 @@ const Sidebar = () => {
             >
               <FaList className="me-2" /> 点検項目マスタ
             </NavLink>
-          </li>{" "}
+          </li>
           <li>
             <NavLink
               to="/devices"

@@ -60,31 +60,6 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </div>
-      <div className="col-md-3">
-        <div className="card text-center">
-          <div className="card-body">
-            <FaServer className="fs-1 text-success mb-3" />
-            <h5 className="card-title">機器管理</h5>
-            <Link to="/devices" className="btn btn-sm btn-success">
-              一覧を見る
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="row mt-4">
-        <div className="col-md-3">
-          <div className="card text-center">
-            <div className="card-body">
-              <FaList className="fs-1 text-info mb-3" />
-              <h5 className="card-title">点検項目</h5>
-              <Link to="/inspection-items" className="btn btn-sm btn-info">
-                一覧を見る
-              </Link>
-            </div>
-          </div>
-        </div>
         <div className="col-md-3">
           <div className="card text-center">
             <div className="card-body">

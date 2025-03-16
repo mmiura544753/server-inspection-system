@@ -1,6 +1,6 @@
 // src/components/common/Modal.js
 import React, { useEffect } from "react";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaCheckCircle } from "react-icons/fa";
 
 const Modal = ({ show, onClose, title, children, onConfirm }) => {
   useEffect(() => {
@@ -39,11 +39,11 @@ const Modal = ({ show, onClose, title, children, onConfirm }) => {
             <div className="modal-footer">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-primary"
                 onClick={onClose}
               >
-                <FaTimes className="me-2" />
-                キャンセル
+                <FaCheckCircle className="me-2" />
+                完了
               </button>
               {onConfirm && (
                 <button

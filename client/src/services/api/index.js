@@ -6,6 +6,7 @@ import { customerAPI } from "./customerAPI";
 import { deviceAPI } from "./deviceAPI";
 import { inspectionAPI } from "./inspectionAPI";
 import { inspectionItemAPI } from "./inspectionItemAPI";
+import { inspectionFormAPI } from "./inspectionFormAPI";
 
 const API_BASE_URL =
   process.env.REACT_APP_API_URL || "http://localhost:5000/api";
@@ -30,4 +31,5 @@ export {
   deviceAPI,
   inspectionAPI,
   inspectionItemAPI,
+  inspectionFormAPI,
 };

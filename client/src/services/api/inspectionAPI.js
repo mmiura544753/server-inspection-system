@@ -1,4 +1,4 @@
-// services/api/inspectionAPI.js
+// src/services/api/inspectionAPI.js
 import api from './index';
 
 export const inspectionAPI = {
@@ -35,6 +35,17 @@ export const inspectionAPI = {
     }
   },
 
+  // 機器の最新点検結果を取得
+  getLatestByDeviceId: async (deviceId) => {
+    try {
+      const response = await api.get(`/devices/${deviceId}/inspections/latest`);
+      return response.data;
+    } catch (error) {
+      console.error(`機器ID:${deviceId}の最新点検取得エラー:`, error);
+      throw error;
+    }
+  },
+
   // 点検を新規作成
   create: async (inspectionData) => {
     try {
@@ -67,36 +78,15 @@ export const inspectionAPI = {
       throw error;
     }
   },
-  
-  // 点検エクスポート機能
-  exportData: async (format = 'csv') => {
+
+  // 点検項目一覧を取得（SQL結果と同じ形式のデータを返す）
+  getInspectionItems: async () => {
     try {
-      console.log(`点検エクスポート開始: 形式=${format}`);
-      
-      const response = await api.get(`/inspections/export`, {
-        params: { format },
-        responseType: 'blob'
-      });
-      
-      console.log('点検エクスポート成功:', response);
-      return response.data;
+      // このエンドポイントは新しく追加する必要があります
+      const response = await api.get("/inspection-items/all-with-details");
+      return response;
     } catch (error) {
-      console.error("点検エクスポートエラー:", error);
-      
-      if (error.response && error.response.data) {
-        // Blobからテキストを抽出
-        const text = await new Response(error.response.data).text();
-        let errorMsg;
-        try {
-          const json = JSON.parse(text);
-          errorMsg = json.error || json.message || '未知のエラーが発生しました';
-        } catch {
-          errorMsg = text;
-        }
-        console.error("エクスポートエラー詳細:", errorMsg);
-        throw new Error(errorMsg);
-      }
-      
+      console.error("点検項目一覧取得エラー:", error);
       throw error;
     }
   }

@@ -22,15 +22,12 @@ import DeviceDetails from "./components/devices/DeviceDetails";
 
 // 点検作業コンポーネント
 import InspectionList from "./components/inspections/InspectionList";
-// import InspectionForm from "./components/inspections/InspectionForm";
+import ServerInspectionSheet from "./components/inspections/ServerInspectionSheet"; // 新しい点検シートコンポーネント
 import InspectionDetails from "./components/inspections/InspectionDetails";
 
 // 点検項目マスタコンポーネント
 import InspectionItemList from "./components/inspectionItems/InspectionItemList";
 import InspectionItemForm from "./components/inspectionItems/InspectionItemForm";
-
-//点検作業
-import InspectionForm from "./components/inspections/InspectionForm.jsx";
 
 // その他のページ
 import Home from "./components/Home";
@@ -58,28 +55,13 @@ function App() {
               <Route path="/devices/:id" element={<DeviceDetails />} />
               {/* 点検作業関連のルート */}
               <Route path="/inspections" element={<InspectionList />} />
-              <Route
-                path="/inspections/new"
-                element={<InspectionForm />}
-              />{" "}
-              <Route
-                path="/inspections/edit/:id"
-                element={<InspectionForm />}
-              />{" "}
+              <Route path="/inspections/new" element={<ServerInspectionSheet />} /> {/* 新しい点検シートの使用 */}
+              <Route path="/inspections/edit/:id" element={<InspectionDetails />} />
               <Route path="/inspections/:id" element={<InspectionDetails />} />
-              {/* 点検項目マスタ関連のルート (パスを変更) */}
-              <Route
-                path="/inspection-items"
-                element={<InspectionItemList />}
-              />
-              <Route
-                path="/inspection-items/new"
-                element={<InspectionItemForm />}
-              />
-              <Route
-                path="/inspection-items/edit/:id"
-                element={<InspectionItemForm />}
-              />
+              {/* 点検項目マスタ関連のルート */}
+              <Route path="/inspection-items" element={<InspectionItemList />} />
+              <Route path="/inspection-items/new" element={<InspectionItemForm />} />
+              <Route path="/inspection-items/edit/:id" element={<InspectionItemForm />} />
               {/* 404ページ */}
               <Route path="*" element={<NotFound />} />
             </Routes>

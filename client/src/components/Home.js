@@ -7,17 +7,27 @@ import {
   FaClipboardCheck,
   FaChartBar,
   FaList,
+  FaPlay
 } from "react-icons/fa";
 
 const Home = () => {
   return (
     <div className="container py-4">
-      <div className="p-5 mb-4 bg-light rounded-3">
+      <div className="p-5 mb-4 bg-light rounded-3 text-center">
         <div className="container-fluid">
           <h1 className="display-5 fw-bold">サーバー点検管理システム</h1>
-          <p className="col-md-8 fs-4">
-            サーバーやネットワーク機器の点検作業を効率的に管理するシステムです。顧客情報、機器情報、点検結果を一元管理できます。
+          <p className="fs-4 mt-3">
+            サーバーやネットワーク機器の点検作業を効率的に管理するシステムです。
+            顧客情報、機器情報、点検結果を一元管理できます。
           </p>
+          <div className="d-flex justify-content-center mt-4">
+            <Link to="/inspections/new" className="btn btn-primary btn-lg px-4 me-3">
+              <FaPlay className="me-2" /> 点検作業を開始する
+            </Link>
+            <Link to="/inspections" className="btn btn-outline-secondary btn-lg px-4">
+              <FaClipboardCheck className="me-2" /> 点検履歴を見る
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -26,7 +36,7 @@ const Home = () => {
           <div className="h-100 p-5 text-white bg-primary rounded-3">
             <h2>点検作業を開始</h2>
             <p>新しい点検作業を開始するか、進行中の点検作業を確認します。</p>
-            <Link to="/inspections" className="btn btn-outline-light">
+            <Link to="/inspections/new" className="btn btn-outline-light">
               点検作業へ
             </Link>
           </div>
@@ -35,15 +45,17 @@ const Home = () => {
           <div className="h-100 p-5 bg-light border rounded-3">
             <h2>マスタ管理</h2>
             <p>顧客情報や機器情報などのマスタデータを管理します。</p>
-            <Link to="/inspection-items" className="btn btn-outline-info">
-              点検項目
-            </Link>
-            <Link to="/devices" className="btn btn-outline-secondary me-2">
-              機器管理
-            </Link>
-            <Link to="/customers" className="btn btn-outline-primary me-2">
-              顧客管理
-            </Link>
+            <div className="d-flex flex-wrap gap-2">
+              <Link to="/inspection-items" className="btn btn-outline-primary">
+                点検項目
+              </Link>
+              <Link to="/devices" className="btn btn-outline-secondary">
+                機器管理
+              </Link>
+              <Link to="/customers" className="btn btn-outline-dark">
+                顧客管理
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -74,17 +86,6 @@ const Home = () => {
         <div className="col-md-3">
           <div className="card text-center">
             <div className="card-body">
-              <FaChartBar className="fs-1 text-warning mb-3" />
-              <h5 className="card-title">レポート</h5>
-              <Link to="/reports" className="btn btn-sm btn-warning">
-                一覧を見る
-              </Link>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card text-center">
-            <div className="card-body">
               <FaServer className="fs-1 text-success mb-3" />
               <h5 className="card-title">機器管理</h5>
               <Link to="/devices" className="btn btn-sm btn-success">
@@ -93,9 +94,6 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="row mt-4">
         <div className="col-md-3">
           <div className="card text-center">
             <div className="card-body">

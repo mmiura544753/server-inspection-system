@@ -1,13 +1,7 @@
 // src/components/Home.js
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  FaUsers,
-  FaServer,
-  FaClipboardCheck,
-  FaList,
-  FaPlay,
-} from "react-icons/fa";
+import { FaUsers, FaServer, FaClipboardCheck, FaList } from "react-icons/fa";
 
 const Home = () => {
   return (

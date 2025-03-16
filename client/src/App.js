@@ -20,13 +20,13 @@ import CustomerList from "./components/customers/CustomerList";
 import CustomerForm from "./components/customers/CustomerForm";
 import CustomerDetails from "./components/customers/CustomerDetails";
 
-// 機器コンポーネント
+機器コンポーネント;
 import DeviceList from "./components/devices/DeviceList";
 import DeviceForm from "./components/devices/DeviceForm";
 import DeviceDetails from "./components/devices/DeviceDetails";
 
 // 点検作業コンポーネント
-import InspectionList from "./components/inspections/InspectionList";
+// import InspectionList from "./components/inspections/InspectionList";
 import ServerInspectionSheet from "./components/inspections/ServerInspectionSheet"; // 新しい点検シートコンポーネント
 import InspectionDetails from "./components/inspections/InspectionDetails";
 

@@ -5,11 +5,6 @@ import { inspectionAPI } from "../services/api";
 export const useInspection = () => {
   // 現在の日時を取得する
   const today = new Date();
-  const formattedDate = {
-    year: today.getFullYear(),
-    month: (today.getMonth() + 1).toString().padStart(2, "0"),
-    day: today.getDate().toString().padStart(2, "0"),
-  };
 
   // 状態管理
   const [loading, setLoading] = useState(true);
@@ -40,7 +35,7 @@ export const useInspection = () => {
   // データの読み込み
   useEffect(() => {
     fetchInspectionItems();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 設置場所ごとにアイテムをグループ化する関数
   const groupItemsByLocation = (items) => {

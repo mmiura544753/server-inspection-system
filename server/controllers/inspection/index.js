@@ -3,6 +3,7 @@ const {
   getInspections,
   getInspectionById,
   getInspectionsByDeviceId,
+  getLatestInspectionByDeviceId,
 } = require("./inspectionController");
 const { createInspection } = require("./inspectionCreateController");
 const { updateInspection } = require("./inspectionUpdateController");
@@ -13,6 +14,7 @@ module.exports = {
   getInspections,
   getInspectionById,
   getInspectionsByDeviceId,
+  getLatestInspectionByDeviceId,
   createInspection,
   updateInspection,
   deleteInspection,

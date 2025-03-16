@@ -7,6 +7,7 @@ const {
   createInspection,
   updateInspection,
   deleteInspection,
+  getLatestInspectionByDeviceId,
 } = require("../controllers/inspection");
 
 // /api/inspections

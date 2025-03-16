@@ -1,8 +1,8 @@
 // src/components/inspections/ServerInspectionSheet.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Save, RotateCcw } from 'lucide-react';
-import { inspectionAPI, deviceAPI, customerAPI, inspectionItemAPI } from '../../services/api';
+import { Clock } from 'lucide-react';
+import { inspectionAPI } from '../../services/api';
 import Loading from '../common/Loading';
 import Alert from '../common/Alert';
 
@@ -126,22 +126,6 @@ const ServerInspectionSheet = () => {
     }
   }, [isComplete, endTime]);
   
-  // チェック状態が変更されたときに点検状態を更新
-  useEffect(() => {
-    if (!isStarted && hasAnyResults()) {
-      setIsStarted(true);
-    }
-    
-    if (!isComplete && allItemsChecked()) {
-      setIsComplete(true);
-    }
-  }, [inspectionItems]);
-  
-  // 時間フォーマット関数
-  const formatTime = (date) => {
-    return date.toTimeString().substring(0, 5);
-  };
-  
   // 任意の点検結果が入力されているかチェック
   const hasAnyResults = () => {
     return inspectionItems.some(location => 
@@ -158,6 +142,22 @@ const ServerInspectionSheet = () => {
         server.results.every(result => result !== null)
       )
     );
+  };
+  
+  // チェック状態が変更されたときに点検状態を更新
+  useEffect(() => {
+    if (!isStarted && hasAnyResults()) {
+      setIsStarted(true);
+    }
+    
+    if (!isComplete && allItemsChecked()) {
+      setIsComplete(true);
+    }
+  }, [inspectionItems, isStarted, isComplete]);
+  
+  // 時間フォーマット関数
+  const formatTime = (date) => {
+    return date.toTimeString().substring(0, 5);
   };
   
   // 点検結果を更新する関数

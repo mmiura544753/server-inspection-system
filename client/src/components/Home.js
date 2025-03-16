@@ -5,7 +5,6 @@ import {
   FaUsers,
   FaServer,
   FaClipboardCheck,
-  FaChartBar,
   FaList,
   FaPlay
 } from "react-icons/fa";

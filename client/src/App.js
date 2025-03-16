@@ -54,14 +54,32 @@ function App() {
               <Route path="/devices/edit/:id" element={<DeviceForm />} />
               <Route path="/devices/:id" element={<DeviceDetails />} />
               {/* 点検作業関連のルート */}
-              <Route path="/inspections" element={<InspectionList />} />
-              <Route path="/inspections/new" element={<ServerInspectionSheet />} /> {/* 新しい点検シートの使用 */}
-              <Route path="/inspections/edit/:id" element={<InspectionDetails />} />
+              <Route
+                path="/inspections"
+                element={<Navigate to="/inspections/new" />}
+              />
+              <Route
+                path="/inspections/new"
+                element={<ServerInspectionSheet />}
+              />
+              <Route
+                path="/inspections/edit/:id"
+                element={<InspectionDetails />}
+              />
               <Route path="/inspections/:id" element={<InspectionDetails />} />
               {/* 点検項目マスタ関連のルート */}
-              <Route path="/inspection-items" element={<InspectionItemList />} />
-              <Route path="/inspection-items/new" element={<InspectionItemForm />} />
-              <Route path="/inspection-items/edit/:id" element={<InspectionItemForm />} />
+              <Route
+                path="/inspection-items"
+                element={<InspectionItemList />}
+              />
+              <Route
+                path="/inspection-items/new"
+                element={<InspectionItemForm />}
+              />
+              <Route
+                path="/inspection-items/edit/:id"
+                element={<InspectionItemForm />}
+              />
               {/* 404ページ */}
               <Route path="*" element={<NotFound />} />
             </Routes>

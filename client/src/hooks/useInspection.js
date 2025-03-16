@@ -14,16 +14,28 @@ export const useInspection = () => {
   // 状態管理
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [date, setDate] = useState(formattedDate);
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [date, setDate] = useState(today); // 日付をDate型で保持
+  const [startTime, setStartTime] = useState(""); // 空文字列で初期化
+  const [endTime, setEndTime] = useState(""); // 空文字列で初期化
   const [isStarted, setIsStarted] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [location, setLocation] = useState("データセンターIT ホストサーバ室");
-  const [workContent, setWorkContent] = useState("ハードウェアLEDランプの目視確認");
+  const [workContent, setWorkContent] =
+    useState("ハードウェアLEDランプの目視確認");
   const [inspectionItems, setInspectionItems] = useState([]);
   const [saveStatus, setSaveStatus] = useState("");
+
+  // ページ読み込み時に現在時刻を開始時間に設定
+  useEffect(() => {
+    const currentTime = formatTime(new Date());
+    setStartTime(currentTime);
+  }, []);
+
+  // 時間フォーマット関数
+  const formatTime = (date) => {
+    return date.toTimeString().substring(0, 5);
+  };
 
   // データの読み込み
   useEffect(() => {
@@ -117,11 +129,6 @@ export const useInspection = () => {
     }
   }, [isComplete, endTime]);
 
-  // 時間フォーマット関数
-  const formatTime = (date) => {
-    return date.toTimeString().substring(0, 5);
-  };
-
   // 任意の点検結果が入力されているかチェック
   const hasAnyResults = () => {
     return inspectionItems.some((location) =>
@@ -154,7 +161,8 @@ export const useInspection = () => {
   // 点検結果を更新する関数
   const updateResult = (locationIndex, serverIndex, itemIndex, isNormal) => {
     const newInspectionItems = [...inspectionItems];
-    newInspectionItems[locationIndex].servers[serverIndex].results[itemIndex] = isNormal;
+    newInspectionItems[locationIndex].servers[serverIndex].results[itemIndex] =
+      isNormal;
     setInspectionItems(newInspectionItems);
   };
 
@@ -295,6 +303,6 @@ export const useInspection = () => {
     calculateCompletionRate,
     loadPreviousData,
     saveInspectionResults,
-    formatTime
+    formatTime,
   };
 };

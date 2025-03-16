@@ -2,17 +2,19 @@
 import React from "react";
 import { Clock } from "lucide-react";
 import Alert from "../common/Alert";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css"; // スタイルシートのインポート
 
-const InspectionHeader = ({ 
-  customerName, 
-  date, 
-  setDate, 
-  startTime, 
-  setStartTime, 
-  endTime, 
-  setEndTime, 
+const InspectionHeader = ({
+  customerName,
+  date,
+  setDate,
+  startTime,
+  setStartTime,
+  endTime,
+  setEndTime,
   calculateCompletionRate,
-  error
+  error,
 }) => {
   return (
     <>
@@ -34,29 +36,12 @@ const InspectionHeader = ({
             <label className="block text-gray-700 font-semibold mb-1">
               年月日
             </label>
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={date.year}
-                onChange={(e) => setDate({ ...date, year: e.target.value })}
-                className="w-16 px-2 py-1 border rounded"
-              />
-              <span className="flex items-center">年</span>
-              <input
-                type="text"
-                value={date.month}
-                onChange={(e) => setDate({ ...date, month: e.target.value })}
-                className="w-12 px-2 py-1 border rounded"
-              />
-              <span className="flex items-center">月</span>
-              <input
-                type="text"
-                value={date.day}
-                onChange={(e) => setDate({ ...date, day: e.target.value })}
-                className="w-12 px-2 py-1 border rounded"
-              />
-              <span className="flex items-center">日</span>
-            </div>
+            <DatePicker
+              selected={date}
+              onChange={(date) => setDate(date)}
+              dateFormat="yyyy/MM/dd"
+              className="w-full px-3 py-2 border rounded"
+            />
           </div>
 
           <div className="col-span-1">
@@ -65,11 +50,10 @@ const InspectionHeader = ({
             </label>
             <div className="flex items-center">
               <input
-                type="text"
+                type="time"
                 value={startTime || ""}
                 onChange={(e) => setStartTime(e.target.value)}
                 className="w-20 px-2 py-1 border rounded"
-                placeholder="--:--"
               />
               <Clock className="ml-2 text-gray-500" size={18} />
             </div>
@@ -81,11 +65,10 @@ const InspectionHeader = ({
             </label>
             <div className="flex items-center">
               <input
-                type="text"
+                type="time"
                 value={endTime || ""}
                 onChange={(e) => setEndTime(e.target.value)}
                 className="w-20 px-2 py-1 border rounded"
-                placeholder="--:--"
               />
               <Clock className="ml-2 text-gray-500" size={18} />
             </div>

@@ -6,7 +6,7 @@ import {
   FaServer,
   FaClipboardCheck,
   FaList,
-  FaPlay
+  FaPlay,
 } from "react-icons/fa";
 
 const Home = () => {
@@ -19,14 +19,6 @@ const Home = () => {
             サーバーやネットワーク機器の点検作業を効率的に管理するシステムです。
             顧客情報、機器情報、点検結果を一元管理できます。
           </p>
-          <div className="d-flex justify-content-center mt-4">
-            <Link to="/inspections/new" className="btn btn-primary btn-lg px-4 me-3">
-              <FaPlay className="me-2" /> 点検作業を開始する
-            </Link>
-            <Link to="/inspections" className="btn btn-outline-secondary btn-lg px-4">
-              <FaClipboardCheck className="me-2" /> 点検履歴を見る
-            </Link>
-          </div>
         </div>
       </div>
 

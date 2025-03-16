@@ -2,12 +2,13 @@
 import axios from "axios";
 
 // 各APIサービスをインポート
-import { customerAPI } from './customerAPI';
-import { deviceAPI } from './deviceAPI';
-import { inspectionAPI } from './inspectionAPI';
-import { inspectionItemAPI } from './inspectionItemAPI';
+import { customerAPI } from "./customerAPI";
+import { deviceAPI } from "./deviceAPI";
+import { inspectionAPI } from "./inspectionAPI";
+import { inspectionItemAPI } from "./inspectionItemAPI";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 // デバッグ用ログ
 console.log("環境変数から読み込まれた API URL:", process.env.REACT_APP_API_URL);
@@ -19,6 +20,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 120000, // 2分のタイムアウト
 });
 
 // 全てのAPIサービスをエクスポート
@@ -27,5 +29,5 @@ export {
   customerAPI,
   deviceAPI,
   inspectionAPI,
-  inspectionItemAPI
+  inspectionItemAPI,
 };

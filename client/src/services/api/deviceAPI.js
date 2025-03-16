@@ -125,8 +125,8 @@ export const deviceAPI = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        // タイムアウトを延長 (60秒)
-        timeout: 60000,
+        // タイムアウトを3分に延長
+        timeout: 180000,
       });
 
       console.log("機器インポート成功:", response);

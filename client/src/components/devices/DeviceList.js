@@ -28,6 +28,8 @@ const DeviceList = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [showImportResultModal, setShowImportResultModal] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  // インポート処理状態の追加
+  const [importProgress, setImportProgress] = useState("");
 
   // ファイル入力用のref
   const fileInputRef = useRef(null);
@@ -120,12 +122,52 @@ const DeviceList = () => {
       setImportError(null);
       setImportSuccess(null);
       setImportLoading(true);
+      setImportProgress("CSVファイルを解析中...");
 
       console.log("インポート処理開始:", file.name);
 
-      // deviceAPI経由でインポート実行
+      // インポート開始前に処理中モーダルを表示
+      setImportResult({
+        message: "インポート処理中...",
+        status: "processing",
+        progress: "リクエストを送信中...",
+      });
+      setShowImportResultModal(true);
+
+      // deviceAPI経由でインポート実行（5秒ごとにUIメッセージを更新）
+      let progressTimer = setTimeout(function updateProgress() {
+        setImportProgress((prev) => {
+          const messages = [
+            "CSVファイルを解析中...",
+            "データを処理中...",
+            "データベースに保存中...",
+            "少々お待ちください...",
+            "インポート処理が完了するまでこのままお待ちください...",
+          ];
+          // ランダムに別のメッセージを選択
+          let newMsg;
+          do {
+            newMsg = messages[Math.floor(Math.random() * messages.length)];
+          } while (newMsg === prev);
+          return newMsg;
+        });
+
+        // インポート結果モーダルも更新
+        setImportResult((prev) => ({
+          ...prev,
+          progress: `処理中... ${new Date().toLocaleTimeString()}`,
+        }));
+
+        // 次の更新をスケジュール
+        progressTimer = setTimeout(updateProgress, 5000);
+      }, 5000);
+
+      // インポート処理実行
       const response = await deviceAPI.importData(file);
       console.log("インポート完了 - レスポンス:", response);
+
+      // タイマーをクリア
+      clearTimeout(progressTimer);
 
       // 結果を保存
       setImportResult(response.data || response);
@@ -144,6 +186,7 @@ const DeviceList = () => {
       // エラーモーダルも表示
       setImportResult({
         message: "インポート中にエラーが発生しました",
+        status: "error",
         errors: [
           {
             row: {},
@@ -154,6 +197,7 @@ const DeviceList = () => {
       setShowImportResultModal(true);
     } finally {
       setImportLoading(false);
+      setImportProgress("");
       // ファイル入力をリセット
       e.target.value = "";
     }
@@ -207,7 +251,18 @@ const DeviceList = () => {
             disabled={importLoading}
           >
             <FaUpload className="me-2" />
-            {importLoading ? "インポート中..." : "CSVインポート"}
+            {importLoading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                {importProgress || "インポート中..."}
+              </>
+            ) : (
+              "CSVインポート"
+            )}
           </button>
           <input
             type="file"
@@ -348,44 +403,65 @@ const DeviceList = () => {
       {/* インポート結果モーダル */}
       <Modal
         show={showImportResultModal}
-        onClose={() => setShowImportResultModal(false)}
-        title="インポート結果"
+        onClose={() => !importLoading && setShowImportResultModal(false)}
+        title={importLoading ? "インポート処理中..." : "インポート結果"}
       >
         {importResult && (
           <div>
-            <p>{importResult.message}</p>
-
-            {importResult.errors && importResult.errors.length > 0 && (
-              <div className="alert alert-warning">
-                <h6>以下の行でエラーが発生しました：</h6>
-                <ul>
-                  {importResult.errors.map((error, idx) => (
-                    <li key={idx}>
-                      {error.row["機器名"] || "No name"}: {error.error}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {importResult.importedDevices &&
-              importResult.importedDevices.length > 0 && (
-                <div>
-                  <h6>インポートされた機器：</h6>
-                  <ul>
-                    {importResult.importedDevices.slice(0, 10).map((device) => (
-                      <li key={device.id}>
-                        {device.device_name} ({device.customer_name})
-                      </li>
-                    ))}
-                    {importResult.importedDevices.length > 10 && (
-                      <li>
-                        ...他 {importResult.importedDevices.length - 10} 件
-                      </li>
-                    )}
-                  </ul>
+            {importLoading ? (
+              <div className="text-center">
+                <div className="spinner-border text-primary my-3" role="status">
+                  <span className="visually-hidden">処理中...</span>
                 </div>
-              )}
+                <p>{importResult.progress || "データ処理中..."}</p>
+                <p className="text-muted small">
+                  インポート処理には数分かかる場合があります。
+                  <br />
+                  この画面を閉じても処理は継続されます。
+                </p>
+              </div>
+            ) : (
+              <>
+                <p>{importResult.message}</p>
+
+                {importResult.errors && importResult.errors.length > 0 && (
+                  <div className="alert alert-warning">
+                    <h6>以下の行でエラーが発生しました：</h6>
+                    <ul>
+                      {importResult.errors.map((error, idx) => (
+                        <li key={idx}>
+                          {error.row["機器名"] ||
+                            error.row["device_name"] ||
+                            "不明な機器"}
+                          : {error.error}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {importResult.importedDevices &&
+                  importResult.importedDevices.length > 0 && (
+                    <div>
+                      <h6>インポートされた機器：</h6>
+                      <ul>
+                        {importResult.importedDevices
+                          .slice(0, 10)
+                          .map((device) => (
+                            <li key={device.id}>
+                              {device.device_name} ({device.customer_name})
+                            </li>
+                          ))}
+                        {importResult.importedDevices.length > 10 && (
+                          <li>
+                            ...他 {importResult.importedDevices.length - 10} 件
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+              </>
+            )}
           </div>
         )}
       </Modal>

@@ -1,14 +1,7 @@
 // src/components/inspections/InspectionItemList.js
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import {
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaSearch,
-  FaDownload,
-  FaUpload,
-} from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaDownload, FaUpload } from "react-icons/fa";
 import { inspectionItemAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
@@ -44,6 +37,131 @@ const InspectionItemList = () => {
       console.error("点検項目一覧取得エラー:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // CSVエクスポート機能
+  const handleExportCSV = async () => {
+    try {
+      setExportError(null);
+      // APIからBlobとしてCSVをダウンロード
+      const response = await inspectionItemAPI.exportData("csv", "shift_jis");
+
+      // Blobからダウンロードリンクを作成
+      const url = window.URL.createObjectURL(new Blob([response]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `inspection_items_${new Date().toISOString().split("T")[0]}.csv`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setExportError("点検項目データのエクスポートに失敗しました。");
+      console.error("点検項目エクスポートエラー:", err);
+    }
+  };
+
+  // ファイル選択ダイアログを開く
+  const handleImportClick = () => {
+    fileInputRef.current.click();
+  };
+
+  // ファイルインポート
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // CSVファイルか確認
+    if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
+      setImportError("CSVファイルを選択してください");
+      return;
+    }
+
+    try {
+      setImportError(null);
+      setImportSuccess(null);
+      setImportLoading(true);
+      setImportProgress("CSVファイルを解析中...");
+
+      console.log("インポート処理開始:", file.name);
+
+      // インポート開始前に処理中モーダルを表示
+      setImportResult({
+        message: "インポート処理中...",
+        status: "processing",
+        progress: "リクエストを送信中...",
+      });
+      setShowImportResultModal(true);
+
+      // 進捗状況メッセージを定期的に更新
+      let progressTimer = setTimeout(function updateProgress() {
+        setImportProgress((prev) => {
+          const messages = [
+            "CSVファイルを解析中...",
+            "データを処理中...",
+            "データベースに保存中...",
+            "少々お待ちください...",
+            "インポート処理が完了するまでこのままお待ちください...",
+          ];
+          // ランダムに別のメッセージを選択
+          let newMsg;
+          do {
+            newMsg = messages[Math.floor(Math.random() * messages.length)];
+          } while (newMsg === prev);
+          return newMsg;
+        });
+
+        // インポート結果モーダルも更新
+        setImportResult((prev) => ({
+          ...prev,
+          progress: `処理中... ${new Date().toLocaleTimeString()}`,
+        }));
+
+        // 次の更新をスケジュール
+        progressTimer = setTimeout(updateProgress, 5000);
+      }, 5000);
+
+      // インポート処理実行
+      const response = await inspectionItemAPI.importData(file);
+      console.log("インポート完了 - レスポンス:", response);
+
+      // タイマーをクリア
+      clearTimeout(progressTimer);
+
+      // 結果を保存
+      setImportResult(response.data || response);
+      setShowImportResultModal(true);
+
+      // 成功メッセージの表示
+      const importedCount =
+        response.data?.importedRows || response.importedRows || 0;
+      setImportSuccess(`${importedCount}件の点検項目をインポートしました`);
+
+      // 点検項目リストを再読み込み
+      fetchItems();
+    } catch (err) {
+      console.error("CSVインポートエラー詳細:", err);
+      setImportError(err.message || "CSVのインポート中にエラーが発生しました");
+      // エラーモーダルも表示
+      setImportResult({
+        message: "インポート中にエラーが発生しました",
+        status: "error",
+        errors: [
+          {
+            row: {},
+            error: err.message || "詳細不明のエラー",
+          },
+        ],
+      });
+      setShowImportResultModal(true);
+    } finally {
+      setImportLoading(false);
+      setImportProgress("");
+      // ファイル入力をリセット
+      e.target.value = "";
     }
   };
 
@@ -301,12 +419,13 @@ const InspectionItemList = () => {
                     <div>
                       <h6>インポートされた点検項目：</h6>
                       <ul>
-                        {importResult.importedItems.slice(0, 10).map((item) => (
-                          <li key={item.id}>
-                            {item.item_name} ({item.device_name}/
-                            {item.customer_name})
-                          </li>
-                        ))}
+                        {importResult.importedItems
+                          .slice(0, 10)
+                          .map((item) => (
+                            <li key={item.id}>
+                              {item.item_name} ({item.device_name}/{item.customer_name})
+                            </li>
+                          ))}
                         {importResult.importedItems.length > 10 && (
                           <li>
                             ...他 {importResult.importedItems.length - 10} 件
@@ -322,130 +441,6 @@ const InspectionItemList = () => {
       </Modal>
     </div>
   );
-
-  // CSVエクスポート機能
-  const handleExportCSV = async () => {
-    try {
-      setExportError(null);
-      // APIからBlobとしてCSVをダウンロード
-      const response = await inspectionItemAPI.exportData("csv", "shift_jis");
-
-      // Blobからダウンロードリンクを作成
-      const url = window.URL.createObjectURL(new Blob([response]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `inspection_items_${new Date().toISOString().split("T")[0]}.csv`
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      setExportError("点検項目データのエクスポートに失敗しました。");
-      console.error("点検項目エクスポートエラー:", err);
-    }
-  };
-
-  // ファイル選択ダイアログを開く
-  const handleImportClick = () => {
-    fileInputRef.current.click();
-  };
-
-  // ファイルインポート
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // CSVファイルか確認
-    if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
-      setImportError("CSVファイルを選択してください");
-      return;
-    }
-
-    try {
-      setImportError(null);
-      setImportSuccess(null);
-      setImportLoading(true);
-      setImportProgress("CSVファイルを解析中...");
-
-      console.log("インポート処理開始:", file.name);
-
-      // インポート開始前に処理中モーダルを表示
-      setImportResult({
-        message: "インポート処理中...",
-        status: "processing",
-        progress: "リクエストを送信中...",
-      });
-      setShowImportResultModal(true);
-
-      // 進捗状況メッセージを定期的に更新
-      let progressTimer = setTimeout(function updateProgress() {
-        setImportProgress((prev) => {
-          const messages = [
-            "CSVファイルを解析中...",
-            "データを処理中...",
-            "データベースに保存中...",
-            "少々お待ちください...",
-            "インポート処理が完了するまでこのままお待ちください...",
-          ];
-          // ランダムに別のメッセージを選択
-          let newMsg;
-          do {
-            newMsg = messages[Math.floor(Math.random() * messages.length)];
-          } while (newMsg === prev);
-          return newMsg;
-        });
-
-        // インポート結果モーダルも更新
-        setImportResult((prev) => ({
-          ...prev,
-          progress: `処理中... ${new Date().toLocaleTimeString()}`,
-        }));
-
-        // 次の更新をスケジュール
-        progressTimer = setTimeout(updateProgress, 5000);
-      }, 5000);
-
-      // インポート処理実行
-      const response = await inspectionItemAPI.importData(file);
-      console.log("インポート完了 - レスポンス:", response);
-
-      // タイマーをクリア
-      clearTimeout(progressTimer);
-
-      // 結果を保存
-      setImportResult(response.data || response);
-      setShowImportResultModal(true);
-
-      // 成功メッセージの表示
-      const importedCount =
-        response.data?.importedRows || response.importedRows || 0;
-      setImportSuccess(`${importedCount}件の点検項目をインポートしました`);
-
-      // 点検項目リストを再読み込み
-      fetchItems();
-    } catch (err) {
-      console.error("CSVインポートエラー詳細:", err);
-      setImportError(err.message || "CSVのインポート中にエラーが発生しました");
-      // エラーモーダルも表示
-      setImportResult({
-        message: "インポート中にエラーが発生しました",
-        status: "error",
-        errors: [
-          {
-            row: {},
-            error: err.message || "詳細不明のエラー",
-          },
-        ],
-      });
-      setShowImportResultModal(true);
-    } finally {
-      setImportLoading(false);
-      setImportProgress("");
-      // ファイル入力をリセット
-      e.target.value = "";
-    }
-  };
 };
+
 export default InspectionItemList;

@@ -77,9 +77,9 @@ const Home = () => {
         <div className="col-md-3">
           <div className="card text-center">
             <div className="card-body">
-              <FaUsers className="fs-1 text-primary mb-3" />
-              <h5 className="card-title">顧客管理</h5>
-              <Link to="/customers" className="btn btn-sm btn-primary">
+              <FaList className="fs-1 text-info mb-3" />
+              <h5 className="card-title">点検項目</h5>
+              <Link to="/inspection-items" className="btn btn-sm btn-info">
                 一覧を見る
               </Link>
             </div>
@@ -88,9 +88,9 @@ const Home = () => {
         <div className="col-md-3">
           <div className="card text-center">
             <div className="card-body">
-              <FaClipboardCheck className="fs-1 text-info mb-3" />
+              <FaClipboardCheck className="fs-1 text-primary mb-3" />
               <h5 className="card-title">点検作業</h5>
-              <Link to="/inspections" className="btn btn-sm btn-info">
+              <Link to="/inspections" className="btn btn-sm btn-primary">
                 一覧を見る
               </Link>
             </div>
@@ -102,6 +102,31 @@ const Home = () => {
               <FaChartBar className="fs-1 text-warning mb-3" />
               <h5 className="card-title">レポート</h5>
               <Link to="/reports" className="btn btn-sm btn-warning">
+                一覧を見る
+              </Link>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3">
+          <div className="card text-center">
+            <div className="card-body">
+              <FaServer className="fs-1 text-success mb-3" />
+              <h5 className="card-title">機器管理</h5>
+              <Link to="/devices" className="btn btn-sm btn-success">
+                一覧を見る
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-4">
+        <div className="col-md-3">
+          <div className="card text-center">
+            <div className="card-body">
+              <FaUsers className="fs-1 text-primary mb-3" />
+              <h5 className="card-title">顧客管理</h5>
+              <Link to="/customers" className="btn btn-sm btn-primary">
                 一覧を見る
               </Link>
             </div>

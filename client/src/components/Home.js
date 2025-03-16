@@ -35,14 +35,39 @@ const Home = () => {
           <div className="h-100 p-5 bg-light border rounded-3">
             <h2>マスタ管理</h2>
             <p>顧客情報や機器情報などのマスタデータを管理します。</p>
-            <Link to="/customers" className="btn btn-outline-primary me-2">
-              顧客管理
+            <Link to="/inspection-items" className="btn btn-outline-info">
+              点検項目
             </Link>
             <Link to="/devices" className="btn btn-outline-secondary me-2">
               機器管理
             </Link>
-            <Link to="/inspection-items" className="btn btn-outline-info">
-              点検項目
+            <Link to="/customers" className="btn btn-outline-primary me-2">
+              顧客管理
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-4">
+        <div className="col-md-3">
+          <div className="card text-center">
+            <div className="card-body">
+              <FaList className="fs-1 text-info mb-3" />
+              <h5 className="card-title">点検項目</h5>
+              <Link to="/inspection-items" className="btn btn-sm btn-info">
+                一覧を見る
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="col-md-3">
+        <div className="card text-center">
+          <div className="card-body">
+            <FaServer className="fs-1 text-success mb-3" />
+            <h5 className="card-title">機器管理</h5>
+            <Link to="/devices" className="btn btn-sm btn-success">
+              一覧を見る
             </Link>
           </div>
         </div>
@@ -55,17 +80,6 @@ const Home = () => {
               <FaUsers className="fs-1 text-primary mb-3" />
               <h5 className="card-title">顧客管理</h5>
               <Link to="/customers" className="btn btn-sm btn-primary">
-                一覧を見る
-              </Link>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card text-center">
-            <div className="card-body">
-              <FaServer className="fs-1 text-success mb-3" />
-              <h5 className="card-title">機器管理</h5>
-              <Link to="/devices" className="btn btn-sm btn-success">
                 一覧を見る
               </Link>
             </div>
@@ -88,21 +102,6 @@ const Home = () => {
               <FaChartBar className="fs-1 text-warning mb-3" />
               <h5 className="card-title">レポート</h5>
               <Link to="/reports" className="btn btn-sm btn-warning">
-                一覧を見る
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 追加の行 - 点検項目管理カード */}
-      <div className="row mt-4">
-        <div className="col-md-3">
-          <div className="card text-center">
-            <div className="card-body">
-              <FaList className="fs-1 text-info mb-3" />
-              <h5 className="card-title">点検項目</h5>
-              <Link to="/inspection-items" className="btn btn-sm btn-info">
                 一覧を見る
               </Link>
             </div>

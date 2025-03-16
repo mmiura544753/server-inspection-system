@@ -69,12 +69,12 @@ export const inspectionItemAPI = {
   },
   
   // 点検項目エクスポート機能
-  exportData: async (format = 'csv') => {
+  exportData: async (format = 'csv', encoding = 'shift_jis') => {
     try {
-      console.log(`点検項目エクスポート開始: 形式=${format}`);
+      console.log(`点検項目エクスポート開始: 形式=${format}, エンコーディング=${encoding}`);
       
       const response = await api.get(`/inspection-items/export`, {
-        params: { format },
+        params: { format, encoding },
         responseType: 'blob'
       });
       
@@ -97,6 +97,76 @@ export const inspectionItemAPI = {
         throw new Error(errorMsg);
       }
       
+      throw error;
+    }
+  },
+
+  // CSVファイルからデータをインポート
+  importData: async (file) => {
+    try {
+      console.log("点検項目インポート開始", file);
+      console.log("ファイル名:", file.name);
+      console.log("ファイルサイズ:", file.size);
+      console.log("ファイルタイプ:", file.type);
+
+      // FormDataの作成
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // POSTリクエストの実行
+      console.log("インポートリクエスト送信中...");
+      const response = await api.post("/inspection-items/import", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        // タイムアウトを3分に延長
+        timeout: 180000,
+      });
+
+      console.log("点検項目インポート成功:", response);
+      return response.data;
+    } catch (error) {
+      console.error("点検項目インポートエラー:", error);
+
+      if (error.code === "ECONNABORTED") {
+        console.error(
+          "タイムアウトが発生しました。サーバー処理に時間がかかっている可能性があります。"
+        );
+        throw new Error(
+          "リクエストがタイムアウトしました。大きなファイルの場合は処理に時間がかかることがあります。"
+        );
+      }
+
+      // エラーが発生した場合、エラーメッセージを取得して表示
+      if (error.response) {
+        console.error("エラーレスポンス:", error.response);
+        console.error("ステータスコード:", error.response.status);
+
+        if (error.response.data instanceof Blob) {
+          // Blobからテキストを抽出
+          const text = await new Response(error.response.data).text();
+          console.error("Blobレスポンスのテキスト:", text);
+
+          let errorMsg;
+          try {
+            // JSONにパースできるかチェック
+            const json = JSON.parse(text);
+            errorMsg =
+              json.error || json.message || "未知のエラーが発生しました";
+          } catch {
+            // JSONでない場合はそのまま表示
+            errorMsg = text;
+          }
+          console.error("インポートエラー詳細:", errorMsg);
+          throw new Error(errorMsg);
+        } else if (error.response.data) {
+          console.error("エラーデータ:", error.response.data);
+          throw new Error(
+            error.response.data.message || "未知のエラーが発生しました"
+          );
+        }
+      }
+
       throw error;
     }
   }

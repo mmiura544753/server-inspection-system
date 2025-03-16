@@ -151,7 +151,7 @@ export const useInspection = () => {
     if (!isComplete && allItemsChecked()) {
       setIsComplete(true);
     }
-  }, [inspectionItems, isStarted, isComplete]);
+  }, [inspectionItems, isStarted, isComplete, hasAnyResults, allItemsChecked]);
 
   // 点検結果を更新する関数
   const updateResult = (locationIndex, serverIndex, itemIndex, isNormal) => {

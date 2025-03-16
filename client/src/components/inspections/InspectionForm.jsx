@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Clock, Save, RotateCcw, CheckCircle } from "lucide-react";
+import { FaClock, Save, RotateCcw, CheckCircle } from "lucide-react";
 import {
   inspectionAPI,
   deviceAPI,

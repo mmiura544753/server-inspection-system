@@ -1,6 +1,6 @@
 // src/components/inspections/InspectionHeader.js
 import React from "react";
-import { Clock } from "lucide-react";
+import { FaClock } from "lucide-react";
 import Alert from "../common/Alert";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; // スタイルシートのインポート

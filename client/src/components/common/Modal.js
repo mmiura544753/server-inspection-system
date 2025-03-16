@@ -1,6 +1,6 @@
 // src/components/common/Modal.js
 import React, { useEffect } from "react";
-import { FaTimes, FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa";
 
 const Modal = ({ show, onClose, title, children, onConfirm }) => {
   useEffect(() => {

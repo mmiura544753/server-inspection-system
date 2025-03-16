@@ -20,7 +20,7 @@ import CustomerList from "./components/customers/CustomerList";
 import CustomerForm from "./components/customers/CustomerForm";
 import CustomerDetails from "./components/customers/CustomerDetails";
 
-機器コンポーネント;
+// 機器コンポーネント;
 import DeviceList from "./components/devices/DeviceList";
 import DeviceForm from "./components/devices/DeviceForm";
 import DeviceDetails from "./components/devices/DeviceDetails";

@@ -21,7 +21,6 @@ const Home = () => {
           </p>
         </div>
       </div>
-
       <div className="row align-items-md-stretch">
         <div className="col-md-6">
           <div className="h-100 p-5 text-white bg-primary rounded-3">

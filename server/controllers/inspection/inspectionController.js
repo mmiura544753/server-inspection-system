@@ -248,13 +248,8 @@ const getLatestInspectionByDeviceId = asyncHandler(async (req, res) => {
 
 // server/controllers/inspection/index.js にエクスポートを追加
 module.exports = {
-  // 既存のエクスポート
   getInspections,
   getInspectionById,
   getInspectionsByDeviceId,
-  createInspection,
-  updateInspection,
-  deleteInspection,
-  // 新しいエクスポート
   getLatestInspectionByDeviceId,
 };

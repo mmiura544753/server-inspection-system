@@ -1,6 +1,6 @@
 // src/components/inspections/InspectionHeader.js
 import React from "react";
-import { FaClock } from "lucide-react";
+import { FaClock } from "react-icons/fa"; // react-iconsからFaClockをインポート
 import Alert from "../common/Alert";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; // スタイルシートのインポート
@@ -55,7 +55,7 @@ const InspectionHeader = ({
                 onChange={(e) => setStartTime(e.target.value)}
                 className="w-20 px-2 py-1 border rounded"
               />
-              <Clock className="ml-2 text-gray-500" size={18} />
+              <FaClock className="ml-2 text-gray-500" size={18} />
             </div>
           </div>
 
@@ -70,7 +70,7 @@ const InspectionHeader = ({
                 onChange={(e) => setEndTime(e.target.value)}
                 className="w-20 px-2 py-1 border rounded"
               />
-              <Clock className="ml-2 text-gray-500" size={18} />
+              <FaClock className="ml-2 text-gray-500" size={18} />
             </div>
           </div>
 

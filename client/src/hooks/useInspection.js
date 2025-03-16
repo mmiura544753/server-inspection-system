@@ -61,6 +61,7 @@ export const useInspection = () => {
           id: item.device_name,
           device_id: item.device_id,
           type: item.device_type,
+          model: item.model || "",
           items: [],
           results: [],
         };

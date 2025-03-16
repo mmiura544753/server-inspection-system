@@ -53,7 +53,7 @@ const InspectionHeader = ({
                 type="time"
                 value={startTime || ""}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-20 px-2 py-1 border rounded"
+                className="w-32 px-2 py-1 border rounded"
               />
               <FaClock className="ml-2 text-gray-500" size={18} />
             </div>
@@ -68,7 +68,7 @@ const InspectionHeader = ({
                 type="time"
                 value={endTime || ""}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-20 px-2 py-1 border rounded"
+                className="w-32 px-2 py-1 border rounded"
               />
               <FaClock className="ml-2 text-gray-500" size={18} />
             </div>

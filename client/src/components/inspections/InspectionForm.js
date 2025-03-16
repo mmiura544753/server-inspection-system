@@ -1,7 +1,12 @@
 // src/components/inspections/InspectionForm.js
 import React from "react";
 
-const InspectionForm = ({ location, setLocation, workContent, setWorkContent }) => {
+const InspectionForm = ({
+  location,
+  setLocation,
+  workContent,
+  setWorkContent,
+}) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <div>
@@ -11,6 +16,7 @@ const InspectionForm = ({ location, setLocation, workContent, setWorkContent }) 
         <input
           type="text"
           value={location}
+          readOnly
           onChange={(e) => setLocation(e.target.value)}
           className="w-full px-3 py-2 border rounded"
         />
@@ -22,6 +28,7 @@ const InspectionForm = ({ location, setLocation, workContent, setWorkContent }) 
         <input
           type="text"
           value={workContent}
+          readOnly
           onChange={(e) => setWorkContent(e.target.value)}
           className="w-full px-3 py-2 border rounded"
         />

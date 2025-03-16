@@ -7,30 +7,35 @@ const { Device, Customer, sequelize } = require('../../models');
 // @route   POST /api/devices/import
 // @access  Public
 const importDevicesFromCsv = asyncHandler(async (req, res) => {
+  console.log('インポート処理開始: リクエスト受信');
+  
   if (!req.file) {
+    console.error('エラー: ファイルがアップロードされていません');
     res.status(400);
     throw new Error('CSVファイルが提供されていません');
   }
   
   // CSVファイルのバッファを取得
   const buffer = req.file.buffer;
+  console.log(`アップロードされたファイルサイズ: ${buffer.length} バイト`);
   
-  // Shift-JISエンコードされたファイルをデコード
-  // iconv-liteを使用するため、先にrequireする
-  const iconv = require('iconv-lite');
-  const fileContent = iconv.decode(buffer, 'Shift_JIS');
-  
-  // 結果を保存する変数
-  const results = {
-    totalRows: 0,
-    importedRows: 0,
-    errors: [],
-    importedDevices: []
-  };
-  
-  // CSVを解析して行を取得
   try {
-    // CSVを解析し、行ごとに処理
+    // Shift-JISエンコードされたファイルをデコード
+    const iconv = require('iconv-lite');
+    const fileContent = iconv.decode(buffer, 'Shift_JIS');
+    console.log('ファイルのデコード完了');
+    console.log('ファイルの先頭部分:', fileContent.substring(0, 200));
+    
+    // 結果を保存する変数
+    const results = {
+      totalRows: 0,
+      importedRows: 0,
+      errors: [],
+      importedDevices: []
+    };
+    
+    // CSVを解析して行を取得
+    console.log('CSVの解析開始');
     const rows = await new Promise((resolve, reject) => {
       const rows = [];
       
@@ -40,15 +45,25 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
         trim: true,
         skipLines: 0 // ヘッダー行がある場合は0、ない場合は変更する
       })
-        .on('error', error => reject(error))
-        .on('data', row => rows.push(row))
-        .on('end', () => resolve(rows));
+        .on('error', error => {
+          console.error('CSV解析エラー:', error);
+          reject(error);
+        })
+        .on('data', row => {
+          rows.push(row);
+        })
+        .on('end', () => {
+          console.log(`CSV解析完了: ${rows.length}行のデータを検出`);
+          console.log('最初の行のデータ例:', JSON.stringify(rows[0] || {}));
+          resolve(rows);
+        });
     });
     
     results.totalRows = rows.length;
     
     // データベース処理を開始
     if (sequelize) {
+      console.log('データベース処理開始');
       // トランザクションを開始
       const t = await sequelize.transaction();
       
@@ -57,7 +72,8 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
         for (const row of rows) {
           try {
             // 必須フィールドの確認
-            if (!row['機器名'] && !row['@í¼']) {
+            if (!row['機器名'] && !row['device_name']) {
+              console.log('機器名が不足している行:', JSON.stringify(row));
               results.errors.push({
                 row: row,
                 error: '機器名が不足しています'
@@ -65,13 +81,15 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
               continue;
             }
             
-            // データの取得 (Shift-JISで正しくデコードされているはず)
-            const deviceName = row['機器名'] || '';
-            const customerName = row['顧客名'] || '';
-            const model = row['モデル'] || '';
-            const location = row['設置場所'] || '';
-            const deviceType = row['機器種別'] || 'サーバ';
-            const hardwareType = row['ハードウェアタイプ'] || '物理';
+            // データの取得
+            const deviceName = row['機器名'] || row['device_name'] || '';
+            const customerName = row['顧客名'] || row['customer_name'] || '';
+            const model = row['モデル'] || row['model'] || '';
+            const location = row['設置場所'] || row['location'] || '';
+            const deviceType = row['機器種別'] || row['device_type'] || 'サーバ';
+            const hardwareType = row['ハードウェアタイプ'] || row['hardware_type'] || '物理';
+            
+            console.log(`処理中の行: 機器名=${deviceName}, 顧客名=${customerName}`);
             
             // 必須の値が不足している場合
             if (!deviceName) {
@@ -101,6 +119,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
               validHardwareTypes.includes(hardwareType) ? hardwareType : '物理';
             
             // 顧客名から顧客IDを取得または新規作成
+            console.log(`顧客を検索/作成: ${customerName}`);
             let customer;
             
             // 顧客名から顧客を検索
@@ -110,9 +129,12 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
             
             // 顧客が存在しない場合は新規作成
             if (!customer) {
+              console.log(`新規顧客作成: ${customerName}`);
               customer = await Customer.create({
                 customer_name: customerName
               }, { transaction: t });
+            } else {
+              console.log(`既存顧客を利用: ID=${customer.id}, 名前=${customer.customer_name}`);
             }
             
             const customerId = customer.id;
@@ -121,12 +143,20 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
             let device;
             const deviceId = row['ID'] || row['id'];
             if (deviceId) {
+              console.log(`デバイスIDが指定されています: ${deviceId}`);
               device = await Device.findByPk(deviceId);
+              
+              if (device) {
+                console.log(`既存デバイスが見つかりました: ID=${device.id}`);
+              } else {
+                console.log(`指定されたID=${deviceId}のデバイスは見つかりませんでした`);
+              }
             }
             
             // デバイスの作成または更新
             if (device) {
               // 既存のデバイスを更新
+              console.log(`デバイスを更新: ID=${device.id}, 名前=${deviceName}`);
               device.customer_id = customerId;
               device.device_name = deviceName;
               device.model = model;
@@ -137,6 +167,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
               await device.save({ transaction: t });
             } else {
               // 新規デバイスを作成
+              console.log(`新規デバイスを作成: 名前=${deviceName}`);
               device = await Device.create({
                 customer_id: customerId,
                 device_name: deviceName,
@@ -145,6 +176,8 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
                 device_type: normalizedDeviceType,
                 hardware_type: normalizedHardwareType
               }, { transaction: t });
+              
+              console.log(`デバイス作成完了: ID=${device.id}`);
             }
             
             results.importedDevices.push({
@@ -156,6 +189,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
             
             results.importedRows++;
           } catch (err) {
+            console.error('行の処理中にエラー:', err);
             results.errors.push({
               row: row,
               error: err.message
@@ -165,28 +199,33 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
         
         // トランザクションをコミット
         await t.commit();
+        console.log(`インポート処理完了: ${results.importedRows}/${results.totalRows}件を処理`);
         
         res.status(200).json({
           message: `${results.importedRows}/${results.totalRows} 件のデータをインポートしました`,
-          importedRows: results.importedRows,
-          totalRows: results.totalRows,
-          errors: results.errors.length > 0 ? results.errors : undefined,
-          importedDevices: results.importedDevices
+          data: {
+            importedRows: results.importedRows,
+            totalRows: results.totalRows,
+            errors: results.errors.length > 0 ? results.errors : undefined,
+            importedDevices: results.importedDevices
+          }
         });
         
       } catch (error) {
         // エラーが発生した場合はロールバック
+        console.error('トランザクションエラー:', error);
         await t.rollback();
         throw error;
       }
     } else {
       // sequelizeが初期化されていない場合
+      console.error('エラー: データベース接続が初期化されていません');
       res.status(500);
       throw new Error('データベース接続が初期化されていません');
     }
     
   } catch (error) {
-    console.error('CSVインポートエラー:', error);
+    console.error('CSVインポート処理中の重大なエラー:', error);
     res.status(500);
     throw new Error(`CSVのインポート中にエラーが発生しました: ${error.message}`);
   }

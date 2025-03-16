@@ -105,7 +105,7 @@ const DeviceList = () => {
     fileInputRef.current.click();
   };
 
-  // ファイル選択時の処理
+  // ファイルインポート
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -121,25 +121,37 @@ const DeviceList = () => {
       setImportSuccess(null);
       setImportLoading(true);
 
+      console.log("インポート処理開始:", file.name);
+
       // deviceAPI経由でインポート実行
       const response = await deviceAPI.importData(file);
+      console.log("インポート完了 - レスポンス:", response);
 
       // 結果を保存
-      setImportResult(response.data);
+      setImportResult(response.data || response);
       setShowImportResultModal(true);
 
       // 成功メッセージの表示
-      setImportSuccess(
-        `${response.data.importedRows}件のデータをインポートしました`
-      );
+      const importedCount =
+        response.data?.importedRows || response.importedRows || 0;
+      setImportSuccess(`${importedCount}件のデータをインポートしました`);
 
       // 機器リストを再読み込み
       fetchDevices();
     } catch (err) {
-      console.error("CSVインポートエラー:", err);
-      setImportError(
-        err.response?.data?.message || "CSVのインポート中にエラーが発生しました"
-      );
+      console.error("CSVインポートエラー詳細:", err);
+      setImportError(err.message || "CSVのインポート中にエラーが発生しました");
+      // エラーモーダルも表示
+      setImportResult({
+        message: "インポート中にエラーが発生しました",
+        errors: [
+          {
+            row: {},
+            error: err.message || "詳細不明のエラー",
+          },
+        ],
+      });
+      setShowImportResultModal(true);
     } finally {
       setImportLoading(false);
       // ファイル入力をリセット

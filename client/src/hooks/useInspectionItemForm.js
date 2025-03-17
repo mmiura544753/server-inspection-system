@@ -1,5 +1,5 @@
 // src/hooks/useInspectionItemForm.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { inspectionItemAPI, deviceAPI, customerAPI } from '../services/api';
 
@@ -71,44 +71,8 @@ export function useInspectionItemForm(id) {
     fetchDevices();
   }, []);
 
- // 編集モードの場合、既存点検項目データを取得
-useEffect(() => {
-  const fetchItemData = async () => {
-    try {
-      setLoading(true);
-      const data = await inspectionItemAPI.getById(id);
-      
-      // デバイス情報を先に取得する
-      const deviceData = await deviceAPI.getById(data.device_id);
-      
-      // 得られた情報から初期値を設定
-      setItem({
-        customer_id: deviceData.customer_id,
-        location: deviceData.location || "",
-        device_id: data.device_id,
-        item_name: data.item_name,
-      });
-      
-      // ロケーションと機器の選択肢を更新
-      updateLocationOptions(deviceData.customer_id);
-      updateDeviceOptions(deviceData.customer_id, deviceData.location || "");
-      
-      setError(null);
-    } catch (err) {
-      setError("点検項目データの取得に失敗しました。");
-      console.error(`点検項目ID:${id}の取得エラー:`, err);
-    } finally {
-      setLoading(false);
-    }
-  }, [id, isEditMode, updateLocationOptions, updateDeviceOptions]);
-
-  if (isEditMode) {
-    fetchItemData();
-  }
-}, [id, isEditMode]);
-  
   // 顧客が選択された時に設置場所の選択肢を更新する関数
-  const updateLocationOptions = (customerId) => {
+  const updateLocationOptions = useCallback((customerId) => {
     if (!customerId) {
       setLocationOptions([]);
       return;
@@ -125,10 +89,10 @@ useEffect(() => {
     options.unshift({ value: "", label: "すべての設置場所" });
     
     setLocationOptions(options);
-  };
+  }, [allDevices]);
 
   // 顧客と設置場所に基づいて機器の選択肢を更新する関数
-  const updateDeviceOptions = (customerId, location) => {
+  const updateDeviceOptions = useCallback((customerId, location) => {
     if (!customerId) {
       setDeviceOptions([]);
       return;
@@ -150,7 +114,43 @@ useEffect(() => {
     }));
     
     setDeviceOptions(options);
-  };
+  }, [allDevices]);
+
+  // 編集モードの場合、既存点検項目データを取得
+  useEffect(() => {
+    const fetchItemData = async () => {
+      try {
+        setLoading(true);
+        const data = await inspectionItemAPI.getById(id);
+        
+        // デバイス情報を先に取得する
+        const deviceData = await deviceAPI.getById(data.device_id);
+        
+        // 得られた情報から初期値を設定
+        setItem({
+          customer_id: deviceData.customer_id,
+          location: deviceData.location || "",
+          device_id: data.device_id,
+          item_name: data.item_name,
+        });
+        
+        // ロケーションと機器の選択肢を更新
+        updateLocationOptions(deviceData.customer_id);
+        updateDeviceOptions(deviceData.customer_id, deviceData.location || "");
+        
+        setError(null);
+      } catch (err) {
+        setError("点検項目データの取得に失敗しました。");
+        console.error(`点検項目ID:${id}の取得エラー:`, err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isEditMode) {
+      fetchItemData();
+    }
+  }, [id, isEditMode, updateLocationOptions, updateDeviceOptions]);
 
   // フォーム送信処理
   const handleSubmit = async (values, { setSubmitting }) => {

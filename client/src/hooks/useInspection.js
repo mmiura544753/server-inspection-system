@@ -47,17 +47,15 @@ export const useInspection = () => {
 
       // APIのレスポンス形式に合わせて調整
       const inspectionData = response.data?.data || [];
+      console.log("APIから受け取ったデータ:", inspectionData);
 
-      // 空の配列を初期値として設定（レスポンスが空の場合のためのフォールバック）
-      setInspectionItems(inspectionData.length > 0 ? inspectionData : []);
-
-      // 顧客名を設定
-      if (
-        inspectionData.length > 0 &&
-        inspectionData[0].servers &&
-        inspectionData[0].servers.length > 0
-      ) {
-        setCustomerName("サーバー点検");
+      if (inspectionData.length > 0) {
+        // 顧客名を設定 - 最初の項目から取得
+        setCustomerName(inspectionData[0].customer_name || "サーバー点検");
+        setInspectionItems(inspectionData);
+      } else {
+        // データがない場合は空配列を設定
+        setInspectionItems([]);
       }
 
       setError(null);

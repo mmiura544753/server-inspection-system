@@ -16,6 +16,10 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
     );
   }
 
+  // データの構造を確認してログに出力
+  console.log("インスペクションテーブルに渡されたデータ:", inspectionItems);
+
+  // APIから返されたデータ構造に合わせた処理
   return (
     <div className="mb-6">
       <div className="overflow-x-auto">
@@ -31,36 +35,47 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
             </tr>
           </thead>
           <tbody>
-            {inspectionItems.map((location, locationIndex) => {
-              // 各ロケーションの合計行数を計算
-              // servers配列がない場合は0を返す
-              const locationRowSpan = location.servers
-                ? location.servers.reduce(
-                    (acc, srv) => acc + (srv.items ? srv.items.length : 0),
-                    0
-                  )
-                : 0;
-
-              // serversがなければ空の配列としてマップ処理
-              return (location.servers || []).map((server, serverIndex) =>
-                // itemsがなければ空の配列としてマップ処理
-                (server.items || []).map((item, itemIndex) => (
-                  <InspectionItem
-                    key={`${locationIndex}-${serverIndex}-${itemIndex}`}
-                    item={item}
-                    locationIndex={locationIndex}
-                    serverIndex={serverIndex}
-                    itemIndex={itemIndex}
-                    server={server}
-                    updateResult={updateResult}
-                    isFirstItem={itemIndex === 0}
-                    isFirstServer={serverIndex === 0}
-                    locationName={location.locationName}
-                    locationRowSpan={locationRowSpan}
-                  />
-                ))
-              );
-            })}
+            {inspectionItems.map((location, locationIndex) => (
+              <tr key={`location-${locationIndex}`}>
+                <td className="px-4 py-2 border-b">
+                  {location.rack_number || "-"}
+                </td>
+                <td className="px-4 py-2 border-b">
+                  {location.unit_position || "-"}
+                </td>
+                <td className="px-4 py-2 border-b">
+                  {location.device_name || "-"}
+                </td>
+                <td className="px-4 py-2 border-b">{location.model || "-"}</td>
+                <td className="px-4 py-2 border-b">
+                  {location.item_name || "-"}
+                </td>
+                <td className="px-4 py-2 border-b">
+                  <div className="flex justify-center space-x-4">
+                    <button
+                      onClick={() => updateResult(locationIndex, 0, 0, true)}
+                      className={`px-4 py-1 rounded-md font-semibold ${
+                        location.result === true
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-200 text-gray-600"
+                      }`}
+                    >
+                      正常
+                    </button>
+                    <button
+                      onClick={() => updateResult(locationIndex, 0, 0, false)}
+                      className={`px-4 py-1 rounded-md font-semibold ${
+                        location.result === false
+                          ? "bg-red-500 text-white"
+                          : "bg-gray-200 text-gray-600"
+                      }`}
+                    >
+                      異常
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

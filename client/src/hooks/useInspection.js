@@ -159,6 +159,7 @@ export const useInspection = () => {
   };
 
   // 点検完了率を計算
+  // 点検完了率を計算する関数（修正版）
   const calculateCompletionRate = () => {
     // inspectionItemsが未定義または空の場合は0を返す
     if (!inspectionItems || !inspectionItems.length) {
@@ -169,6 +170,7 @@ export const useInspection = () => {
     let completed = 0;
 
     inspectionItems.forEach((location) => {
+      // 階層化された構造（servers配列が存在する場合）
       if (location.servers && Array.isArray(location.servers)) {
         location.servers.forEach((server) => {
           if (server.results && Array.isArray(server.results)) {
@@ -178,6 +180,12 @@ export const useInspection = () => {
             });
           }
         });
+      } else {
+        // フラットな構造の場合
+        total++;
+        if (location.result !== null && location.result !== undefined) {
+          completed++;
+        }
       }
     });
 

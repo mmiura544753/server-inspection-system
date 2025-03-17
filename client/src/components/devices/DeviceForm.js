@@ -9,7 +9,7 @@ import Alert from "../common/Alert";
 
 // フォームコンポーネントをインポート
 import DeviceBasicInfoForm from "./forms/DeviceBasicInfoForm";
-import Devicerack_numberForm from "./forms/Devicerack_numberForm";
+import DeviceLocationForm from "./forms/DeviceLocationForm"; 
 import DeviceTypeForm from "./forms/DeviceTypeForm";
 import FormActionButtons from "./forms/FormActionButtons";
 
@@ -147,7 +147,7 @@ const DeviceForm = () => {
             {({ isSubmitting, values }) => (
               <Form className="form-container">
                 <DeviceBasicInfoForm customers={customers} />
-                <Devicerack_numberForm />
+                <DeviceLocationForm />
                 <DeviceTypeForm />
                 <FormActionButtons isSubmitting={isSubmitting} />
               </Form>

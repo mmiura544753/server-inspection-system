@@ -5,7 +5,7 @@ import { Field, ErrorMessage } from "formik";
 /**
  * 機器の設置場所情報を入力するコンポーネント
  */
-const Devicerack_numberForm = () => {
+const DeviceLocationForm = () => {
   return (
     <div className="mb-4">
       <h4 className="mb-3">設置場所情報</h4>
@@ -58,4 +58,4 @@ const Devicerack_numberForm = () => {
   );
 };
 
-export default Devicerack_numberForm;
+export default DeviceLocationForm;

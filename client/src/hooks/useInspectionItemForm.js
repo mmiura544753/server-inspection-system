@@ -100,7 +100,7 @@ useEffect(() => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, isEditMode, updateLocationOptions, updateDeviceOptions]);
 
   if (isEditMode) {
     fetchItemData();

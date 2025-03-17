@@ -16,7 +16,6 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
         d.device_name, 
         d.model,
         d.rack_number,
-        d.location,
         ii.id as item_id, 
         ii.item_name, 
         d.device_type

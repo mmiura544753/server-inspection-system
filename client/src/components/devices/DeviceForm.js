@@ -18,6 +18,7 @@ const DeviceSchema = Yup.object().shape({
   hardware_type: Yup.string().required("ハードウェアタイプは必須です"),
   model: Yup.string().max(50, "モデル名は50文字以内で入力してください"),
   location: Yup.string().max(100, "設置場所は100文字以内で入力してください"),
+  unit_position: Yup.string().max(20, "ユニット位置は20文字以内で入力してください"),
 });
 
 const DeviceForm = () => {
@@ -30,6 +31,7 @@ const DeviceForm = () => {
     device_name: "",
     model: "",
     location: "",
+    unit_position: "",
     device_type: "サーバ",
     hardware_type: "物理",
   });
@@ -204,6 +206,27 @@ const DeviceForm = () => {
                   />
                   <ErrorMessage
                     name="location"
+                    component="div"
+                    className="text-danger"
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="unit_position" className="form-label">
+                    ユニット位置
+                  </label>
+                  <Field
+                    type="text"
+                    id="unit_position"
+                    name="unit_position"
+                    className="form-control"
+                    placeholder="例: U1-U2"
+                  />
+                  <small className="form-text text-muted">
+                    ラックの搭載位置を入力してください（例: U1-U2）
+                  </small>
+                  <ErrorMessage
+                    name="unit_position"
                     component="div"
                     className="text-danger"
                   />

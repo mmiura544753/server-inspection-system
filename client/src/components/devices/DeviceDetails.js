@@ -108,6 +108,10 @@ const DeviceDetails = () => {
                     <td>{device.location || "-"}</td>
                   </tr>
                   <tr>
+                    <th>ユニット位置</th>
+                    <td>{device.unit_position || "-"}</td>
+                  </tr>
+                  <tr>
                     <th>機器種別</th>
                     <td>{device.device_type}</td>
                   </tr>

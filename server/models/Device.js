@@ -43,6 +43,14 @@ const Device = sequelize.define('Device', {
       len: { args: [0, 100], msg: '設置場所は100文字以内で入力してください' }
     }
   },
+  unit_position: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+    comment: 'ラックの搭載ユニット位置',
+    validate: {
+      len: { args: [0, 20], msg: 'ユニット位置は20文字以内で入力してください' }
+    }
+  },
   device_type: {
     type: DataTypes.ENUM('サーバ', 'UPS', 'ネットワーク機器', 'その他'),
     allowNull: false,

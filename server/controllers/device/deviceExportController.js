@@ -30,6 +30,7 @@ const exportDevicesToCsv = asyncHandler(async (req, res) => {
       customer_name: device.customer ? device.customer.customer_name : "",
       model: device.model || "",
       location: device.location || "",
+      unit_position: device.unit_position || "",
       device_type: device.device_type,
       hardware_type: device.hardware_type,
     };
@@ -42,6 +43,7 @@ const exportDevicesToCsv = asyncHandler(async (req, res) => {
     { label: "顧客名", value: "customer_name" },
     { label: "モデル", value: "model" },
     { label: "設置場所", value: "location" },
+    { label: "ユニット位置", value: "unit_position" },
     { label: "機器種別", value: "device_type" },
     { label: "ハードウェアタイプ", value: "hardware_type" },
   ];

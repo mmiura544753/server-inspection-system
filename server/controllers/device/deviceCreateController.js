@@ -6,7 +6,15 @@ const { Device, Customer } = require('../../models');
 // @route   POST /api/devices
 // @access  Public
 const createDevice = asyncHandler(async (req, res) => {
-  const { customer_id, device_name, model, location, device_type, hardware_type } = req.body;
+  const { 
+    customer_id, 
+    device_name, 
+    model, 
+    location, 
+    unit_position, 
+    device_type, 
+    hardware_type 
+  } = req.body;
   
   // 必須フィールドのチェック
   if (!customer_id || !device_name || !device_type || !hardware_type) {
@@ -28,6 +36,7 @@ const createDevice = asyncHandler(async (req, res) => {
       device_name,
       model,
       location,
+      unit_position,
       device_type,
       hardware_type
     });
@@ -51,6 +60,7 @@ const createDevice = asyncHandler(async (req, res) => {
       customer_id: populatedDevice.customer_id,
       model: populatedDevice.model,
       location: populatedDevice.location,
+      unit_position: populatedDevice.unit_position,
       device_type: populatedDevice.device_type,
       hardware_type: populatedDevice.hardware_type,
       created_at: populatedDevice.created_at,

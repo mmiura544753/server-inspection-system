@@ -1,9 +1,8 @@
-// server/controllers/device/deviceImportController.js - sequelize問題修正版
-
+// server/controllers/device/deviceImportController.js
 const asyncHandler = require('express-async-handler');
 const csvParse = require('csv-parse/sync');
 const { Device, Customer } = require('../../models');
-const { sequelize } = require('../../config/db'); // 正しくsequelizeをインポート
+const { sequelize } = require('../../config/db');
 
 // @desc    CSVからの機器一覧のインポート
 // @route   POST /api/devices/import
@@ -62,11 +61,6 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
       throw new Error('データベース接続が初期化されていません');
     }
     
-    console.log('sequelizeオブジェクト状態:', {
-      availableInModels: !!Device.sequelize,
-      importedDirectly: !!sequelize
-    });
-    
     // トランザクションを開始
     const t = await sequelize.transaction();
     console.log('トランザクション開始成功:', !!t);
@@ -84,6 +78,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
           const customerName = row['顧客名'] || row['customer_name'] || '';
           const model = row['モデル'] || row['model'] || '';
           const location = row['設置場所'] || row['location'] || '';
+          const unitPosition = row['ユニット位置'] || row['unit_position'] || '';
           const deviceType = row['機器種別'] || row['device_type'] || 'サーバ';
           const hardwareType = row['ハードウェアタイプ'] || row['hardware_type'] || '物理';
           
@@ -136,6 +131,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
             device_name: deviceName,
             model: model,
             location: location,
+            unit_position: unitPosition,
             device_type: normalizedDeviceType,
             hardware_type: normalizedHardwareType
           }, { transaction: t });

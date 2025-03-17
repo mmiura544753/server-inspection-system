@@ -6,7 +6,15 @@ const { Device, Customer } = require('../../models');
 // @route   PUT /api/devices/:id
 // @access  Public
 const updateDevice = asyncHandler(async (req, res) => {
-  const { customer_id, device_name, model, location, device_type, hardware_type } = req.body;
+  const { 
+    customer_id, 
+    device_name, 
+    model, 
+    location, 
+    unit_position, 
+    device_type, 
+    hardware_type 
+  } = req.body;
   
   const device = await Device.findByPk(req.params.id);
   
@@ -25,6 +33,7 @@ const updateDevice = asyncHandler(async (req, res) => {
       device.device_name = device_name || device.device_name;
       device.model = model !== undefined ? model : device.model;
       device.location = location !== undefined ? location : device.location;
+      device.unit_position = unit_position !== undefined ? unit_position : device.unit_position;
       device.device_type = device_type || device.device_type;
       device.hardware_type = hardware_type || device.hardware_type;
       
@@ -49,6 +58,7 @@ const updateDevice = asyncHandler(async (req, res) => {
         customer_id: populatedDevice.customer_id,
         model: populatedDevice.model,
         location: populatedDevice.location,
+        unit_position: populatedDevice.unit_position,
         device_type: populatedDevice.device_type,
         hardware_type: populatedDevice.hardware_type,
         created_at: populatedDevice.created_at,

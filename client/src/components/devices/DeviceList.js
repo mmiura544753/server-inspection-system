@@ -296,7 +296,7 @@ const DeviceList = () => {
           </p>
           <p className="small text-muted mt-2">
             インポート用CSVのフォーマット:
-            機器名、顧客名、モデル、設置場所、機器種別、ハードウェアタイプのカラムが必要です。
+            機器名、顧客名、モデル、設置場所、ユニット位置、機器種別、ハードウェアタイプのカラムが必要です。
             IDが指定されている場合は更新、指定がない場合は新規作成されます。存在しない顧客名の場合は自動的に新規顧客が作成されます。
           </p>
         </div>
@@ -331,9 +331,11 @@ const DeviceList = () => {
                     <th>ID</th>
                     <th>機器名</th>
                     <th>顧客</th>
+                    <th>モデル</th>
                     <th>種別</th>
                     <th>ハードウェア</th>
                     <th>設置場所</th>
+                    <th>ユニット位置</th>
                     <th>操作</th>
                   </tr>
                 </thead>
@@ -343,9 +345,11 @@ const DeviceList = () => {
                       <td>{device.id}</td>
                       <td>{device.device_name}</td>
                       <td>{device.customer_name}</td>
+                      <td>{device.model || "-"}</td>
                       <td>{device.device_type}</td>
                       <td>{device.hardware_type}</td>
                       <td>{device.location || "-"}</td>
+                      <td>{device.unit_position || "-"}</td>
                       <td>
                         <div className="action-buttons">
                           <Link

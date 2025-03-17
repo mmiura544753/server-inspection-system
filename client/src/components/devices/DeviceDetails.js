@@ -105,7 +105,7 @@ const DeviceDetails = () => {
                   </tr>
                   <tr>
                     <th>設置場所</th>
-                    <td>{device.location || "-"}</td>
+                    <td>{device.rack_number || "-"}</td>
                   </tr>
                   <tr>
                     <th>ユニット位置</th>
@@ -148,7 +148,7 @@ const DeviceDetails = () => {
         title="機器削除の確認"
         onConfirm={() => {
           // 削除処理。実際のAPIコールは省略（機器一覧ページに任せる）
-          window.location.href = "/devices";
+          window.rack_number.href = "/devices";
         }}
       >
         <p>機器「{device.device_name}」を削除してもよろしいですか？</p>

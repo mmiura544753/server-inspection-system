@@ -1,11 +1,11 @@
-// src/components/devices/forms/DeviceLocationForm.js
+// src/components/devices/forms/Devicerack_numberForm.js
 import React from "react";
 import { Field, ErrorMessage } from "formik";
 
 /**
  * 機器の設置場所情報を入力するコンポーネント
  */
-const DeviceLocationForm = () => {
+const Devicerack_numberForm = () => {
   return (
     <div className="mb-4">
       <h4 className="mb-3">設置場所情報</h4>
@@ -58,4 +58,4 @@ const DeviceLocationForm = () => {
   );
 };
 
-export default DeviceLocationForm;
+export default Devicerack_numberForm;

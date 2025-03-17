@@ -10,7 +10,7 @@ const updateDevice = asyncHandler(async (req, res) => {
     customer_id, 
     device_name, 
     model, 
-    location, 
+    rack_number, 
     unit_position, 
     device_type, 
     hardware_type 
@@ -32,7 +32,7 @@ const updateDevice = asyncHandler(async (req, res) => {
       device.customer_id = customer_id || device.customer_id;
       device.device_name = device_name || device.device_name;
       device.model = model !== undefined ? model : device.model;
-      device.location = location !== undefined ? location : device.location;
+      device.rack_number = rack_number !== undefined ? rack_number : device.rack_number;
       device.unit_position = unit_position !== undefined ? unit_position : device.unit_position;
       device.device_type = device_type || device.device_type;
       device.hardware_type = hardware_type || device.hardware_type;
@@ -57,7 +57,7 @@ const updateDevice = asyncHandler(async (req, res) => {
         customer_name: populatedDevice.customer.customer_name,
         customer_id: populatedDevice.customer_id,
         model: populatedDevice.model,
-        location: populatedDevice.location,
+        rack_number: populatedDevice.rack_number,
         unit_position: populatedDevice.unit_position,
         device_type: populatedDevice.device_type,
         hardware_type: populatedDevice.hardware_type,

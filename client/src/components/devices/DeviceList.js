@@ -348,7 +348,7 @@ const DeviceList = () => {
                       <td>{device.model || "-"}</td>
                       <td>{device.device_type}</td>
                       <td>{device.hardware_type}</td>
-                      <td>{device.location || "-"}</td>
+                      <td>{device.rack_number || "-"}</td>
                       <td>{device.unit_position || "-"}</td>
                       <td>
                         <div className="action-buttons">

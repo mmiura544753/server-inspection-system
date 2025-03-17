@@ -9,7 +9,7 @@ import Alert from "../common/Alert";
 
 // フォームコンポーネントをインポート
 import DeviceBasicInfoForm from "./forms/DeviceBasicInfoForm";
-import DeviceLocationForm from "./forms/DeviceLocationForm";
+import Devicerack_numberForm from "./forms/Devicerack_numberForm";
 import DeviceTypeForm from "./forms/DeviceTypeForm";
 import FormActionButtons from "./forms/FormActionButtons";
 
@@ -22,7 +22,7 @@ const DeviceSchema = Yup.object().shape({
   device_type: Yup.string().required("機器種別は必須です"),
   hardware_type: Yup.string().required("ハードウェアタイプは必須です"),
   model: Yup.string().max(50, "モデル名は50文字以内で入力してください"),
-  rack_number: Yup.number() // locationからrack_numberに変更
+  rack_number: Yup.number() // rack_numberからrack_numberに変更
     .integer("ラックNo.は整数で入力してください")
     .positive("ラックNo.は正の数を入力してください")
     .nullable(),
@@ -38,7 +38,7 @@ const DeviceForm = () => {
     customer_id: "",
     device_name: "",
     model: "",
-    location: "",
+    rack_number: "",
     unit_position: "",
     device_type: "サーバ",
     hardware_type: "物理",
@@ -147,7 +147,7 @@ const DeviceForm = () => {
             {({ isSubmitting, values }) => (
               <Form className="form-container">
                 <DeviceBasicInfoForm customers={customers} />
-                <DeviceLocationForm />
+                <Devicerack_numberForm />
                 <DeviceTypeForm />
                 <FormActionButtons isSubmitting={isSubmitting} />
               </Form>

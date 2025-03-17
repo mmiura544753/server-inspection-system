@@ -95,11 +95,11 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
           let rackNumber = null;
           const rackNumberInput = getColumnValue(['設置ラックNo', 'rack_number', 'ÝubNNo']);
           
-          // 入力値が存在し、かつ数値に変換できる場合のみ設定
-          if (rackNumberInput && !isNaN(parseInt(rackNumberInput))) {
-            rackNumber = parseInt(rackNumberInput);
-          }
-          
+          // 数値変換の前に明示的に型変換を行う
+          if (rackNumberInput && !isNaN(Number(rackNumberInput))) {
+            // 明示的にNumber型に変換する（文字列ではなく）
+            rackNumber = Number(parseInt(rackNumberInput, 10));
+          }          
           const unitPosition = getColumnValue(['ユニット位置', 'unit_position', 'jbgÊu']);
           const deviceType = getColumnValue(['機器種別', 'device_type', '@ííÊ']);
           const hardwareType = getColumnValue(['ハードウェアタイプ', 'hardware_type', 'n[hEFA^Cv']);

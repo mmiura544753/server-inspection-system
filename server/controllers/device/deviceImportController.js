@@ -79,8 +79,15 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
           // カラム名のマッピング関数 - 様々な可能性を考慮
           const getColumnValue = (possibleNames) => {
             for (const name of possibleNames) {
-              if (row[name] !== undefined) {
-                return row[name];
+              // カラム名の前後の空白を削除して比較
+              const trimmedName = name.trim();
+              
+              for (const key of Object.keys(row)) {
+                // CSVから取得したカラム名も前後の空白を削除して比較
+                if (key.trim() === trimmedName) {
+                  const value = row[key];
+                  return value !== undefined ? value.toString().trim() : '';
+                }
               }
             }
             return '';
@@ -93,23 +100,27 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
           
           // ラックナンバーの処理 - 数値に変換できるかチェック
           let rackNumber = null;
-          const rackNumberInput = getColumnValue(['設置ラックNo', 'rack_number', 'ラックNo']);
+          const rackNumberInput = getColumnValue(['設置ラックNo', 'rack_number', 'ラックNo', '設置ラックNo.']);
           
-          if (rackNumberInput && rackNumberInput.trim() !== '') {
-            const parsedValue = Number(rackNumberInput);
-            if (!isNaN(parsedValue) && Number.isInteger(parsedValue)) {
-              rackNumber = parsedValue; // 明示的にNumber型として保存
+          console.log(`ラックナンバー取得値(生): "${rackNumberInput}"`);
+          
+          if (rackNumberInput && rackNumberInput.toString().trim() !== '') {
+            // 数値に変換
+            const parsedValue = parseInt(rackNumberInput, 10);
+            if (!isNaN(parsedValue)) {
+              rackNumber = parsedValue; // 明示的に整数として保存
+              console.log(`ラックナンバーを整数に変換: ${rackNumber}`);
+            } else {
+              console.log(`ラックナンバーの変換に失敗: "${rackNumberInput}" は整数に変換できません`);
             }
           }
-
-          console.log(`ラックナンバー入力値: "${rackNumberInput}", 変換後: ${rackNumber}, 型: ${typeof rackNumber}`);
 
           const unitPosition = getColumnValue(['ユニット位置', 'unit_position', 'jbgÊu']);
           const deviceType = getColumnValue(['機器種別', 'device_type', '@ííÊ']);
           const hardwareType = getColumnValue(['ハードウェアタイプ', 'hardware_type', 'n[hEFA^Cv']);
           
           // デバッグログを出力
-          console.log(`処理中の行: 機器名="${deviceName}", 顧客名="${customerName}", ラックNo=${rackNumber}`);
+          console.log(`処理中の行: 機器名="${deviceName}", 顧客名="${customerName}", モデル="${model}", ラックNo=${rackNumber}, ユニット位置="${unitPosition}"`);
 
           // CSVからIDを読み取る
           const deviceId = getColumnValue(['ID', 'id']);
@@ -214,27 +225,38 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
               });
             } else {
               // 新規デバイスを作成
-              const device = await Device.create({
-                customer_id: customer.id,
-                device_name: deviceName,
-                model: model,
-                rack_number: rackNumber !== null ? Number(rackNumber) : null,
-                unit_position: unitPosition,
-                device_type: normalizedDeviceType,
-                hardware_type: normalizedHardwareType
-              }, { transaction: t });
-              
-              console.log(`デバイス作成完了: ID=${device.id}, 名前=${deviceName}`);
-              
-              results.importedDevices.push({
-                id: device.id,
-                device_name: device.device_name,
-                customer_name: customer.customer_name,
-                customer_id: device.customer_id,
-                created: true // 新規作成されたことを示すフラグ
-              });
-              
-              results.importedRows++;
+              try {
+                console.log(`新規デバイス作成: 顧客=${customer.id}, 機器名=${deviceName}, モデル=${model}, ラックNo=${rackNumber}, ユニット位置=${unitPosition}`);
+                
+                const device = await Device.create({
+                  customer_id: customer.id,
+                  device_name: deviceName,
+                  model: model || null,
+                  rack_number: rackNumber, // 数値または null
+                  unit_position: unitPosition || '',
+                  device_type: normalizedDeviceType,
+                  hardware_type: normalizedHardwareType,
+                  location: '' // location フィールドを明示的に空文字で初期化
+                }, { transaction: t });
+                
+                console.log(`デバイス作成完了: ID=${device.id}, 名前=${deviceName}`);
+                
+                results.importedDevices.push({
+                  id: device.id,
+                  device_name: device.device_name,
+                  customer_name: customer.customer_name,
+                  customer_id: device.customer_id,
+                  created: true // 新規作成されたことを示すフラグ
+                });
+                
+                results.importedRows++;
+              } catch (createError) {
+                console.error(`デバイス作成エラー:`, createError);
+                results.errors.push({
+                  row: row,
+                  error: `デバイス作成エラー: ${createError.message}`
+                });
+              }
             }
           }
         } catch (err) {

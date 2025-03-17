@@ -37,55 +37,6 @@ export const useInspection = () => {
     fetchInspectionItems();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 設置場所ごとにアイテムをグループ化する関数
-  const groupItemsByLocation = (items) => {
-    // 設置場所ごとにグループ化するためのオブジェクト
-    const locationGroups = {};
-
-    // まず設置場所でグループ化
-    items.forEach((item) => {
-      const locationKey = item.rack_number !== null && item.rack_number !== '' 
-        ? `ラックNo.${item.rack_number}` 
-        : "未設定";
-
-      console.log('決定されたロケーションキー:', locationKey);
-
-      if (!locationGroups[locationKey]) {
-        locationGroups[locationKey] = {
-          locationId: `loc_${locationKey}`,
-          locationName: locationKey,
-          servers: {},
-        };
-      }
-
-      // 次に各設置場所内で機器ごとにグループ化
-      const deviceKey = item.device_id;
-      if (!locationGroups[locationKey].servers[deviceKey]) {
-        locationGroups[locationKey].servers[deviceKey] = {
-          id: item.device_name,
-          device_id: item.device_id,
-          type: item.device_type,
-          model: item.model || "",
-          unit_position: item.unit_position || "", 
-          items: [],
-          results: [],
-        };
-      }
-
-      // 点検項目を追加
-      locationGroups[locationKey].servers[deviceKey].items.push(item.item_name);
-      locationGroups[locationKey].servers[deviceKey].results.push(null); // 初期値はnull
-    });
-
-    // 最終的なデータ構造に変換（配列形式に）
-    return Object.values(locationGroups).map((location) => {
-      return {
-        ...location,
-        servers: Object.values(location.servers),
-      };
-    });
-  };
-
   // APIから点検項目を取得する関数
   const fetchInspectionItems = async () => {
     try {
@@ -93,18 +44,23 @@ export const useInspection = () => {
 
       // APIからデータを取得
       const response = await inspectionAPI.getInspectionItems();
-      // APIのレスポンス形式に合わせて調整
-      const items = response.data?.data || [];
 
-      // 顧客名を取得（最初のアイテムから）
-      if (items.length > 0) {
-        setCustomerName(items[0].customer_name);
+      // APIのレスポンス形式に合わせて調整（既に階層化されているデータを使用）
+      const groupedByLocation = response.data?.data || [];
+
+      // 顧客名を取得（最初のアイテムのサーバーから）
+      if (
+        groupedByLocation.length > 0 &&
+        groupedByLocation[0].servers &&
+        groupedByLocation[0].servers.length > 0
+      ) {
+        const firstServer = groupedByLocation[0].servers[0];
+        // customerNameはAPIで返されていないので、別途設定する必要があるかもしれません
+        setCustomerName("サーバー点検");
       }
 
-      // データを設置場所ごとにグループ化
-      const groupedByLocation = groupItemsByLocation(items);
+      // 階層化されたデータを設定
       setInspectionItems(groupedByLocation);
-
       setError(null);
     } catch (err) {
       console.error("点検項目データ取得エラー:", err);
@@ -157,7 +113,7 @@ export const useInspection = () => {
     if (!isComplete && allItemsChecked()) {
       setIsComplete(true);
     }
-  },  [inspectionItems, isStarted, isComplete]);
+  }, [inspectionItems, isStarted, isComplete]);
 
   // 点検結果を更新する関数
   const updateResult = (locationIndex, serverIndex, itemIndex, isNormal) => {

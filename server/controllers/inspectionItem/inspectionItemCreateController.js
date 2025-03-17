@@ -31,6 +31,19 @@ const createInspectionItem = asyncHandler(async (req, res) => {
   }
   
   try {
+    // 重複チェック
+    const existingItem = await InspectionItem.findOne({
+      where: {
+        device_id,
+        item_name
+      }
+    });
+
+    if (existingItem) {
+      res.status(400);
+      throw new Error('同じ機器に対して同じ点検項目名がすでに存在します');
+    }
+
     // 点検項目を作成
     const item = await InspectionItem.create({
       device_id,
@@ -51,6 +64,12 @@ const createInspectionItem = asyncHandler(async (req, res) => {
     
     res.status(201).json(formattedItem);
   } catch (error) {
+    // Sequelizeのユニーク制約違反のエラーをキャッチ
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      res.status(400);
+      throw new Error('同じ機器に対して同じ点検項目名がすでに存在します');
+    }
+    
     if (error.name === 'SequelizeValidationError') {
       res.status(400);
       throw new Error(error.errors.map(e => e.message).join(', '));

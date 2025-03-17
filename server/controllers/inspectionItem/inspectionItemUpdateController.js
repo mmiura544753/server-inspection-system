@@ -40,6 +40,25 @@ const updateInspectionItem = asyncHandler(async (req, res) => {
     }
 
     try {
+      // 更新内容に変更がある場合に重複チェック
+      if ((device_id && device_id !== item.device_id) || 
+          (item_name && item_name !== item.item_name)) {
+        
+        // 重複チェック (同じdevice_id + item_nameの組み合わせが、別のIDの項目として存在するか)
+        const existingItem = await InspectionItem.findOne({
+          where: {
+            device_id: device_id || item.device_id,
+            item_name: item_name || item.item_name,
+            id: { [require('sequelize').Op.ne]: item.id } // 自分自身は除外
+          }
+        });
+
+        if (existingItem) {
+          res.status(400);
+          throw new Error('同じ機器に対して同じ点検項目名がすでに存在します');
+        }
+      }
+
       item.device_id = device_id || item.device_id;
       item.item_name = item_name || item.item_name;
 
@@ -59,6 +78,12 @@ const updateInspectionItem = asyncHandler(async (req, res) => {
 
       res.json(formattedItem);
     } catch (error) {
+      // Sequelizeのユニーク制約違反のエラーをキャッチ
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        res.status(400);
+        throw new Error('同じ機器に対して同じ点検項目名がすでに存在します');
+      }
+      
       if (error.name === "SequelizeValidationError") {
         res.status(400);
         throw new Error(error.errors.map((e) => e.message).join(", "));
@@ -66,7 +91,6 @@ const updateInspectionItem = asyncHandler(async (req, res) => {
       throw error;
     }
   } else {
-    // この下の部分が欠けていました
     res.status(404);
     throw new Error("点検項目が見つかりません");
   }

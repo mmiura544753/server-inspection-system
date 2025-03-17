@@ -34,7 +34,15 @@ const InspectionItem = sequelize.define('InspectionItem', {
   timestamps: true,
   underscored: true,
   createdAt: 'created_at',
-  updatedAt: 'updated_at'
+  updatedAt: 'updated_at',
+  // ユニーク制約を追加
+  indexes: [
+    {
+      unique: true,
+      fields: ['device_id', 'item_name'],
+      name: 'device_item_unique_constraint'
+    }
+  ]
 });
 
 // リレーションシップの定義

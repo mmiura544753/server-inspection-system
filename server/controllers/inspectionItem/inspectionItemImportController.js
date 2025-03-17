@@ -71,8 +71,10 @@ const importInspectionItemsFromCsv = asyncHandler(async (req, res) => {
           const itemName = row['点検項目名'] || row['item_name'] || '';
           const deviceName = row['機器名'] || row['device_name'] || '';
           const customerName = row['顧客名'] || row['customer_name'] || '';
+          // CSVからIDを読み取る
+          const itemId = row['ID'] || row['id'] || null;
           
-          console.log(`処理中の行: 項目名="${itemName}", 機器名="${deviceName}", 顧客名="${customerName}"`);
+          console.log(`処理中の行: 項目名="${itemName}", 機器名="${deviceName}", 顧客名="${customerName}", ID=${itemId}`);
           
           // 必須フィールドの確認
           if (!itemName) {
@@ -140,24 +142,77 @@ const importInspectionItemsFromCsv = asyncHandler(async (req, res) => {
             // キャッシュに機器を保存
             deviceCache[deviceCacheKey] = device;
           }
-          
-          // 最後に、点検項目を作成
-          const inspectionItem = await InspectionItem.create({
-            device_id: device.id,
-            item_name: itemName
-          }, { transaction: t });
-          
-          console.log(`点検項目作成完了: ID=${inspectionItem.id}, 名前=${itemName}`);
-          
-          results.importedItems.push({
-            id: inspectionItem.id,
-            item_name: inspectionItem.item_name,
-            device_name: device.device_name,
-            customer_name: customer.customer_name
-          });
-          
-          results.importedRows++;
-          
+
+          // IDが指定されている場合は更新、ない場合は新規作成
+          if (itemId) {
+            // 既存の点検項目を検索
+            const existingItem = await InspectionItem.findByPk(itemId);
+            
+            if (existingItem) {
+              // 存在する場合は更新
+              console.log(`ID=${itemId}の点検項目を更新します: ${itemName}`);
+              
+              existingItem.device_id = device.id;
+              existingItem.item_name = itemName;
+              
+              await existingItem.save({ transaction: t });
+              
+              console.log(`点検項目更新完了: ID=${existingItem.id}, 名前=${itemName}`);
+
+              // 更新後の点検項目を結果に追加
+              results.importedItems.push({
+                id: existingItem.id,
+                item_name: existingItem.item_name,
+                device_name: device.device_name,
+                customer_name: customer.customer_name,
+                updated: true // 更新されたことを示すフラグ
+              });
+              
+              results.importedRows++;
+            } else {
+              // 指定されたIDが存在しない場合はエラー
+              console.error(`指定されたID: ${itemId}の点検項目が存在しません`);
+              results.errors.push({
+                row: row,
+                error: `指定されたID: ${itemId}の点検項目が存在しません`
+              });
+            }
+          } else {
+            // IDがない場合は新規作成 - 重複チェック(device_id + item_name)を行う
+            const existingItem = await InspectionItem.findOne({
+              where: {
+                device_id: device.id,
+                item_name: itemName
+              }
+            });
+
+            if (existingItem) {
+              // 既存項目がある場合はスキップ
+              console.log(`重複点検項目のためスキップ: ${itemName} (${device.device_name})`);
+              results.errors.push({
+                row: row,
+                error: '同じ機器に対して同じ点検項目名がすでに存在します'
+              });
+            } else {
+              // 最後に、点検項目を作成
+              const inspectionItem = await InspectionItem.create({
+                device_id: device.id,
+                item_name: itemName
+              }, { transaction: t });
+              
+              console.log(`点検項目作成完了: ID=${inspectionItem.id}, 名前=${itemName}`);
+              
+              results.importedItems.push({
+                id: inspectionItem.id,
+                item_name: inspectionItem.item_name,
+                device_name: device.device_name,
+                customer_name: customer.customer_name,
+                created: true // 新規作成されたことを示すフラグ
+              });
+              
+              results.importedRows++;
+            }
+          }
         } catch (err) {
           console.error(`行 ${i+1} の処理中にエラー:`, err.message);
           results.errors.push({

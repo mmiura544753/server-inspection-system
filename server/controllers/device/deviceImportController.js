@@ -93,13 +93,17 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
           
           // ラックナンバーの処理 - 数値に変換できるかチェック
           let rackNumber = null;
-          const rackNumberInput = getColumnValue(['設置ラックNo', 'rack_number', 'ÝubNNo']);
+          const rackNumberInput = getColumnValue(['設置ラックNo', 'rack_number', 'ラックNo']);
           
-          // 数値変換の前に明示的に型変換を行う
-          if (rackNumberInput && !isNaN(Number(rackNumberInput))) {
-            // 明示的にNumber型に変換する（文字列ではなく）
-            rackNumber = Number(parseInt(rackNumberInput, 10));
-          }          
+          if (rackNumberInput && rackNumberInput.trim() !== '') {
+            const parsedValue = Number(rackNumberInput);
+            if (!isNaN(parsedValue) && Number.isInteger(parsedValue)) {
+              rackNumber = parsedValue; // 明示的にNumber型として保存
+            }
+          }
+
+          console.log(`ラックナンバー入力値: "${rackNumberInput}", 変換後: ${rackNumber}, 型: ${typeof rackNumber}`);
+
           const unitPosition = getColumnValue(['ユニット位置', 'unit_position', 'jbgÊu']);
           const deviceType = getColumnValue(['機器種別', 'device_type', '@ííÊ']);
           const hardwareType = getColumnValue(['ハードウェアタイプ', 'hardware_type', 'n[hEFA^Cv']);
@@ -214,7 +218,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
                 customer_id: customer.id,
                 device_name: deviceName,
                 model: model,
-                rack_number: rackNumber,
+                rack_number: rackNumber !== null ? Number(rackNumber) : null,
                 unit_position: unitPosition,
                 device_type: normalizedDeviceType,
                 hardware_type: normalizedHardwareType

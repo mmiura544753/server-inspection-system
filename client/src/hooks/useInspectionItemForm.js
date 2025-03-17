@@ -71,52 +71,42 @@ export function useInspectionItemForm(id) {
     fetchDevices();
   }, []);
 
-  // 編集モードの場合、既存点検項目データを取得
-  useEffect(() => {
-    const fetchItemData = async () => {
-      try {
-        setLoading(true);
-        const data = await inspectionItemAPI.getById(id);
-        
-        if (allDevices.length > 0) {
-          const deviceData = allDevices.find(d => d.id === data.device_id);
-          if (deviceData) {
-            setItem({
-              customer_id: deviceData.customer_id,
-              location: deviceData.location || "",
-              device_id: data.device_id,
-              item_name: data.item_name,
-            });
-            
-            updateLocationOptions(deviceData.customer_id);
-            updateDeviceOptions(deviceData.customer_id, deviceData.location || "");
-          } else {
-            setItem({
-              device_id: data.device_id,
-              item_name: data.item_name,
-            });
-          }
-        } else {
-          setItem({
-            device_id: data.device_id,
-            item_name: data.item_name,
-          });
-        }
-        
-        setError(null);
-      } catch (err) {
-        setError("点検項目データの取得に失敗しました。");
-        console.error(`点検項目ID:${id}の取得エラー:`, err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (isEditMode && allDevices.length > 0) {
-      fetchItemData();
+ // 編集モードの場合、既存点検項目データを取得
+useEffect(() => {
+  const fetchItemData = async () => {
+    try {
+      setLoading(true);
+      const data = await inspectionItemAPI.getById(id);
+      
+      // デバイス情報を先に取得する
+      const deviceData = await deviceAPI.getById(data.device_id);
+      
+      // 得られた情報から初期値を設定
+      setItem({
+        customer_id: deviceData.customer_id,
+        location: deviceData.location || "",
+        device_id: data.device_id,
+        item_name: data.item_name,
+      });
+      
+      // ロケーションと機器の選択肢を更新
+      updateLocationOptions(deviceData.customer_id);
+      updateDeviceOptions(deviceData.customer_id, deviceData.location || "");
+      
+      setError(null);
+    } catch (err) {
+      setError("点検項目データの取得に失敗しました。");
+      console.error(`点検項目ID:${id}の取得エラー:`, err);
+    } finally {
+      setLoading(false);
     }
-  }, [id, isEditMode, allDevices]);
+  };
 
+  if (isEditMode) {
+    fetchItemData();
+  }
+}, [id, isEditMode]);
+  
   // 顧客が選択された時に設置場所の選択肢を更新する関数
   const updateLocationOptions = (customerId) => {
     if (!customerId) {

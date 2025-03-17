@@ -68,18 +68,16 @@ const InspectionItemForm = () => {
               <Form className="form-container">
                 <CustomerSelect 
                   customerOptions={customerOptions}
-                  value={customerOptions.find(option => option.value === parseInt(values.customer_id, 10) || 0)}
+                  value={customerOptions.find(option => option.value === parseInt(values.customer_id, 10))}
                   onChange={(selectedOption) => {
                     setFieldValue("customer_id", selectedOption ? selectedOption.value : "");
                     setFieldValue("location", "");
                     setFieldValue("device_id", "");
                     
                     if (selectedOption) {
-                      updateLocationOptions(selectedOption.value);
-                      updateDeviceOptions(selectedOption.value, "");
-                    } else {
-                      setFieldValue("location", "");
-                      setFieldValue("device_id", "");
+                      // 顧客IDを数値として渡す
+                      updateLocationOptions(parseInt(selectedOption.value, 10));
+                      updateDeviceOptions(parseInt(selectedOption.value, 10), "");
                     }
                   }}
                   errors={errors.customer_id}

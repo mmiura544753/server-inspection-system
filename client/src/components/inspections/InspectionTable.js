@@ -10,6 +10,7 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
           <thead>
             <tr className="bg-gray-100">
               <th className="px-4 py-2 text-left border-b w-24">ラックNo</th>
+              <th className="px-4 py-2 text-left border-b w-28">ユニット</th>
               <th className="px-4 py-2 text-left border-b w-40">サーバ名</th>
               <th className="px-4 py-2 text-left border-b w-32">機種</th>
               <th className="px-4 py-2 text-left border-b">点検項目</th>
@@ -23,7 +24,7 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
                 (acc, srv) => acc + srv.items.length,
                 0
               );
-              
+
               return location.servers.map((server, serverIndex) =>
                 server.items.map((item, itemIndex) => (
                   <InspectionItem

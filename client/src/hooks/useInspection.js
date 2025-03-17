@@ -130,22 +130,22 @@ export const useInspection = () => {
   }, [isComplete, endTime]);
 
   // 任意の点検結果が入力されているかチェック
-  const hasAnyResults = () => {
+  const hasAnyResults = (() => {
     return inspectionItems.some((location) =>
       location.servers.some((server) =>
         server.results.some((result) => result !== null)
       )
     );
-  };
+  }, [inspectionItems]);
 
   // すべての点検項目がチェックされているかチェック
-  const allItemsChecked = () => {
+  const allItemsChecked = (() => {
     return inspectionItems.every((location) =>
       location.servers.every((server) =>
         server.results.every((result) => result !== null)
       )
     );
-  };
+  }, [inspectionItems]);
 
   // チェック状態が変更されたときに点検状態を更新
   useEffect(() => {
@@ -156,7 +156,7 @@ export const useInspection = () => {
     if (!isComplete && allItemsChecked()) {
       setIsComplete(true);
     }
-  }, [inspectionItems, isStarted, isComplete, hasAnyResults, allItemsChecked]);
+  },  [inspectionItems, isStarted, isComplete]);
 
   // 点検結果を更新する関数
   const updateResult = (locationIndex, serverIndex, itemIndex, isNormal) => {

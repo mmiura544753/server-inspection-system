@@ -83,7 +83,10 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
           const hardwareType = row['ハードウェアタイプ'] || row['hardware_type'] || '物理';
           
           console.log(`処理中の行: 機器名="${deviceName}", 顧客名="${customerName}"`);
-          
+
+          // CSVからIDを読み取る
+          const deviceId = row['ID'] || row['id'] || null;
+
           // 必須フィールドの確認
           if (!deviceName) {
             throw new Error('機器名が不足しています');
@@ -125,48 +128,88 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
             customerCache[customerName] = customer;
           }
 
-          // 既存の機器をチェック（顧客ID、機器名、設置場所、ユニット位置の組み合わせ）
-          const existingDevice = await Device.findOne({
-            where: { 
-              customer_id: customer.id,
-              device_name: deviceName,
-              location: location || '',
-              unit_position: unitPosition || ''
-            }
-          });
+          // IDが指定されている場合は更新、ない場合は新規作成
+          if (deviceId) {
+            // 既存の機器を検索
+            const existingDevice = await Device.findByPk(deviceId);
+            
+            if (existingDevice) {
+              // 存在する場合は更新
+              console.log(`ID=${deviceId}の機器を更新します: ${deviceName}`);
+              
+              existingDevice.customer_id = customer.id;
+              existingDevice.device_name = deviceName;
+              existingDevice.model = model;
+              existingDevice.location = location;
+              existingDevice.unit_position = unitPosition;
+              existingDevice.device_type = normalizedDeviceType;
+              existingDevice.hardware_type = normalizedHardwareType;
+              
+              await existingDevice.save({ transaction: t });
+              
+              console.log(`デバイス更新完了: ID=${existingDevice.id}, 名前=${deviceName}`);
 
-          if (existingDevice) {
-            // 既存デバイスがある場合はスキップ
-            console.log(`重複機器のためスキップ: ${deviceName} (${customer.customer_name})`);
-            results.errors.push({
-              row: row,
-              error: '同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します'
+              results.importedDevices.push({
+                id: existingDevice.id,
+                device_name: existingDevice.device_name,
+                customer_name: customer.customer_name,
+                customer_id: existingDevice.customer_id,
+                updated: true // 更新されたことを示すフラグ
+              });
+              
+              results.importedRows++;
+            } else {
+              // 指定されたIDが存在しない場合はエラー
+              console.error(`指定されたID: ${deviceId}の機器が存在しません`);
+              results.errors.push({
+                row: row,
+                error: `指定されたID: ${deviceId}の機器が存在しません`
+              });
+            }
+          } else {
+            // IDがない場合は新規作成の処理を実行
+            // 既存の機器をチェック（顧客ID、機器名、設置場所、ユニット位置の組み合わせ）
+            const existingDevice = await Device.findOne({
+              where: { 
+                customer_id: customer.id,
+                device_name: deviceName,
+                location: location || '',
+                unit_position: unitPosition || ''
+              }
             });
-            continue; // 次の行へスキップ
+
+            if (existingDevice) {
+              // 既存デバイスがある場合はスキップ
+              console.log(`重複機器のためスキップ: ${deviceName} (${customer.customer_name})`);
+              results.errors.push({
+                row: row,
+                error: '同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します'
+              });
+            } else {
+              // 新規デバイスを作成
+              const device = await Device.create({
+                customer_id: customer.id,
+                device_name: deviceName,
+                model: model,
+                location: location,
+                unit_position: unitPosition,
+                device_type: normalizedDeviceType,
+                hardware_type: normalizedHardwareType
+              }, { transaction: t });
+              
+              console.log(`デバイス作成完了: ID=${device.id}, 名前=${deviceName}`);
+              
+              results.importedDevices.push({
+                id: device.id,
+                device_name: device.device_name,
+                customer_name: customer.customer_name,
+                customer_id: device.customer_id,
+                created: true // 新規作成されたことを示すフラグ
+              });
+              
+              results.importedRows++;
+            }
           }
-          
-          // 新規デバイスを作成
-          const device = await Device.create({
-            customer_id: customer.id,
-            device_name: deviceName,
-            model: model,
-            location: location,
-            unit_position: unitPosition,
-            device_type: normalizedDeviceType,
-            hardware_type: normalizedHardwareType
-          }, { transaction: t });
-          
-          console.log(`デバイス作成完了: ID=${device.id}, 名前=${deviceName}`);
-          
-          results.importedDevices.push({
-            id: device.id,
-            device_name: device.device_name,
-            customer_name: customer.customer_name,
-            customer_id: device.customer_id
-          });
-          
-          results.importedRows++;
-          
         } catch (err) {
           console.error(`行 ${i+1} の処理中にエラー:`, err.message);
           results.errors.push({

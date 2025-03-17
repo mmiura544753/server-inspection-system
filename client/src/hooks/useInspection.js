@@ -48,6 +48,8 @@ export const useInspection = () => {
         ? `ラックNo.${item.rack_number}` 
         : "未設定";
 
+      console.log('決定されたロケーションキー:', locationKey);
+
       if (!locationGroups[locationKey]) {
         locationGroups[locationKey] = {
           locationId: `loc_${locationKey}`,

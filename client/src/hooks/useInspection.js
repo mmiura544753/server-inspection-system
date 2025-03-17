@@ -129,10 +129,32 @@ export const useInspection = () => {
   }, [inspectionItems, isStarted, isComplete, hasAnyResults, allItemsChecked]);
 
   // 点検結果を更新する関数
+  // updateResult関数の修正例
   const updateResult = (locationIndex, serverIndex, itemIndex, isNormal) => {
     const newInspectionItems = [...inspectionItems];
-    newInspectionItems[locationIndex].servers[serverIndex].results[itemIndex] =
-      isNormal;
+
+    // データ構造に応じた処理
+    const location = newInspectionItems[locationIndex];
+    if (!location) return; // 存在チェック
+
+    // 階層化されたデータ構造（servers配列が存在する場合）
+    if (location.servers && Array.isArray(location.servers)) {
+      const server = location.servers[serverIndex];
+      if (!server) return; // 存在チェック
+
+      // results配列が存在する場合
+      if (server.results && Array.isArray(server.results)) {
+        server.results[itemIndex] = isNormal;
+      } else {
+        // results配列が存在しない場合は作成
+        server.results = Array(server.items.length).fill(null);
+        server.results[itemIndex] = isNormal;
+      }
+    } else {
+      // フラットな構造の場合、直接resultプロパティを更新
+      location.result = isNormal;
+    }
+
     setInspectionItems(newInspectionItems);
   };
 

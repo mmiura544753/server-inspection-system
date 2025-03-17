@@ -1,6 +1,5 @@
 // src/components/inspections/InspectionTable.js
 import React from "react";
-import InspectionItem from "./InspectionItem";
 
 const InspectionTable = ({ inspectionItems, updateResult }) => {
   // inspectionItemsが未定義または空の配列の場合の表示
@@ -35,47 +34,153 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
             </tr>
           </thead>
           <tbody>
-            {inspectionItems.map((location, locationIndex) => (
-              <tr key={`location-${locationIndex}`}>
-                <td className="px-4 py-2 border-b">
-                  {location.rack_number || "-"}
-                </td>
-                <td className="px-4 py-2 border-b">
-                  {location.unit_position || "-"}
-                </td>
-                <td className="px-4 py-2 border-b">
-                  {location.device_name || "-"}
-                </td>
-                <td className="px-4 py-2 border-b">{location.model || "-"}</td>
-                <td className="px-4 py-2 border-b">
-                  {location.item_name || "-"}
-                </td>
-                <td className="px-4 py-2 border-b">
-                  <div className="flex justify-center space-x-4">
-                    <button
-                      onClick={() => updateResult(locationIndex, 0, 0, true)}
-                      className={`px-4 py-1 rounded-md font-semibold ${
-                        location.result === true
-                          ? "bg-green-500 text-white"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      正常
-                    </button>
-                    <button
-                      onClick={() => updateResult(locationIndex, 0, 0, false)}
-                      className={`px-4 py-1 rounded-md font-semibold ${
-                        location.result === false
-                          ? "bg-red-500 text-white"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      異常
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {inspectionItems.map((location, locationIndex) => {
+              // 各ロケーションごとにserversが存在するか確認
+              if (location.servers && Array.isArray(location.servers)) {
+                // 通常の階層化されたデータ構造の場合
+                return location.servers.flatMap((server, serverIndex) => {
+                  return server.items.map((item, itemIndex) => (
+                    <tr key={`${locationIndex}-${serverIndex}-${itemIndex}`}>
+                      {/* 最初の項目でのみロケーション名を表示 */}
+                      {serverIndex === 0 && itemIndex === 0 ? (
+                        <td
+                          className="px-4 py-2 border-b"
+                          rowSpan={location.servers.reduce(
+                            (acc, srv) => acc + srv.items.length,
+                            0
+                          )}
+                        >
+                          {location.locationName || "-"}
+                        </td>
+                      ) : null}
+                      {/* 各サーバーの最初の項目でのみユニット位置を表示 */}
+                      {itemIndex === 0 ? (
+                        <td
+                          className="px-4 py-2 border-b"
+                          rowSpan={server.items.length}
+                        >
+                          {server.unit_position || "-"}
+                        </td>
+                      ) : null}
+                      {/* 各サーバーの最初の項目でのみサーバー名を表示 */}
+                      {itemIndex === 0 ? (
+                        <td
+                          className="px-4 py-2 border-b"
+                          rowSpan={server.items.length}
+                        >
+                          {server.id || "-"}
+                        </td>
+                      ) : null}
+                      {/* 各サーバーの最初の項目でのみ機種を表示 */}
+                      {itemIndex === 0 ? (
+                        <td
+                          className="px-4 py-2 border-b"
+                          rowSpan={server.items.length}
+                        >
+                          {server.model || "-"}
+                        </td>
+                      ) : null}
+                      {/* 点検項目 */}
+                      <td className="px-4 py-2 border-b">{item || "-"}</td>
+                      {/* 点検結果 */}
+                      <td className="px-4 py-2 border-b">
+                        <div className="flex justify-center space-x-4">
+                          <button
+                            onClick={() =>
+                              updateResult(
+                                locationIndex,
+                                serverIndex,
+                                itemIndex,
+                                true
+                              )
+                            }
+                            className={`px-4 py-1 rounded-md font-semibold ${
+                              server.results[itemIndex] === true
+                                ? "bg-green-500 text-white"
+                                : "bg-gray-200 text-gray-600"
+                            }`}
+                          >
+                            正常
+                          </button>
+                          <button
+                            onClick={() =>
+                              updateResult(
+                                locationIndex,
+                                serverIndex,
+                                itemIndex,
+                                false
+                              )
+                            }
+                            className={`px-4 py-1 rounded-md font-semibold ${
+                              server.results[itemIndex] === false
+                                ? "bg-red-500 text-white"
+                                : "bg-gray-200 text-gray-600"
+                            }`}
+                          >
+                            異常
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ));
+                });
+              } else {
+                // フラットなデータ構造の場合（serversがない場合）
+                return (
+                  <tr key={`location-${locationIndex}`}>
+                    <td className="px-4 py-2 border-b">
+                      {location.locationName || location.rack_number || "-"}
+                    </td>
+                    <td className="px-4 py-2 border-b">
+                      {location.unit_position || "-"}
+                    </td>
+                    <td className="px-4 py-2 border-b">
+                      {location.device_name || location.id || "-"}
+                    </td>
+                    <td className="px-4 py-2 border-b">
+                      {location.model || "-"}
+                    </td>
+                    <td className="px-4 py-2 border-b">
+                      {location.item_name || "-"}
+                    </td>
+                    <td className="px-4 py-2 border-b">
+                      <div className="flex justify-center space-x-4">
+                        <button
+                          onClick={() => {
+                            // フラットな構造用の単純な更新関数の呼び出し
+                            location.result = true;
+                            // この行により再レンダリングを強制
+                            updateResult(locationIndex, 0, 0, true);
+                          }}
+                          className={`px-4 py-1 rounded-md font-semibold ${
+                            location.result === true
+                              ? "bg-green-500 text-white"
+                              : "bg-gray-200 text-gray-600"
+                          }`}
+                        >
+                          正常
+                        </button>
+                        <button
+                          onClick={() => {
+                            // フラットな構造用の単純な更新関数の呼び出し
+                            location.result = false;
+                            // この行により再レンダリングを強制
+                            updateResult(locationIndex, 0, 0, false);
+                          }}
+                          className={`px-4 py-1 rounded-md font-semibold ${
+                            location.result === false
+                              ? "bg-red-500 text-white"
+                              : "bg-gray-200 text-gray-600"
+                          }`}
+                        >
+                          異常
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }
+            })}
           </tbody>
         </table>
       </div>

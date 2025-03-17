@@ -7,8 +7,7 @@ import { FaSave, FaTimes } from "react-icons/fa";
 import { inspectionItemAPI, deviceAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
-// react-selectをインポート
-import Select from 'react-select';
+import Select from 'react-select'; // react-selectをインポート
 
 // バリデーションスキーマ
 const InspectionItemSchema = Yup.object().shape({
@@ -27,14 +26,11 @@ const InspectionItemForm = () => {
     device_id: "",
     item_name: "",
   });
-  const [devices, setDevices] = useState([]);
+  const [deviceOptions, setDeviceOptions] = useState([]);
   const [loading, setLoading] = useState(isEditMode);
   const [deviceLoading, setDeviceLoading] = useState(true);
   const [error, setError] = useState(null);
   const [submitError, setSubmitError] = useState(null);
-  
-  // 選択された機器のステート
-  const [selectedDevice, setSelectedDevice] = useState(null);
 
   // 機器一覧を取得
   useEffect(() => {
@@ -43,14 +39,17 @@ const InspectionItemForm = () => {
         setDeviceLoading(true);
         const data = await deviceAPI.getAll();
         
+        console.log("APIから取得した機器データ:", data);
+
         // APIから取得したデータをreact-select用の形式に変換
-        const formattedDevices = data.map(device => ({
+        const options = data.map(device => ({
           value: device.id,
-          label: `${device.device_name} (${device.customer_name})`,
-          deviceData: device // 元のデータも保持
+          label: `${device.device_name} (${device.customer_name || '顧客なし'})`
         }));
-        
-        setDevices(formattedDevices);
+
+        console.log("react-select用に変換したオプション:", options);
+
+        setDeviceOptions(options);
       } catch (err) {
         setError("機器データの取得に失敗しました。");
         console.error("機器一覧取得エラー:", err);
@@ -72,15 +71,6 @@ const InspectionItemForm = () => {
           device_id: data.device_id,
           item_name: data.item_name,
         });
-        
-        // 編集モードの場合、選択中の機器を設定
-        if (devices.length > 0) {
-          const deviceOption = devices.find(d => d.value === data.device_id);
-          if (deviceOption) {
-            setSelectedDevice(deviceOption);
-          }
-        }
-        
         setError(null);
       } catch (err) {
         setError("点検項目データの取得に失敗しました。");
@@ -93,7 +83,7 @@ const InspectionItemForm = () => {
     if (isEditMode) {
       fetchItem();
     }
-  }, [id, isEditMode, devices]);
+  }, [id, isEditMode]);
 
   // フォーム送信処理
   const handleSubmit = async (values, { setSubmitting }) => {
@@ -152,27 +142,23 @@ const InspectionItemForm = () => {
                     機器
                   </label>
                   
-                  {/* react-selectを使用した機器選択コンポーネント */}
+                  {/* ここでreact-selectを使用 */}
                   <Select
-                    id="device_id"
+                    inputId="device_id"
                     name="device_id"
-                    options={devices}
-                    value={selectedDevice || devices.find(option => option.value === values.device_id) || null}
-                    onChange={(option) => {
-                      setSelectedDevice(option);
-                      setFieldValue("device_id", option ? option.value : "");
+                    options={deviceOptions}
+                    // value={deviceOptions.find(option => option.value === parseInt(values.device_id))}
+                    value={deviceOptions.find(option => {
+                      console.log("現在の値:", values.device_id, "オプション:", option.value);
+                      return option.value === parseInt(values.device_id);
+                    })}
+                    onChange={(selectedOption) => {
+                      setFieldValue("device_id", selectedOption ? selectedOption.value : "");
                     }}
-                    isSearchable={true}
-                    isClearable={true}
                     placeholder="機器を選択してください"
                     noOptionsMessage={() => "該当する機器がありません"}
-                    isLoading={deviceLoading}
-                    className="basic-single"
-                    classNamePrefix="select"
-                    // 日本語検索のためのカスタムフィルタ関数
-                    filterOption={(option, inputValue) => {
-                      return option.label.toLowerCase().includes(inputValue.toLowerCase());
-                    }}
+                    isSearchable={true}
+                    isClearable={true}
                   />
                   
                   {errors.device_id && touched.device_id && (

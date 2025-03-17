@@ -4,6 +4,8 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import 'react-select/dist/react-select.css'; 
+import 'react-select/dist/react-select.min.css';
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

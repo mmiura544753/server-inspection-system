@@ -11,27 +11,28 @@ const DeviceLocationForm = () => {
       <h4 className="mb-3">設置場所情報</h4>
 
       <div className="mb-3">
-        <label htmlFor="location" className="form-label">
-          設置場所
+        <label htmlFor="rack_number" className="form-label">
+          設置ラックNo.
         </label>
         <Field
-          type="text"
-          id="location"
-          name="location"
+          type="number"
+          id="rack_number"
+          name="rack_number"
           className="form-control"
-          placeholder="設置場所を入力"
-          data-testid="location-input"
+          placeholder="ラック番号を入力 (例: 8)"
+          min="1"
+          data-testid="rack-number-input"
         />
         <ErrorMessage
-          name="location"
+          name="rack_number"
           component="div"
           className="text-danger"
         />
         <small className="form-text text-muted">
-          サーバルーム名、ラックの場所など、機器の設置場所を入力してください
+          設置されているラックの番号を入力してください
         </small>
       </div>
-
+      
       <div className="mb-3">
         <label htmlFor="unit_position" className="form-label">
           ユニット位置

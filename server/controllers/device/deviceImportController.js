@@ -77,7 +77,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
           const deviceName = row['機器名'] || row['device_name'] || '';
           const customerName = row['顧客名'] || row['customer_name'] || '';
           const model = row['モデル'] || row['model'] || '';
-          const location = row['設置場所'] || row['location'] || '';
+          const rack_number = row['設置場所'] || row['rack_number'] || '';
           const unitPosition = row['ユニット位置'] || row['unit_position'] || '';
           const deviceType = row['機器種別'] || row['device_type'] || 'サーバ';
           const hardwareType = row['ハードウェアタイプ'] || row['hardware_type'] || '物理';
@@ -140,7 +140,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
               existingDevice.customer_id = customer.id;
               existingDevice.device_name = deviceName;
               existingDevice.model = model;
-              existingDevice.location = location;
+              existingDevice.rack_number = rack_number;
               existingDevice.unit_position = unitPosition;
               existingDevice.device_type = normalizedDeviceType;
               existingDevice.hardware_type = normalizedHardwareType;
@@ -173,7 +173,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
               where: { 
                 customer_id: customer.id,
                 device_name: deviceName,
-                location: location || '',
+                rack_number: rack_number || '',
                 unit_position: unitPosition || ''
               }
             });
@@ -191,7 +191,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
                 customer_id: customer.id,
                 device_name: deviceName,
                 model: model,
-                location: location,
+                rack_number: rack_number,
                 unit_position: unitPosition,
                 device_type: normalizedDeviceType,
                 hardware_type: normalizedHardwareType

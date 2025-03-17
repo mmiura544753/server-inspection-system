@@ -36,15 +36,16 @@ const Device = sequelize.define('Device', {
       len: { args: [0, 50], msg: 'モデル名は50文字以内で入力してください' }
     }
   },
-  location: {
-    type: DataTypes.STRING(100),
+  rack_number: {
+    type: DataTypes.INTEGER,
     allowNull: true,
-    defaultValue: '',
+    defaultValue: null,
     validate: {
-      len: { args: [0, 100], msg: '設置場所は100文字以内で入力してください' }
+      isInt: { msg: 'ラックNo.は整数で入力してください' },
+      min: { args: [1], msg: 'ラックNo.は1以上の値を入力してください' }
     }
   },
-  unit_position: {
+    unit_position: {
     type: DataTypes.STRING(20),
     allowNull: true,
     defaultValue: '',

@@ -22,7 +22,10 @@ const DeviceSchema = Yup.object().shape({
   device_type: Yup.string().required("機器種別は必須です"),
   hardware_type: Yup.string().required("ハードウェアタイプは必須です"),
   model: Yup.string().max(50, "モデル名は50文字以内で入力してください"),
-  location: Yup.string().max(100, "設置場所は100文字以内で入力してください"),
+  rack_number: Yup.number() // locationからrack_numberに変更
+    .integer("ラックNo.は整数で入力してください")
+    .positive("ラックNo.は正の数を入力してください")
+    .nullable(),
   unit_position: Yup.string().max(20, "ユニット位置は20文字以内で入力してください"),
 });
 

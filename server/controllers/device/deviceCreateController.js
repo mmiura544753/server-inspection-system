@@ -11,7 +11,7 @@ const createDevice = asyncHandler(async (req, res) => {
     customer_id, 
     device_name, 
     model, 
-    location = '', 
+    rack_number, 
     unit_position = '', 
     device_type, 
     hardware_type 
@@ -36,7 +36,7 @@ const createDevice = asyncHandler(async (req, res) => {
       where: {
         customer_id,
         device_name,
-        location: location || '',
+        rack_number: rack_number || null,
         unit_position: unit_position || ''
       }
     });

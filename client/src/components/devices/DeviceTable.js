@@ -20,7 +20,7 @@ const DeviceTable = ({ devices, onDeleteClick }) => {
                     <th>モデル</th>
                     <th>種別</th>
                     <th>ハードウェア</th>
-                    <th>設置場所</th>
+                    <th>設置ラックNo.</th>
                     <th>ユニット位置</th>
                     <th>操作</th>
                   </tr>
@@ -34,7 +34,7 @@ const DeviceTable = ({ devices, onDeleteClick }) => {
                       <td>{device.model || "-"}</td>
                       <td>{device.device_type}</td>
                       <td>{device.hardware_type}</td>
-                      <td>{device.location || "-"}</td>
+                      <td>{device.rack_number || "-"}</td>
                       <td>{device.unit_position || "-"}</td>
                       <td>
                         <div className="action-buttons">

@@ -16,6 +16,7 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
         d.device_name, 
         d.model,
         d.rack_number,
+        d.unit_position,
         ii.id as item_id, 
         ii.item_name, 
         d.device_type
@@ -26,7 +27,7 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
       JOIN 
         customers c ON d.customer_id = c.id
       ORDER BY 
-        c.customer_name, d.device_name, ii.item_name
+        c.customer_name, d.rack_number, d.unit_position
     `;
 
     // クエリを実行

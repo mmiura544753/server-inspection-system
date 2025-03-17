@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "server_inspector",
+    "password": "NCing@000",
+    "database": "server_inspection_db",
+    "host": "127.0.0.1",
+    "dialect": "mariadb"
+  },
+  "test": {
+    "username": "server_inspector",
+    "password": "NCing@000",
+    "database": "server_inspection_db",
+    "host": "127.0.0.1",
+    "dialect": "mariadb"
+  },
+  "production": {
+    "username": "server_inspector",
+    "password": "NCing@000",
+    "database": "server_inspection_db",
+    "host": "127.0.0.1",
+    "dialect": "mariadb"
+  }
+}

@@ -142,16 +142,11 @@ const InspectionItemForm = () => {
                     機器
                   </label>
                   
-                  {/* ここでreact-selectを使用 */}
                   <Select
                     inputId="device_id"
                     name="device_id"
                     options={deviceOptions}
-                    // value={deviceOptions.find(option => option.value === parseInt(values.device_id))}
-                    value={deviceOptions.find(option => {
-                      console.log("現在の値:", values.device_id, "オプション:", option.value);
-                      return option.value === parseInt(values.device_id);
-                    })}
+                    value={deviceOptions.find(option => option.value === parseInt(values.device_id, 10) || 0)}
                     onChange={(selectedOption) => {
                       setFieldValue("device_id", selectedOption ? selectedOption.value : "");
                     }}
@@ -159,6 +154,23 @@ const InspectionItemForm = () => {
                     noOptionsMessage={() => "該当する機器がありません"}
                     isSearchable={true}
                     isClearable={true}
+                    classNamePrefix="select"
+                    // Bootstrapに近いスタイルを適用
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#80bdff' : '#ced4da',
+                        boxShadow: state.isFocused ? '0 0 0 0.2rem rgba(0, 123, 255, 0.25)' : null,
+                        '&:hover': {
+                          borderColor: state.isFocused ? '#80bdff' : '#ced4da'
+                        }
+                      }),
+                      option: (base, state) => ({
+                        ...base,
+                        backgroundColor: state.isSelected ? '#007bff' : state.isFocused ? '#f8f9fa' : null,
+                        color: state.isSelected ? 'white' : 'black'
+                      })
+                    }}
                   />
                   
                   {errors.device_id && touched.device_id && (

@@ -23,6 +23,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
   try {
     // Shift-JISエンコードされたファイルをデコード
     const iconv = require('iconv-lite');
+    // 明示的にShift-JISでデコード
     const fileContent = iconv.decode(buffer, 'Shift_JIS');
     console.log('ファイルのデコード完了');
     console.log('ファイルの先頭部分:', fileContent.substring(0, 200));
@@ -33,7 +34,9 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
     const records = csvParse.parse(fileContent, {
       columns: true,
       skip_empty_lines: true,
-      trim: true
+      trim: true,
+      // カラム名に関する問題を軽減するため、relaxColumnCountを有効化
+      relax_column_count: true
     });
     
     console.log(`CSV解析完了: ${records.length}行のデータを検出`);
@@ -73,19 +76,39 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
         console.log(`行 ${i+1}/${records.length} の処理中...`);
         
         try {
-          // 機器名を取得 (様々なカラム名に対応)
-          const deviceName = row['機器名'] || row['device_name'] || '';
-          const customerName = row['顧客名'] || row['customer_name'] || '';
-          const model = row['モデル'] || row['model'] || '';
-          const rack_number = row['設置場所'] || row['rack_number'] || '';
-          const unitPosition = row['ユニット位置'] || row['unit_position'] || '';
-          const deviceType = row['機器種別'] || row['device_type'] || 'サーバ';
-          const hardwareType = row['ハードウェアタイプ'] || row['hardware_type'] || '物理';
+          // カラム名のマッピング関数 - 様々な可能性を考慮
+          const getColumnValue = (possibleNames) => {
+            for (const name of possibleNames) {
+              if (row[name] !== undefined) {
+                return row[name];
+              }
+            }
+            return '';
+          };
           
-          console.log(`処理中の行: 機器名="${deviceName}", 顧客名="${customerName}"`);
+          // 機器名を取得 - 日本語と英語の両方のカラム名に対応
+          const deviceName = getColumnValue(['機器名', 'device_name', '機器名', '@í¼']);
+          const customerName = getColumnValue(['顧客名', 'customer_name', '顧客名', 'Úq¼']);
+          const model = getColumnValue(['モデル', 'model', 'f']);
+          
+          // ラックナンバーの処理 - 数値に変換できるかチェック
+          let rackNumber = null;
+          const rackNumberInput = getColumnValue(['設置ラックNo', 'rack_number', 'ÝubNNo']);
+          
+          // 入力値が存在し、かつ数値に変換できる場合のみ設定
+          if (rackNumberInput && !isNaN(parseInt(rackNumberInput))) {
+            rackNumber = parseInt(rackNumberInput);
+          }
+          
+          const unitPosition = getColumnValue(['ユニット位置', 'unit_position', 'jbgÊu']);
+          const deviceType = getColumnValue(['機器種別', 'device_type', '@ííÊ']);
+          const hardwareType = getColumnValue(['ハードウェアタイプ', 'hardware_type', 'n[hEFA^Cv']);
+          
+          // デバッグログを出力
+          console.log(`処理中の行: 機器名="${deviceName}", 顧客名="${customerName}", ラックNo=${rackNumber}`);
 
           // CSVからIDを読み取る
-          const deviceId = row['ID'] || row['id'] || null;
+          const deviceId = getColumnValue(['ID', 'id']);
 
           // 必須フィールドの確認
           if (!deviceName) {
@@ -129,9 +152,9 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
           }
 
           // IDが指定されている場合は更新、ない場合は新規作成
-          if (deviceId) {
+          if (deviceId && !isNaN(parseInt(deviceId))) {
             // 既存の機器を検索
-            const existingDevice = await Device.findByPk(deviceId);
+            const existingDevice = await Device.findByPk(parseInt(deviceId));
             
             if (existingDevice) {
               // 存在する場合は更新
@@ -140,7 +163,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
               existingDevice.customer_id = customer.id;
               existingDevice.device_name = deviceName;
               existingDevice.model = model;
-              existingDevice.rack_number = rack_number;
+              existingDevice.rack_number = rackNumber;
               existingDevice.unit_position = unitPosition;
               existingDevice.device_type = normalizedDeviceType;
               existingDevice.hardware_type = normalizedHardwareType;
@@ -173,7 +196,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
               where: { 
                 customer_id: customer.id,
                 device_name: deviceName,
-                rack_number: rack_number || '',
+                rack_number: rackNumber,
                 unit_position: unitPosition || ''
               }
             });
@@ -191,7 +214,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
                 customer_id: customer.id,
                 device_name: deviceName,
                 model: model,
-                rack_number: rack_number,
+                rack_number: rackNumber,
                 unit_position: unitPosition,
                 device_type: normalizedDeviceType,
                 hardware_type: normalizedHardwareType

@@ -41,11 +41,26 @@ const Device = sequelize.define('Device', {
     allowNull: true,
     defaultValue: null,
     validate: {
-      isInt: { msg: 'ラックNo.は整数で入力してください' },
-      min: { args: [1], msg: 'ラックNo.は1以上の値を入力してください' }
+      // isIntまたはnullの検証
+      isValidRackNumber(value) {
+        // nullまたはundefinedの場合は検証をスキップ
+        if (value === null || value === undefined) {
+          return;
+        }
+        
+        // 整数かどうかを検証
+        if (!Number.isInteger(value)) {
+          throw new Error('ラックNo.は整数で入力してください');
+        }
+        
+        // 正の数かどうかを検証
+        if (value < 1) {
+          throw new Error('ラックNo.は1以上の値を入力してください');
+        }
+      }
     }
   },
-    unit_position: {
+  unit_position: {
     type: DataTypes.STRING(20),
     allowNull: true,
     defaultValue: '',
@@ -74,6 +89,15 @@ const Device = sequelize.define('Device', {
         args: [['物理', 'VM']],
         msg: '無効なハードウェアタイプです'
       }
+    }
+  },
+  location: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    defaultValue: '',
+    comment: '設置場所（ロケーション）の自由記述',
+    validate: {
+      len: { args: [0, 100], msg: '設置場所は100文字以内で入力してください' }
     }
   }
 }, {

@@ -29,6 +29,15 @@ const InspectionItem = ({
       {/* サーバ名 - 各サーバの最初の項目でのみ表示 */}
       {isFirstItem ? (
         <td className="px-4 py-2 border-b" rowSpan={server.items.length}>
+          <div className="whitespace-pre-line">
+            {server.unit_position || "-"}
+          </div>
+        </td>
+      ) : null}
+
+      {/* サーバ名 - 各サーバの最初の項目でのみ表示 */}
+      {isFirstItem ? (
+        <td className="px-4 py-2 border-b" rowSpan={server.items.length}>
           <div className="whitespace-pre-line">{server.id}</div>
         </td>
       ) : null}

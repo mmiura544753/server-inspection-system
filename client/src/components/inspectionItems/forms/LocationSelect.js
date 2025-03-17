@@ -11,7 +11,7 @@ const LocationSelect = ({
   return (
     <div className="mb-3">
       <label htmlFor="location" className="form-label">
-        設置場所
+        設置ラックNo.
       </label>
       
       <Select

@@ -79,13 +79,15 @@ export function useInspectionItemForm(id) {
     }
 
     const customerDevices = allDevices.filter(device => device.customer_id === parseInt(customerId));
-    const uniqueLocations = [...new Set(customerDevices.map(device => device.location).filter(Boolean))];
+    const uniqueLocations = [...new Set(customerDevices.map(device => 
+      device.rack_number
+    ).filter(Boolean))];
     
     const options = uniqueLocations.map(location => ({
-      value: location,
-      label: location
+      value: location.toString(), // 数値の場合は文字列に変換
+      label: `ラックNo.${location}`
     }));
-    
+
     options.unshift({ value: "", label: "すべての設置場所" });
     
     setLocationOptions(options);
@@ -104,7 +106,7 @@ export function useInspectionItemForm(id) {
     
     if (location) {
       filteredDevices = filteredDevices.filter(device => 
-        device.location === location
+        device.rack_number && device.rack_number.toString() === location
       );
     }
     
@@ -129,15 +131,18 @@ export function useInspectionItemForm(id) {
         // 得られた情報から初期値を設定
         setItem({
           customer_id: deviceData.customer_id,
-          location: deviceData.location || "",
+          location: deviceData.rack_number ? deviceData.rack_number.toString() : "",
           device_id: data.device_id,
           item_name: data.item_name,
         });
         
         // ロケーションと機器の選択肢を更新
         updateLocationOptions(deviceData.customer_id);
-        updateDeviceOptions(deviceData.customer_id, deviceData.location || "");
-        
+        updateDeviceOptions(
+          deviceData.customer_id, 
+          deviceData.rack_number ? deviceData.rack_number.toString() : ""
+        );
+      
         setError(null);
       } catch (err) {
         setError("点検項目データの取得に失敗しました。");

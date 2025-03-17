@@ -45,26 +45,27 @@ export const useInspection = () => {
       // APIからデータを取得
       const response = await inspectionAPI.getInspectionItems();
 
-      // APIのレスポンス形式に合わせて調整（既に階層化されているデータを使用）
-      const groupedByLocation = response.data?.data || [];
+      // APIのレスポンス形式に合わせて調整
+      const inspectionData = response.data?.data || [];
 
-      // 顧客名を取得（最初のアイテムのサーバーから）
+      // 空の配列を初期値として設定（レスポンスが空の場合のためのフォールバック）
+      setInspectionItems(inspectionData.length > 0 ? inspectionData : []);
+
+      // 顧客名を設定
       if (
-        groupedByLocation.length > 0 &&
-        groupedByLocation[0].servers &&
-        groupedByLocation[0].servers.length > 0
+        inspectionData.length > 0 &&
+        inspectionData[0].servers &&
+        inspectionData[0].servers.length > 0
       ) {
-        const firstServer = groupedByLocation[0].servers[0];
-        // customerNameはAPIで返されていないので、別途設定する必要があるかもしれません
         setCustomerName("サーバー点検");
       }
 
-      // 階層化されたデータを設定
-      setInspectionItems(groupedByLocation);
       setError(null);
     } catch (err) {
       console.error("点検項目データ取得エラー:", err);
       setError("点検データの読み込みに失敗しました。");
+      // エラー時には空の配列を設定して、他の関数がエラーにならないようにする
+      setInspectionItems([]);
     } finally {
       setLoading(false);
     }
@@ -88,19 +89,33 @@ export const useInspection = () => {
 
   // 任意の点検結果が入力されているかチェック
   const hasAnyResults = () => {
-    return inspectionItems.some((location) =>
-      location.servers.some((server) =>
-        server.results.some((result) => result !== null)
-      )
+    if (!inspectionItems || !inspectionItems.length) {
+      return false;
+    }
+
+    return inspectionItems.some(
+      (location) =>
+        location.servers &&
+        location.servers.some(
+          (server) =>
+            server.results && server.results.some((result) => result !== null)
+        )
     );
   };
 
   // すべての点検項目がチェックされているかチェック
   const allItemsChecked = () => {
-    return inspectionItems.every((location) =>
-      location.servers.every((server) =>
-        server.results.every((result) => result !== null)
-      )
+    if (!inspectionItems || !inspectionItems.length) {
+      return false;
+    }
+
+    return inspectionItems.every(
+      (location) =>
+        location.servers &&
+        location.servers.every(
+          (server) =>
+            server.results && server.results.every((result) => result !== null)
+        )
     );
   };
 
@@ -113,7 +128,7 @@ export const useInspection = () => {
     if (!isComplete && allItemsChecked()) {
       setIsComplete(true);
     }
-  }, [inspectionItems, isStarted, isComplete]);
+  }, [inspectionItems, isStarted, isComplete, hasAnyResults, allItemsChecked]);
 
   // 点検結果を更新する関数
   const updateResult = (locationIndex, serverIndex, itemIndex, isNormal) => {
@@ -125,16 +140,25 @@ export const useInspection = () => {
 
   // 点検完了率を計算
   const calculateCompletionRate = () => {
+    // inspectionItemsが未定義または空の場合は0を返す
+    if (!inspectionItems || !inspectionItems.length) {
+      return 0;
+    }
+
     let total = 0;
     let completed = 0;
 
     inspectionItems.forEach((location) => {
-      location.servers.forEach((server) => {
-        server.results.forEach((result) => {
-          total++;
-          if (result !== null) completed++;
+      if (location.servers && Array.isArray(location.servers)) {
+        location.servers.forEach((server) => {
+          if (server.results && Array.isArray(server.results)) {
+            server.results.forEach((result) => {
+              total++;
+              if (result !== null) completed++;
+            });
+          }
         });
-      });
+      }
     });
 
     return total > 0 ? Math.floor((completed / total) * 100) : 0;

@@ -3,6 +3,19 @@ import React from "react";
 import InspectionItem from "./InspectionItem";
 
 const InspectionTable = ({ inspectionItems, updateResult }) => {
+  // inspectionItemsが未定義または空の配列の場合の表示
+  if (!inspectionItems || inspectionItems.length === 0) {
+    return (
+      <div className="mb-6">
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+          <p>
+            点検項目がありません。データを読み込み中か、APIからデータが返されていない可能性があります。
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mb-6">
       <div className="overflow-x-auto">
@@ -20,13 +33,18 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
           <tbody>
             {inspectionItems.map((location, locationIndex) => {
               // 各ロケーションの合計行数を計算
-              const locationRowSpan = location.servers.reduce(
-                (acc, srv) => acc + srv.items.length,
-                0
-              );
+              // servers配列がない場合は0を返す
+              const locationRowSpan = location.servers
+                ? location.servers.reduce(
+                    (acc, srv) => acc + (srv.items ? srv.items.length : 0),
+                    0
+                  )
+                : 0;
 
-              return location.servers.map((server, serverIndex) =>
-                server.items.map((item, itemIndex) => (
+              // serversがなければ空の配列としてマップ処理
+              return (location.servers || []).map((server, serverIndex) =>
+                // itemsがなければ空の配列としてマップ処理
+                (server.items || []).map((item, itemIndex) => (
                   <InspectionItem
                     key={`${locationIndex}-${serverIndex}-${itemIndex}`}
                     item={item}

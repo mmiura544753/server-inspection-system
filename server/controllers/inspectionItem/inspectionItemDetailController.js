@@ -15,10 +15,11 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
         d.id as device_id, 
         d.device_name, 
         d.model,
+        d.rack_number,
+        d.location,
         ii.id as item_id, 
         ii.item_name, 
-        d.device_type,
-        d.location
+        d.device_type
       FROM 
         inspection_items ii
       JOIN 

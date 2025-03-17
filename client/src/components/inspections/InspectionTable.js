@@ -9,7 +9,7 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
-              <th className="px-4 py-2 text-left border-b w-24">場所</th>
+              <th className="px-4 py-2 text-left border-b w-24">ラックNo</th>
               <th className="px-4 py-2 text-left border-b w-40">サーバ名</th>
               <th className="px-4 py-2 text-left border-b w-32">機種</th>
               <th className="px-4 py-2 text-left border-b">点検項目</th>

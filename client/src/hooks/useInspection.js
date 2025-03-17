@@ -44,7 +44,9 @@ export const useInspection = () => {
 
     // まず設置場所でグループ化
     items.forEach((item) => {
-      const locationKey = item.location || "未設定";
+      const locationKey = item.rack_number 
+      ? `ラックNo.${item.rack_number}` 
+      : (item.location && item.location.trim() !== "" ? item.location : "未設定");
 
       if (!locationGroups[locationKey]) {
         locationGroups[locationKey] = {

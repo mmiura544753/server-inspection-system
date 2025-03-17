@@ -1,6 +1,7 @@
 // server/controllers/device/deviceCreateController.js
 const asyncHandler = require('express-async-handler');
 const { Device, Customer } = require('../../models');
+const { Op } = require('sequelize');
 
 // @desc    新規機器の作成
 // @route   POST /api/devices
@@ -10,8 +11,8 @@ const createDevice = asyncHandler(async (req, res) => {
     customer_id, 
     device_name, 
     model, 
-    location, 
-    unit_position, 
+    location = '', 
+    unit_position = '', 
     device_type, 
     hardware_type 
   } = req.body;
@@ -30,6 +31,21 @@ const createDevice = asyncHandler(async (req, res) => {
   }
   
   try {
+    // 重複チェック
+    const existingDevice = await Device.findOne({
+      where: {
+        customer_id,
+        device_name,
+        location: location || '',
+        unit_position: unit_position || ''
+      }
+    });
+
+    if (existingDevice) {
+      res.status(400);
+      throw new Error('同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します');
+    }
+
     // 機器を作成
     const device = await Device.create({
       customer_id,
@@ -69,6 +85,12 @@ const createDevice = asyncHandler(async (req, res) => {
     
     res.status(201).json(formattedDevice);
   } catch (error) {
+    // Sequelizeのユニーク制約違反のエラーをキャッチ
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      res.status(400);
+      throw new Error('同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します');
+    }
+    
     if (error.name === 'SequelizeValidationError') {
       res.status(400);
       throw new Error(error.errors.map(e => e.message).join(', '));

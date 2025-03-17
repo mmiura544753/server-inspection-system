@@ -42,6 +42,9 @@ export const deviceAPI = {
       return response.data;
     } catch (error) {
       console.error("機器作成エラー:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        error.message = error.response.data.message;
+      }
       throw error;
     }
   },
@@ -53,6 +56,10 @@ export const deviceAPI = {
       return response.data;
     } catch (error) {
       console.error(`機器ID:${id}の更新エラー:`, error);
+      // エラー情報を詳細に含めて再スロー
+      if (error.response && error.response.data && error.response.data.message) {
+        error.message = error.response.data.message;
+      }      
       throw error;
     }
   },

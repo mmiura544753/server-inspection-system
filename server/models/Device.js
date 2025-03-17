@@ -39,6 +39,7 @@ const Device = sequelize.define('Device', {
   location: {
     type: DataTypes.STRING(100),
     allowNull: true,
+    defaultValue: '',
     validate: {
       len: { args: [0, 100], msg: '設置場所は100文字以内で入力してください' }
     }
@@ -46,6 +47,7 @@ const Device = sequelize.define('Device', {
   unit_position: {
     type: DataTypes.STRING(20),
     allowNull: true,
+    defaultValue: '',
     comment: 'ラックの搭載ユニット位置',
     validate: {
       len: { args: [0, 20], msg: 'ユニット位置は20文字以内で入力してください' }
@@ -78,7 +80,15 @@ const Device = sequelize.define('Device', {
   timestamps: true,
   underscored: true,
   createdAt: 'created_at',
-  updatedAt: 'updated_at'
+  updatedAt: 'updated_at',
+  // ユニーク制約を追加
+  indexes: [
+    {
+      unique: true,
+      fields: ['customer_id', 'device_name', 'location', 'unit_position'],
+      name: 'devices_unique_constraint'
+    }
+  ]
 });
 
 // リレーションシップの定義

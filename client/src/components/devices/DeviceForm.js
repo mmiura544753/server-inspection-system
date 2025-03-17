@@ -96,8 +96,18 @@ const DeviceForm = () => {
       // 成功したら機器一覧ページに戻る
       navigate("/devices");
     } catch (err) {
-      setSubmitError(`機器の${isEditMode ? "更新" : "作成"}に失敗しました。`);
       console.error(`機器${isEditMode ? "更新" : "作成"}エラー:`, err);
+    // 重複エラーの場合
+      if (err.response && err.response.data && err.response.data.message) {
+        if (err.response.data.message.includes('同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します')) {
+          // フォームのフィールドにエラーを表示
+          setFieldError('device_name', '同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します');
+        } else {
+          setSubmitError(err.response.data.message);
+        }
+      } else {
+        setSubmitError(`機器の${isEditMode ? "更新" : "作成"}に失敗しました。`);
+      }      
     } finally {
       setSubmitting(false);
     }

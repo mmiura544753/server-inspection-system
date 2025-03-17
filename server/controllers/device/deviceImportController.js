@@ -124,6 +124,26 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
             // キャッシュに顧客を保存
             customerCache[customerName] = customer;
           }
+
+          // 既存の機器をチェック（顧客ID、機器名、設置場所、ユニット位置の組み合わせ）
+          const existingDevice = await Device.findOne({
+            where: { 
+              customer_id: customer.id,
+              device_name: deviceName,
+              location: location || '',
+              unit_position: unitPosition || ''
+            }
+          });
+
+          if (existingDevice) {
+            // 既存デバイスがある場合はスキップ
+            console.log(`重複機器のためスキップ: ${deviceName} (${customer.customer_name})`);
+            results.errors.push({
+              row: row,
+              error: '同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します'
+            });
+            continue; // 次の行へスキップ
+          }
           
           // 新規デバイスを作成
           const device = await Device.create({

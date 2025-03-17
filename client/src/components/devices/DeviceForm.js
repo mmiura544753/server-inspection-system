@@ -1,12 +1,17 @@
 // src/components/devices/DeviceForm.js
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { useParams, useNavigate } from "react-router-dom";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import { FaSave, FaTimes } from "react-icons/fa";
 import { deviceAPI, customerAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
+
+// フォームコンポーネントをインポート
+import DeviceBasicInfoForm from "./forms/DeviceBasicInfoForm";
+import DeviceLocationForm from "./forms/DeviceLocationForm";
+import DeviceTypeForm from "./forms/DeviceTypeForm";
+import FormActionButtons from "./forms/FormActionButtons";
 
 // バリデーションスキーマ
 const DeviceSchema = Yup.object().shape({
@@ -81,7 +86,7 @@ const DeviceForm = () => {
   }, [id, isEditMode]);
 
   // フォーム送信処理
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     try {
       setSubmitError(null);
 
@@ -97,7 +102,8 @@ const DeviceForm = () => {
       navigate("/devices");
     } catch (err) {
       console.error(`機器${isEditMode ? "更新" : "作成"}エラー:`, err);
-    // 重複エラーの場合
+      
+      // 重複エラーの場合
       if (err.response && err.response.data && err.response.data.message) {
         if (err.response.data.message.includes('同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します')) {
           // フォームのフィールドにエラーを表示
@@ -107,7 +113,7 @@ const DeviceForm = () => {
         }
       } else {
         setSubmitError(`機器の${isEditMode ? "更新" : "作成"}に失敗しました。`);
-      }      
+      }
     } finally {
       setSubmitting(false);
     }
@@ -137,173 +143,10 @@ const DeviceForm = () => {
           >
             {({ isSubmitting, values }) => (
               <Form className="form-container">
-                <div className="mb-3">
-                  <label
-                    htmlFor="customer_id"
-                    className="form-label required-label"
-                  >
-                    顧客
-                  </label>
-                  <Field
-                    as="select"
-                    id="customer_id"
-                    name="customer_id"
-                    className="form-select"
-                  >
-                    <option value="">顧客を選択してください</option>
-                    {customers.map((customer) => (
-                      <option key={customer.id} value={customer.id}>
-                        {customer.customer_name}
-                      </option>
-                    ))}
-                  </Field>
-                  <ErrorMessage
-                    name="customer_id"
-                    component="div"
-                    className="text-danger"
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label
-                    htmlFor="device_name"
-                    className="form-label required-label"
-                  >
-                    機器名
-                  </label>
-                  <Field
-                    type="text"
-                    id="device_name"
-                    name="device_name"
-                    className="form-control"
-                    placeholder="機器名を入力"
-                  />
-                  <ErrorMessage
-                    name="device_name"
-                    component="div"
-                    className="text-danger"
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="model" className="form-label">
-                    モデル
-                  </label>
-                  <Field
-                    type="text"
-                    id="model"
-                    name="model"
-                    className="form-control"
-                    placeholder="モデル名を入力"
-                  />
-                  <ErrorMessage
-                    name="model"
-                    component="div"
-                    className="text-danger"
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="location" className="form-label">
-                    設置場所
-                  </label>
-                  <Field
-                    type="text"
-                    id="location"
-                    name="location"
-                    className="form-control"
-                    placeholder="設置場所を入力"
-                  />
-                  <ErrorMessage
-                    name="location"
-                    component="div"
-                    className="text-danger"
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="unit_position" className="form-label">
-                    ユニット位置
-                  </label>
-                  <Field
-                    type="text"
-                    id="unit_position"
-                    name="unit_position"
-                    className="form-control"
-                    placeholder="例: U1-U2"
-                  />
-                  <small className="form-text text-muted">
-                    ラックの搭載位置を入力してください（例: U1-U2）
-                  </small>
-                  <ErrorMessage
-                    name="unit_position"
-                    component="div"
-                    className="text-danger"
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label
-                    htmlFor="device_type"
-                    className="form-label required-label"
-                  >
-                    機器種別
-                  </label>
-                  <Field
-                    as="select"
-                    id="device_type"
-                    name="device_type"
-                    className="form-select"
-                  >
-                    <option value="サーバ">サーバ</option>
-                    <option value="UPS">UPS</option>
-                    <option value="ネットワーク機器">ネットワーク機器</option>
-                    <option value="その他">その他</option>
-                  </Field>
-                  <ErrorMessage
-                    name="device_type"
-                    component="div"
-                    className="text-danger"
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label
-                    htmlFor="hardware_type"
-                    className="form-label required-label"
-                  >
-                    ハードウェアタイプ
-                  </label>
-                  <Field
-                    as="select"
-                    id="hardware_type"
-                    name="hardware_type"
-                    className="form-select"
-                  >
-                    <option value="物理">物理</option>
-                    <option value="VM">VM</option>
-                  </Field>
-                  <ErrorMessage
-                    name="hardware_type"
-                    component="div"
-                    className="text-danger"
-                  />
-                </div>
-
-                <div className="mt-4 d-flex justify-content-between">
-                  <Link to="/devices" className="btn btn-secondary">
-                    <FaTimes className="me-2" />
-                    キャンセル
-                  </Link>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={isSubmitting}
-                  >
-                    <FaSave className="me-2" />
-                    {isSubmitting ? "保存中..." : "保存する"}
-                  </button>
-                </div>
+                <DeviceBasicInfoForm customers={customers} />
+                <DeviceLocationForm />
+                <DeviceTypeForm />
+                <FormActionButtons isSubmitting={isSubmitting} />
               </Form>
             )}
           </Formik>

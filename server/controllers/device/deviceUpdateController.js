@@ -11,7 +11,8 @@ const updateDevice = asyncHandler(async (req, res) => {
     device_name,
     model,
     rack_number,
-    unit_position,
+    unit_start_position, // 追加: unit_start_positionを取得
+    unit_end_position, // 追加: unit_end_positionを取得
     device_type,
     hardware_type,
   } = req.body;

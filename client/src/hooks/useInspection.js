@@ -242,38 +242,77 @@ export const useInspection = () => {
   };
 
   // 点検結果を保存する関数を作成
+  // client/src/hooks/useInspection.js の saveInspectionResults 関数を修正
+
+  // 点検結果を保存する関数
   const saveInspectionResults = async (navigate) => {
     try {
       setSaveStatus("saving");
 
+      // 日付のフォーマット（YYYY-MM-DD形式）
+      let formattedDate;
+      if (date instanceof Date) {
+        // Date型の場合
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        formattedDate = `${year}-${month}-${day}`;
+      } else {
+        // 既存の形式の場合（オブジェクトの場合）
+        formattedDate = `${date.year}-${date.month}-${date.day}`;
+      }
+
       // 保存用のデータを構築
       const resultsData = {
-        inspection_date: `${date.year}-${date.month}-${date.day}`,
+        inspection_date: formattedDate,
         start_time: startTime,
         end_time: endTime,
         inspector_name: "システム管理者", // 実際のアプリケーションでは入力フィールドから取得
         device_id: inspectionItems[0]?.servers[0]?.device_id || 1, // 最初の機器のIDを使用
+        status: "完了", // ステータスを追加
         results: [],
       };
 
       // 各点検項目の結果を追加
       inspectionItems.forEach((location) => {
-        location.servers.forEach((server) => {
-          server.items.forEach((item, index) => {
-            if (server.results[index] !== null) {
-              resultsData.results.push({
-                inspection_item_id: item.id || 1, // 実際のアプリケーションではitem.idを使用
-                status: server.results[index] ? "正常" : "異常",
+        if (location.servers && Array.isArray(location.servers)) {
+          location.servers.forEach((server) => {
+            if (server.items && Array.isArray(server.items)) {
+              server.items.forEach((item, index) => {
+                if (server.results && server.results[index] !== null) {
+                  // 点検項目IDを取得する
+                  let itemId;
+
+                  // アイテムの構造に応じてIDを抽出
+                  if (typeof item === "object" && item.id) {
+                    itemId = item.id;
+                  } else if (server.item_ids && server.item_ids[index]) {
+                    itemId = server.item_ids[index];
+                  } else {
+                    // デバッグのためにIDが見つからない場合のログ
+                    console.warn(`点検項目IDが見つかりません:`, {
+                      item,
+                      index,
+                      server,
+                    });
+                    itemId = index + 1; // 応急措置としてインデックス+1をIDとして使用
+                  }
+
+                  resultsData.results.push({
+                    inspection_item_id: itemId,
+                    status: server.results[index] ? "正常" : "異常",
+                  });
+                }
               });
             }
           });
-        });
+        }
       });
 
-      // APIで保存（実際のアプリケーションではこのAPI関数を実装）
-      // await inspectionAPI.saveResults(resultsData);
-
       console.log("保存するデータ:", resultsData);
+
+      // APIで保存（コメントアウトを解除）
+      await inspectionAPI.create(resultsData);
 
       // 成功したら状態を更新
       setSaveStatus("success");
@@ -285,7 +324,7 @@ export const useInspection = () => {
     } catch (error) {
       console.error("保存エラー:", error);
       setSaveStatus("error");
-      setError("点検結果の保存に失敗しました。");
+      setError("点検結果の保存に失敗しました: " + (error.message || ""));
     }
   };
 

@@ -50,6 +50,12 @@ const exportDevicesToCsv = asyncHandler(async (req, res) => {
     { label: "ハードウェアタイプ", value: "hardware_type" },
   ];
 
+  console.log(
+    "エクスポートするデータ:",
+    JSON.stringify(formattedDevices[0], null, 2)
+  );
+  console.log("CSVフィールド:", JSON.stringify(fields, null, 2));
+
   // JSON to CSV Parserの設定
   const json2csvParser = new Parser({ fields });
 

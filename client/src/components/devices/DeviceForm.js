@@ -9,11 +9,11 @@ import Alert from "../common/Alert";
 
 // フォームコンポーネントをインポート
 import DeviceBasicInfoForm from "./forms/DeviceBasicInfoForm";
-import DeviceLocationForm from "./forms/DeviceLocationForm"; 
+import DeviceLocationForm from "./forms/DeviceLocationForm";
 import DeviceTypeForm from "./forms/DeviceTypeForm";
 import FormActionButtons from "./forms/FormActionButtons";
 
-// バリデーションスキーマ
+// バリデーションスキーマも更新:
 const DeviceSchema = Yup.object().shape({
   customer_id: Yup.number().required("顧客の選択は必須です"),
   device_name: Yup.string()
@@ -22,11 +22,29 @@ const DeviceSchema = Yup.object().shape({
   device_type: Yup.string().required("機器種別は必須です"),
   hardware_type: Yup.string().required("ハードウェアタイプは必須です"),
   model: Yup.string().max(50, "モデル名は50文字以内で入力してください"),
-  rack_number: Yup.number() // rack_numberからrack_numberに変更
+  rack_number: Yup.number()
     .integer("ラックNo.は整数で入力してください")
     .positive("ラックNo.は正の数を入力してください")
     .nullable(),
-  unit_position: Yup.string().max(20, "ユニット位置は20文字以内で入力してください"),
+  unit_start_position: Yup.number()
+    .integer("ユニット開始位置は整数で入力してください")
+    .min(1, "ユニット開始位置は1以上の値を入力してください")
+    .max(99, "ユニット開始位置は99以下の値を入力してください")
+    .nullable(),
+  unit_end_position: Yup.number()
+    .integer("ユニット終了位置は整数で入力してください")
+    .min(1, "ユニット終了位置は1以上の値を入力してください")
+    .max(99, "ユニット終了位置は99以下の値を入力してください")
+    .nullable()
+    .test(
+      "greater-than-start",
+      "ユニット終了位置は開始位置以上である必要があります",
+      function (value) {
+        const { unit_start_position } = this.parent;
+        if (!value || !unit_start_position) return true;
+        return value >= unit_start_position;
+      }
+    ),
 });
 
 const DeviceForm = () => {
@@ -39,7 +57,8 @@ const DeviceForm = () => {
     device_name: "",
     model: "",
     rack_number: "",
-    unit_position: "",
+    unit_start_position: "",
+    unit_end_position: "",
     device_type: "サーバ",
     hardware_type: "物理",
   });
@@ -105,12 +124,19 @@ const DeviceForm = () => {
       navigate("/devices");
     } catch (err) {
       console.error(`機器${isEditMode ? "更新" : "作成"}エラー:`, err);
-      
+
       // 重複エラーの場合
       if (err.response && err.response.data && err.response.data.message) {
-        if (err.response.data.message.includes('同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します')) {
+        if (
+          err.response.data.message.includes(
+            "同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します"
+          )
+        ) {
           // フォームのフィールドにエラーを表示
-          setFieldError('device_name', '同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します');
+          setFieldError(
+            "device_name",
+            "同じ顧客で同じ機器名、設置場所、ユニット位置の組み合わせがすでに存在します"
+          );
         } else {
           setSubmitError(err.response.data.message);
         }

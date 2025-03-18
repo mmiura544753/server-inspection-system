@@ -32,27 +32,55 @@ const DeviceLocationForm = () => {
           設置されているラックの番号を入力してください
         </small>
       </div>
-      
-      <div className="mb-3">
-        <label htmlFor="unit_position" className="form-label">
-          ユニット位置
-        </label>
-        <Field
-          type="text"
-          id="unit_position"
-          name="unit_position"
-          className="form-control"
-          placeholder="例: U1-U2"
-          data-testid="unit-position-input"
-        />
-        <ErrorMessage
-          name="unit_position"
-          component="div"
-          className="text-danger"
-        />
-        <small className="form-text text-muted">
-          ラックの搭載位置を入力してください（例: U1-U2）
-        </small>
+
+      <div className="row">
+        <div className="col-md-6 mb-3">
+          <label htmlFor="unit_start_position" className="form-label">
+            ユニット開始位置
+          </label>
+          <Field
+            type="number"
+            id="unit_start_position"
+            name="unit_start_position"
+            className="form-control"
+            placeholder="例: 1"
+            min="1"
+            max="99"
+            data-testid="unit-start-position-input"
+          />
+          <ErrorMessage
+            name="unit_start_position"
+            component="div"
+            className="text-danger"
+          />
+          <small className="form-text text-muted">
+            ラックの搭載開始位置を数値で入力してください（例: 1）
+          </small>
+        </div>
+
+        <div className="col-md-6 mb-3">
+          <label htmlFor="unit_end_position" className="form-label">
+            ユニット終了位置
+          </label>
+          <Field
+            type="number"
+            id="unit_end_position"
+            name="unit_end_position"
+            className="form-control"
+            placeholder="例: 2"
+            min="1"
+            max="99"
+            data-testid="unit-end-position-input"
+          />
+          <ErrorMessage
+            name="unit_end_position"
+            component="div"
+            className="text-danger"
+          />
+          <small className="form-text text-muted">
+            ラックの搭載終了位置を数値で入力してください（単一ユニットの場合は開始位置と同じ値を入力）
+          </small>
+        </div>
       </div>
     </div>
   );

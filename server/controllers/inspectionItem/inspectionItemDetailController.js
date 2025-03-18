@@ -16,7 +16,8 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
         d.device_name, 
         d.model,
         d.rack_number,
-        d.unit_position,
+        d.unit_start_position,
+        d.unit_end_position,
         ii.id as item_id, 
         ii.item_name, 
         d.device_type
@@ -90,7 +91,13 @@ function transformToHierarchy(items) {
         device_id: item.device_id,
         type: item.device_type,
         model: item.model || "",
-        unit_position: item.unit_position || "",
+        unit_position:
+          item.unit_start_position !== null
+            ? item.unit_end_position !== null &&
+              item.unit_start_position !== item.unit_end_position
+              ? `U${item.unit_start_position}-U${item.unit_end_position}`
+              : `U${item.unit_start_position}`
+            : "",
         items: [],
         results: [],
       };
@@ -103,35 +110,21 @@ function transformToHierarchy(items) {
     // 点検項目を追加
     locationGroups[locationKey].servers[deviceKey].items.push(item.item_name);
     locationGroups[locationKey].servers[deviceKey].results.push(null); // 初期値はnull
+    locationGroups[locationKey].servers[deviceKey].unitPositionDisplay =
+      unitPositionDisplay;
     console.log("現在の locationGroups:", locationGroups);
   });
 
   console.log("グループ化完了後の locationGroups:", locationGroups); // グループ化完了後の状態をログ出力
 
-  // 最終的なデータ構造に変換（配列形式に）
-  return Object.values(locationGroups).map((location) => {
-    // 各ロケーション内のサーバー配列をunit_positionでソート
-    const sortedServers = Object.values(location.servers).sort((a, b) => {
-      // ユニット位置をソート（数値または文字列として）
-      const aPos = a.unit_position || "";
-      const bPos = b.unit_position || "";
+  // ソート関数も更新:
+  const sortedServers = Object.values(location.servers).sort((a, b) => {
+    const aStartPos =
+      typeof a.unit_start_position === "number" ? a.unit_start_position : 999;
+    const bStartPos =
+      typeof b.unit_start_position === "number" ? b.unit_start_position : 999;
 
-      // U1, U2 のような形式をソートするために数値部分を抽出
-      const aMatch = aPos.match(/U(\d+)/i);
-      const bMatch = bPos.match(/U(\d+)/i);
-
-      if (aMatch && bMatch) {
-        return parseInt(aMatch[1]) - parseInt(bMatch[1]);
-      }
-
-      // 数値抽出できない場合は文字列比較
-      return aPos.localeCompare(bPos);
-    });
-
-    return {
-      ...location,
-      servers: sortedServers,
-    };
+    return aStartPos - bStartPos;
   });
 }
 

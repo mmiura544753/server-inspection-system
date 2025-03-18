@@ -1,7 +1,7 @@
 // src/components/devices/DeviceTable.js
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
+import React from "react";
+import { Link } from "react-router-dom";
+import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 
 // 機器一覧表示テーブルコンポーネント
 const DeviceTable = ({ devices, onDeleteClick }) => {

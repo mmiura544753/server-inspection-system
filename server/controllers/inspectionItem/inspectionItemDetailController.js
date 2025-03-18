@@ -7,11 +7,10 @@ const { sequelize } = require("../../config/db");
 // @access  Public
 const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
   try {
-    // SQLクエリを直接実行 - unit_positionをunit_start_positionに修正
+    // SQLクエリを直接実行 - customer_nameを削除し、ORDER BY句を変更
     const query = `
       SELECT 
         c.id as customer_id,
-        c.customer_name,
         d.id as device_id, 
         d.device_name, 
         d.model,
@@ -28,7 +27,7 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
       JOIN 
         customers c ON d.customer_id = c.id
       ORDER BY 
-        c.customer_name, d.rack_number, d.unit_start_position
+        d.rack_number ASC, d.unit_start_position DESC
     `;
 
     // クエリを実行
@@ -115,17 +114,8 @@ function transformToHierarchy(items) {
 
   // 各ロケーションを配列に変換
   Object.values(locationGroups).forEach((location) => {
-    // サーバーをオブジェクトから配列に変換、ユニット位置でソート
-    const serverArray = Object.values(location.servers).sort((a, b) => {
-      // ユニット開始位置でソート（数値がない場合は末尾に配置）
-      const aPos = a.unit_position
-        ? parseInt(a.unit_position.replace(/[^0-9]/g, ""))
-        : 999;
-      const bPos = b.unit_position
-        ? parseInt(b.unit_position.replace(/[^0-9]/g, ""))
-        : 999;
-      return aPos - bPos;
-    });
+    // サーバーをオブジェクトから配列に変換
+    const serverArray = Object.values(location.servers);
 
     // 配列をserversに設定
     location.servers = serverArray;

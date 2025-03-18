@@ -56,6 +56,9 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
 // データを階層化する関数
 function transformToHierarchy(items) {
   // 顧客→ロケーション→サーバー→点検項目の階層構造に変換
+
+  console.log("入力データ (items):", items); // 関数への入力データをログ出力
+
   const locationGroups = {};
 
   // まず設置場所でグループ化
@@ -65,12 +68,18 @@ function transformToHierarchy(items) {
         ? `ラックNo.${item.rack_number}`
         : "未設定";
 
+    console.log("処理中の item:", item, "locationKey:", locationKey); // 各itemの処理をログ出力
+
     if (!locationGroups[locationKey]) {
       locationGroups[locationKey] = {
         locationId: `loc_${locationKey}`,
         locationName: locationKey,
         servers: {},
       };
+      console.log(
+        "新しい locationGroups[locationKey] を作成:",
+        locationGroups[locationKey]
+      ); // 新しいグループ作成をログ出力
     }
 
     // 次に各設置場所内で機器ごとにグループ化
@@ -85,12 +94,19 @@ function transformToHierarchy(items) {
         items: [],
         results: [],
       };
+      console.log(
+        "新しい locationGroups[locationKey].servers[deviceKey] を作成:",
+        locationGroups[locationKey].servers[deviceKey]
+      ); // 新しいサーバー作成をログ出力
     }
 
     // 点検項目を追加
     locationGroups[locationKey].servers[deviceKey].items.push(item.item_name);
     locationGroups[locationKey].servers[deviceKey].results.push(null); // 初期値はnull
+    console.log("現在の locationGroups:", locationGroups);
   });
+
+  console.log("グループ化完了後の locationGroups:", locationGroups); // グループ化完了後の状態をログ出力
 
   // 最終的なデータ構造に変換（配列形式に）
   return Object.values(locationGroups).map((location) => {

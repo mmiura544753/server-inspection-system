@@ -31,8 +31,10 @@ export const useInspection = () => {
 
   // コンポーネントマウント時にデータを読み込む
   useEffect(() => {
+    // 初回のみデータを読み込む
     apiState.fetchInspectionItems();
-  }, [apiState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 依存配列を空にして初回のみ実行されるようにする
 
   // 統合されたフックの返り値
   return {

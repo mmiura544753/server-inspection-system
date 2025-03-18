@@ -114,8 +114,18 @@ function transformToHierarchy(items) {
 
   // 各ロケーションを配列に変換
   Object.values(locationGroups).forEach((location) => {
-    // サーバーをオブジェクトから配列に変換
-    const serverArray = Object.values(location.servers);
+    // サーバーをオブジェクトから配列に変換、ユニット位置でソート
+    // サーバーをオブジェクトから配列に変換、ユニット位置の降順でソート（上のユニットから下へ）
+    const serverArray = Object.values(location.servers).sort((a, b) => {
+      // ユニット開始位置でソート（数値がない場合は末尾に配置）
+      const aPos = a.unit_position
+        ? parseInt(a.unit_position.replace(/[^0-9]/g, ""))
+        : 999;
+      const bPos = b.unit_position
+        ? parseInt(b.unit_position.replace(/[^0-9]/g, ""))
+        : 999;
+      return bPos - aPos; // 降順にするために順序を逆にする
+    });
 
     // 配列をserversに設定
     location.servers = serverArray;

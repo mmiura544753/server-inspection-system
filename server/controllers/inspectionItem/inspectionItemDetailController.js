@@ -115,18 +115,17 @@ function transformToHierarchy(items) {
 
   // 各ロケーションを配列に変換
   Object.values(locationGroups).forEach((location) => {
-    // server/controllers/inspectionItem/inspectionItemDetailController.js の修正部分
-
     // サーバーをオブジェクトから配列に変換、ユニット位置でソート
     const serverArray = Object.values(location.servers).sort((a, b) => {
-      // データベースのソート順と同じ順序（unit_start_positionの降順）で並べる
-      // a.unit_start_positionとb.unit_start_positionを直接使用
-
       // unit_start_positionが存在しない場合は最後に表示
       const aPos =
-        a.unit_start_position !== undefined ? a.unit_start_position : -1;
+        a.unit_start_position !== null && a.unit_start_position !== undefined
+          ? a.unit_start_position
+          : -1;
       const bPos =
-        b.unit_start_position !== undefined ? b.unit_start_position : -1;
+        b.unit_start_position !== null && b.unit_start_position !== undefined
+          ? b.unit_start_position
+          : -1;
 
       // 降順にするために b - a とする
       return bPos - aPos;
@@ -137,6 +136,16 @@ function transformToHierarchy(items) {
 
     // 結果に追加
     result.push(location);
+  });
+
+  // ラック番号でロケーションを並べ替え
+  result.sort((a, b) => {
+    // ラック番号を取得（"ラックNo.X"から数値部分を抽出）
+    const aRackNum = parseInt(a.locationName.replace(/[^0-9]/g, "")) || 0;
+    const bRackNum = parseInt(b.locationName.replace(/[^0-9]/g, "")) || 0;
+
+    // 昇順に並べ替え
+    return aRackNum - bRackNum;
   });
 
   return result;

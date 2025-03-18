@@ -7,7 +7,7 @@ const { sequelize } = require("../../config/db");
 // @access  Public
 const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
   try {
-    // SQLクエリを直接実行
+    // SQLクエリを直接実行 - unit_positionをunit_start_positionに修正
     const query = `
       SELECT 
         c.id as customer_id,
@@ -28,7 +28,7 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
       JOIN 
         customers c ON d.customer_id = c.id
       ORDER BY 
-        c.customer_name, d.rack_number, d.unit_position
+        c.customer_name, d.rack_number, d.unit_start_position
     `;
 
     // クエリを実行
@@ -57,19 +57,14 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
 // データを階層化する関数
 function transformToHierarchy(items) {
   // 顧客→ロケーション→サーバー→点検項目の階層構造に変換
-
-  console.log("入力データ (items):", items); // 関数への入力データをログ出力
-
   const locationGroups = {};
 
   // まず設置場所でグループ化
   items.forEach((item) => {
     const locationKey =
-      item.rack_number !== null && item.rack_number !== ""
+      item.rack_number !== null && item.rack_number !== undefined
         ? `ラックNo.${item.rack_number}`
         : "未設定";
-
-    console.log("処理中の item:", item, "locationKey:", locationKey); // 各itemの処理をログ出力
 
     if (!locationGroups[locationKey]) {
       locationGroups[locationKey] = {
@@ -77,55 +72,69 @@ function transformToHierarchy(items) {
         locationName: locationKey,
         servers: {},
       };
-      console.log(
-        "新しい locationGroups[locationKey] を作成:",
-        locationGroups[locationKey]
-      ); // 新しいグループ作成をログ出力
     }
 
     // 次に各設置場所内で機器ごとにグループ化
     const deviceKey = item.device_id;
     if (!locationGroups[locationKey].servers[deviceKey]) {
+      // ユニットポジションの表示形式を作成
+      let unitPositionDisplay = "";
+      if (
+        item.unit_start_position !== null &&
+        item.unit_start_position !== undefined
+      ) {
+        if (
+          item.unit_end_position !== null &&
+          item.unit_end_position !== undefined &&
+          item.unit_start_position !== item.unit_end_position
+        ) {
+          unitPositionDisplay = `U${item.unit_start_position}-U${item.unit_end_position}`;
+        } else {
+          unitPositionDisplay = `U${item.unit_start_position}`;
+        }
+      }
+
       locationGroups[locationKey].servers[deviceKey] = {
         id: item.device_name,
         device_id: item.device_id,
         type: item.device_type,
         model: item.model || "",
-        unit_position:
-          item.unit_start_position !== null
-            ? item.unit_end_position !== null &&
-              item.unit_start_position !== item.unit_end_position
-              ? `U${item.unit_start_position}-U${item.unit_end_position}`
-              : `U${item.unit_start_position}`
-            : "",
+        unit_position: unitPositionDisplay,
         items: [],
         results: [],
       };
-      console.log(
-        "新しい locationGroups[locationKey].servers[deviceKey] を作成:",
-        locationGroups[locationKey].servers[deviceKey]
-      ); // 新しいサーバー作成をログ出力
     }
 
     // 点検項目を追加
     locationGroups[locationKey].servers[deviceKey].items.push(item.item_name);
     locationGroups[locationKey].servers[deviceKey].results.push(null); // 初期値はnull
-    locationGroups[locationKey].servers[deviceKey].unitPositionDisplay =
-      unitPositionDisplay;
-    console.log("現在の locationGroups:", locationGroups);
   });
 
-  console.log("グループ化完了後の locationGroups:", locationGroups); // グループ化完了後の状態をログ出力
+  // オブジェクトから配列に変換し、階層構造を作成
+  const result = [];
 
-  // ソート関数も更新:
-  const sortedServers = Object.values(location.servers).sort((a, b) => {
-    const aStartPos =
-      typeof a.unit_start_position === "number" ? a.unit_start_position : 999;
-    const bStartPos =
-      typeof b.unit_start_position === "number" ? b.unit_start_position : 999;
+  // 各ロケーションを配列に変換
+  Object.values(locationGroups).forEach((location) => {
+    // サーバーをオブジェクトから配列に変換、ユニット位置でソート
+    const serverArray = Object.values(location.servers).sort((a, b) => {
+      // ユニット開始位置でソート（数値がない場合は末尾に配置）
+      const aPos = a.unit_position
+        ? parseInt(a.unit_position.replace(/[^0-9]/g, ""))
+        : 999;
+      const bPos = b.unit_position
+        ? parseInt(b.unit_position.replace(/[^0-9]/g, ""))
+        : 999;
+      return aPos - bPos;
+    });
 
-    return aStartPos - bStartPos;
+    // 配列をserversに設定
+    location.servers = serverArray;
+
+    // 結果に追加
+    result.push(location);
   });
+
+  return result;
 }
 
 module.exports = {

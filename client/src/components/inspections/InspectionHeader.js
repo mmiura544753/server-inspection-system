@@ -20,7 +20,7 @@ const InspectionHeader = ({
     <>
       <div className="flex flex-col md:flex-row justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-indigo-700">
-          {customerName || "顧客名"} サーバ点検チェックシート
+          サーバ点検チェックシート
         </h1>
         <div className="bg-indigo-100 py-2 px-4 rounded-lg flex items-center mt-4 md:mt-0">
           <span className="font-semibold mr-2">点検実施時間:</span>

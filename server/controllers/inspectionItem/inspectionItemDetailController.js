@@ -99,6 +99,7 @@ function transformToHierarchy(items) {
         type: item.device_type,
         model: item.model || "",
         unit_position: unitPositionDisplay,
+        unit_start_position: item.unit_start_position,
         items: [],
         results: [],
       };
@@ -114,17 +115,21 @@ function transformToHierarchy(items) {
 
   // 各ロケーションを配列に変換
   Object.values(locationGroups).forEach((location) => {
+    // server/controllers/inspectionItem/inspectionItemDetailController.js の修正部分
+
     // サーバーをオブジェクトから配列に変換、ユニット位置でソート
-    // サーバーをオブジェクトから配列に変換、ユニット位置の降順でソート（上のユニットから下へ）
     const serverArray = Object.values(location.servers).sort((a, b) => {
-      // ユニット開始位置でソート（数値がない場合は末尾に配置）
-      const aPos = a.unit_position
-        ? parseInt(a.unit_position.replace(/[^0-9]/g, ""))
-        : 999;
-      const bPos = b.unit_position
-        ? parseInt(b.unit_position.replace(/[^0-9]/g, ""))
-        : 999;
-      return bPos - aPos; // 降順にするために順序を逆にする
+      // データベースのソート順と同じ順序（unit_start_positionの降順）で並べる
+      // a.unit_start_positionとb.unit_start_positionを直接使用
+
+      // unit_start_positionが存在しない場合は最後に表示
+      const aPos =
+        a.unit_start_position !== undefined ? a.unit_start_position : -1;
+      const bPos =
+        b.unit_start_position !== undefined ? b.unit_start_position : -1;
+
+      // 降順にするために b - a とする
+      return bPos - aPos;
     });
 
     // 配列をserversに設定

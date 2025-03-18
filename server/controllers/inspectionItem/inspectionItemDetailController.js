@@ -102,12 +102,14 @@ function transformToHierarchy(items) {
         unit_start_position: item.unit_start_position,
         items: [],
         results: [],
+        item_ids: [], // 点検項目IDを保存する配列を追加
       };
     }
 
     // 点検項目を追加
     locationGroups[locationKey].servers[deviceKey].items.push(item.item_name);
     locationGroups[locationKey].servers[deviceKey].results.push(null); // 初期値はnull
+    locationGroups[locationKey].servers[deviceKey].item_ids.push(item.item_id); // 点検項目IDを保存
   });
 
   // オブジェクトから配列に変換し、階層構造を作成

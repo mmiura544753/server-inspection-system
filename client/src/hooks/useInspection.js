@@ -241,9 +241,6 @@ export const useInspection = () => {
     }
   };
 
-  // 点検結果を保存する関数を作成
-  // client/src/hooks/useInspection.js の saveInspectionResults 関数を修正
-
   // 点検結果を保存する関数
   const saveInspectionResults = async (navigate) => {
     try {

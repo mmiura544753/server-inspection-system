@@ -22,15 +22,7 @@ const Inspection = sequelize.define('Inspection', {
       notNull: { msg: '機器IDは必須です' }
     }
   },
-  // server_id カラムの追加（データベースに存在するため）
-  server_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 1, // デフォルト値を設定
-    validate: {
-      notNull: { msg: 'サーバーIDは必須です' }
-    }
-  },
+  // server_idカラムは削除されました
   inspection_date: {
     type: DataTypes.DATEONLY,
     allowNull: false,

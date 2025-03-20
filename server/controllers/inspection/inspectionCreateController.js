@@ -19,7 +19,6 @@ const createInspection = asyncHandler(async (req, res) => {
     end_time,
     inspector_name,
     device_id,
-    server_id = 1, // サーバーIDのデフォルト値を設定
     status = "完了", // ステータスのデフォルト値
     results,
   } = req.body;
@@ -85,7 +84,6 @@ const createInspection = asyncHandler(async (req, res) => {
         end_time,
         inspector_name,
         device_id,
-        server_id, // サーバーIDフィールド
         status, // ステータスフィールド
       },
       { transaction }
@@ -158,7 +156,6 @@ const createInspection = asyncHandler(async (req, res) => {
       end_time: createdInspection.end_time,
       inspector_name: createdInspection.inspector_name,
       device_id: createdInspection.device_id,
-      server_id: createdInspection.server_id,
       device_name: createdInspection.device.device_name,
       customer_id: createdInspection.device.customer.id,
       customer_name: createdInspection.device.customer.customer_name,

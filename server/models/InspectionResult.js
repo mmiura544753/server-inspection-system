@@ -76,6 +76,6 @@ const InspectionResult = sequelize.define('InspectionResult', {
 });
 
 // リレーションシップの定義
-InspectionResult.belongsTo(InspectionItem, { foreignKey: 'inspection_item_id', as: 'inspection_item' });
+// InspectionItem.jsで相互のアソシエーションを定義しています
 
 module.exports = InspectionResult;

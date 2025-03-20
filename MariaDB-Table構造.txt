@@ -1,0 +1,89 @@
+MariaDB [server_inspection_db]> show tables;
++--------------------------------+
+| Tables_in_server_inspection_db |
++--------------------------------+
+| SequelizeMeta                  |
+| customers                      |
+| devices                        |
+| inspection_item_names          |
+| inspection_items               |
+| inspection_results             |
+| inspection_results_backup      |
+| inspections                    |
++--------------------------------+
+8 rows in set (0.000 sec)
+
+MariaDB [server_inspection_db]> desc inspection_items;
++--------------+--------------+------+-----+---------------------+-------------------------------+
+| Field        | Type         | Null | Key | Default             | Extra                         |
++--------------+--------------+------+-----+---------------------+-------------------------------+
+| id           | int(11)      | NO   | PRI | NULL                | auto_increment                |
+| device_id    | int(11)      | NO   |     | NULL                |                               |
+| created_at   | timestamp    | YES  |     | current_timestamp() |                               |
+| updated_at   | timestamp    | YES  |     | current_timestamp() | on update current_timestamp() |
+| item_name_id | int(11)      | NO   | MUL | NULL                |                               |
+| item_name    | varchar(255) | YES  |     | NULL                |                               |
++--------------+--------------+------+-----+---------------------+-------------------------------+
+6 rows in set (0.001 sec)
+
+MariaDB [server_inspection_db]> 
+MariaDB [server_inspection_db]> desc inspection_item_names  ;
++------------+--------------+------+-----+---------------------+-------------------------------+
+| Field      | Type         | Null | Key | Default             | Extra                         |
++------------+--------------+------+-----+---------------------+-------------------------------+
+| id         | int(11)      | NO   | PRI | NULL                | auto_increment                |
+| name       | varchar(255) | NO   | UNI | NULL                |                               |
+| created_at | timestamp    | YES  |     | current_timestamp() |                               |
+| updated_at | timestamp    | YES  |     | current_timestamp() | on update current_timestamp() |
++------------+--------------+------+-----+---------------------+-------------------------------+
+4 rows in set (0.001 sec)
+
+MariaDB [server_inspection_db]> 
+MariaDB [server_inspection_db]> desc customers;
++---------------+--------------+------+-----+---------------------+-------------------------------+
+| Field         | Type         | Null | Key | Default             | Extra                         |
++---------------+--------------+------+-----+---------------------+-------------------------------+
+| id            | int(11)      | NO   | PRI | NULL                | auto_increment                |
+| customer_name | varchar(100) | NO   |     | NULL                |                               |
+| created_at    | timestamp    | YES  |     | current_timestamp() |                               |
+| updated_at    | timestamp    | YES  |     | current_timestamp() | on update current_timestamp() |
++---------------+--------------+------+-----+---------------------+-------------------------------+
+4 rows in set (0.001 sec)
+
+MariaDB [server_inspection_db]> 
+MariaDB [server_inspection_db]> desc inspection_results;
++--------------------+-------------------------+------+-----+---------------------+-------------------------------+
+| Field              | Type                    | Null | Key | Default             | Extra                         |
++--------------------+-------------------------+------+-----+---------------------+-------------------------------+
+| id                 | int(11)                 | NO   | PRI | NULL                | auto_increment                |
+| inspection_id      | int(11)                 | NO   | MUL | NULL                |                               |
+| device_id          | int(11)                 | YES  | MUL | NULL                |                               |
+| check_item         | text                    | NO   |     | NULL                |                               |
+| status             | enum('正常','異常')     | NO   |     | NULL                |                               |
+| checked_at         | timestamp               | YES  |     | current_timestamp() |                               |
+| inspection_item_id | int(11)                 | YES  | MUL | NULL                |                               |
+| created_at         | timestamp               | YES  |     | current_timestamp() |                               |
+| updated_at         | timestamp               | YES  |     | current_timestamp() | on update current_timestamp() |
++--------------------+-------------------------+------+-----+---------------------+-------------------------------+
+9 rows in set (0.001 sec)
+
+MariaDB [server_inspection_db]> MariaDB [server_inspection_db]> desc inspections;
++-----------------+----------------------------------------+------+-----+---------------------+-------------------------------+
+| Field           | Type                                   | Null | Key | Default             | Extra                         |
++-----------------+----------------------------------------+------+-----+---------------------+-------------------------------+
+| id              | int(11)                                | NO   | PRI | NULL                | auto_increment                |
+| inspection_date | date                                   | NO   |     | NULL                |                               |
+| device_id       | int(11)                                | NO   | MUL | NULL                |                               |
+| start_time      | time                                   | YES  |     | NULL                |                               |
+| end_time        | time                                   | YES  |     | NULL                |                               |
+| inspector_name  | varchar(50)                            | NO   |     | NULL                |                               |
+| created_at      | timestamp                              | YES  |     | current_timestamp() |                               |
+| updated_at      | timestamp                              | YES  |     | current_timestamp() | on update current_timestamp() |
+| status          | enum('準備中','進行中','完了')         | NO   |     | 完了                |                               |
++-----------------+----------------------------------------+------+-----+---------------------+-------------------------------+
+9 rows in set (0.001 sec)
+
+MariaDB [server_inspection_db]> 
+
+現在のテーブル構造です。
+

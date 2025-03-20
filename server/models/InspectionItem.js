@@ -2,6 +2,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/db");
 const Device = require("./Device");
+const InspectionItemName = require("./InspectionItemName");
 
 // 点検項目モデル
 const InspectionItem = sequelize.define(
@@ -23,18 +24,21 @@ const InspectionItem = sequelize.define(
         notNull: { msg: "機器IDは必須です" },
       },
     },
-    // item_name を item_name_id に変更、あるいはデータベースのカラム名をマッピング
+    item_name_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: InspectionItemName,
+        key: "id",
+      },
+      validate: {
+        notNull: { msg: "点検項目名IDは必須です" },
+      },
+    },
+    // レガシーフィールド - 使用しない
     item_name: {
       type: DataTypes.STRING(255),
-      allowNull: false,
-      field: "item_name_id", // データベース上のカラム名にマッピング
-      validate: {
-        notEmpty: { msg: "点検項目名は必須です" },
-        len: {
-          args: [1, 255],
-          msg: "点検項目名は255文字以内で入力してください",
-        },
-      },
+      allowNull: true,
     },
   },
   {
@@ -60,5 +64,17 @@ Device.hasMany(InspectionItem, {
   foreignKey: "device_id",
   as: "inspection_items",
 });
+
+// InspectionItemNameとのリレーションシップ
+InspectionItem.belongsTo(InspectionItemName, { foreignKey: "item_name_id", as: "item_name_master" });
+InspectionItemName.hasMany(InspectionItem, {
+  foreignKey: "item_name_id",
+  as: "inspection_items",
+});
+
+// InspectionResultとのリレーションシップ
+const InspectionResult = require('./InspectionResult');
+InspectionItem.hasMany(InspectionResult, { foreignKey: 'inspection_item_id', as: 'results' });
+InspectionResult.belongsTo(InspectionItem, { foreignKey: 'inspection_item_id', as: 'inspection_item' });
 
 module.exports = InspectionItem;

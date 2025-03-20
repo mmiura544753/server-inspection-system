@@ -49,10 +49,12 @@ export const inspectionAPI = {
   // 点検を新規作成
   create: async (inspectionData) => {
     try {
+      console.log("APIに送信する点検データ:", JSON.stringify(inspectionData, null, 2));
       const response = await api.post("/inspections", inspectionData);
+      console.log("点検作成成功レスポンス:", response.data);
       return response.data;
     } catch (error) {
-      console.error("点検作成エラー:", error);
+      console.error("点検作成エラー:", error.response?.data || error.message || error);
       throw error;
     }
   },

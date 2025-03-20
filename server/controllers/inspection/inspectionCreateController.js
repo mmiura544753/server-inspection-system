@@ -26,8 +26,10 @@ const createInspection = asyncHandler(async (req, res) => {
   // 必須フィールドのチェック
   if (!inspection_date || !inspector_name || !device_id) {
     res.status(400);
-    throw new Error("必須フィールドが不足しています");
+    throw new Error("必須フィールドが不足しています（inspection_date, inspector_name, device_id）");
   }
+  
+  console.log("点検作成リクエスト:", JSON.stringify(req.body, null, 2));
 
   // 機器の存在確認
   const device = await Device.findByPk(device_id, {
@@ -46,10 +48,12 @@ const createInspection = asyncHandler(async (req, res) => {
   }
 
   // 結果が空でないことを確認
-  if (!results || results.length === 0) {
+  if (!results || !Array.isArray(results) || results.length === 0) {
     res.status(400);
-    throw new Error("少なくとも1つの点検結果が必要です");
+    throw new Error("少なくとも1つの点検結果が必要です。点検項目にチェックを入れてください。");
   }
+  
+  console.log("点検結果データ:", JSON.stringify(results, null, 2));
 
   // 点検項目の存在確認と結果の検証
   for (const result of results) {

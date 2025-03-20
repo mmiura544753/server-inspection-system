@@ -145,18 +145,21 @@ const InspectionDetails = () => {
                 <table className="table table-hover">
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>機器名</th>
-                      <th>確認項目</th>
-                      <th>結果</th>
-                      <th>確認日時</th>
+                      <th>ラックNo.</th>
+                      <th>ユニット</th>
+                      <th>サーバ名</th>
+                      <th>機種</th>
+                      <th>点検項目</th>
+                      <th>点検結果</th>
                     </tr>
                   </thead>
                   <tbody>
                     {inspection.results.map((result) => (
                       <tr key={result.id}>
-                        <td>{result.id}</td>
-                        <td>{result.device_name}</td>
+                        <td>{result.rack_number || '-'}</td>
+                        <td>{result.unit_position || '-'}</td>
+                        <td>{result.device_name || '-'}</td>
+                        <td>{result.model || '-'}</td>
                         <td>{result.check_item}</td>
                         <td>
                           <span
@@ -164,9 +167,6 @@ const InspectionDetails = () => {
                           >
                             {result.status}
                           </span>
-                        </td>
-                        <td>
-                          {new Date(result.checked_at).toLocaleString("ja-JP")}
                         </td>
                       </tr>
                     ))}

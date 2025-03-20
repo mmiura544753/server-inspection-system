@@ -68,7 +68,7 @@ const getInspectionById = asyncHandler(async (req, res) => {
       {
         model: Device,
         as: "device",
-        attributes: ["id", "device_name", "customer_id"],
+        attributes: ["id", "device_name", "customer_id", "rack_number", "unit_start_position", "unit_end_position", "model"],
         include: [
           {
             model: Customer,
@@ -96,6 +96,14 @@ const getInspectionById = asyncHandler(async (req, res) => {
         checked_at: result.checked_at,
         device_id: inspection.device_id,
         device_name: inspection.device ? inspection.device.device_name : null,
+        // 追加のデバイス情報
+        rack_number: inspection.device ? inspection.device.rack_number : null,
+        unit_position: inspection.device ? (
+          inspection.device.unit_start_position === inspection.device.unit_end_position || !inspection.device.unit_end_position
+            ? `U${inspection.device.unit_start_position || ''}`
+            : `U${inspection.device.unit_start_position || ''}-U${inspection.device.unit_end_position || ''}`
+        ) : null,
+        model: inspection.device ? inspection.device.model : null,
       };
     });
 

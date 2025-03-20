@@ -14,6 +14,8 @@ import { deviceAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
 import Modal from "../common/Modal";
+import SortableTableHeader from "../common/SortableTableHeader";
+import { sortArrayByKey } from "../../utils/sortUtils";
 
 const DeviceList = () => {
   const [devices, setDevices] = useState([]);
@@ -30,6 +32,10 @@ const DeviceList = () => {
   const [importResult, setImportResult] = useState(null);
   // インポート処理状態の追加
   const [importProgress, setImportProgress] = useState("");
+  
+  // ソート用の状態
+  const [sortField, setSortField] = useState("id");
+  const [sortDescending, setSortDescending] = useState(false);
 
   // ファイル入力用のref
   const fileInputRef = useRef(null);
@@ -215,6 +221,14 @@ const DeviceList = () => {
         device.model.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  // ソートの処理
+  const handleSort = (field, descending) => {
+    setSortField(field);
+    setSortDescending(descending);
+  };
+
+  // ソートされたデータ
+  const sortedDevices = sortArrayByKey(filteredDevices, sortField, sortDescending);
 
   if (loading) {
     return <Loading />;
@@ -309,26 +323,74 @@ const DeviceList = () => {
       </div>
 
       {/* 機器一覧テーブル */}
-      {filteredDevices.length > 0 ? (
+      {sortedDevices.length > 0 ? (
         <div className="card">
           <div className="card-body">
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>機器名</th>
-                    <th>顧客</th>
-                    <th>モデル</th>
-                    <th>種別</th>
-                    <th>ハードウェア</th>
-                    <th>設置場所</th>
-                    <th>ユニット位置</th>
+                    <SortableTableHeader
+                      field="id"
+                      label="ID"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      field="device_name"
+                      label="機器名"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      field="customer_name"
+                      label="顧客"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      field="model"
+                      label="モデル"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      field="device_type"
+                      label="種別"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      field="hardware_type"
+                      label="ハードウェア"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      field="rack_number"
+                      label="設置場所"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      field="unit_position"
+                      label="ユニット位置"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
                     <th>操作</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredDevices.map((device) => (
+                  {sortedDevices.map((device) => (
                     <tr key={device.id}>
                       <td>{device.id}</td>
                       <td>{device.device_name}</td>

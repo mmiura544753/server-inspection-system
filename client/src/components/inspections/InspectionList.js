@@ -1,15 +1,66 @@
 // src/components/inspections/InspectionList.js
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { inspectionAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
 import { formatDate, formatTime } from "../../utils/dateTimeUtils";
+import { sortArrayByKey } from "../../utils/sortUtils";
+
+// TailwindCSSスタイルのソートヘッダーコンポーネント
+const SortableTailwindHeader = ({ 
+  field, 
+  label, 
+  currentSortField, 
+  isDescending, 
+  onSort 
+}) => {
+  // このヘッダーが現在ソートされているかどうか
+  const isSorted = currentSortField === field;
+
+  // クリック時の処理
+  const handleClick = () => {
+    if (isSorted) {
+      // 同じフィールドがすでにソートされている場合は、昇順/降順を切り替え
+      onSort(field, !isDescending);
+    } else {
+      // 新しいフィールドでソートする場合は、デフォルトで昇順
+      onSort(field, false);
+    }
+  };
+
+  // ソートアイコンの選択
+  const getSortIcon = () => {
+    if (!isSorted) {
+      return <FaSort className="ml-1 text-gray-400" />;
+    }
+    return isDescending 
+      ? <FaSortDown className="ml-1 text-blue-500" /> 
+      : <FaSortUp className="ml-1 text-blue-500" />;
+  };
+
+  return (
+    <th 
+      className="py-2 px-4 border-b text-left cursor-pointer select-none"
+      onClick={handleClick}
+    >
+      <div className="flex items-center">
+        {label}
+        {getSortIcon()}
+      </div>
+    </th>
+  );
+};
 
 const InspectionList = () => {
   const [inspections, setInspections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // ソート用の状態
+  const [sortField, setSortField] = useState("inspection_date");
+  const [sortDescending, setSortDescending] = useState(true); // 最新の点検が上に来るようにデフォルトは降順
 
   useEffect(() => {
     fetchInspections();
@@ -29,6 +80,15 @@ const InspectionList = () => {
     }
   };
 
+  // ソートの処理
+  const handleSort = (field, descending) => {
+    setSortField(field);
+    setSortDescending(descending);
+  };
+
+  // ソートされたデータ
+  const sortedInspections = sortArrayByKey(inspections, sortField, sortDescending);
+
   if (loading) {
     return <Loading />;
   }
@@ -47,7 +107,7 @@ const InspectionList = () => {
 
       {error && <Alert type="danger" message={error} />}
 
-      {inspections.length === 0 ? (
+      {sortedInspections.length === 0 ? (
         <div className="bg-gray-100 p-4 rounded text-center">
           点検データがありません
         </div>
@@ -56,16 +116,46 @@ const InspectionList = () => {
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
               <tr className="bg-gray-100">
-                <th className="py-2 px-4 border-b text-left">点検日</th>
-                <th className="py-2 px-4 border-b text-left">点検者名</th>
-                <th className="py-2 px-4 border-b text-left">点検時間</th>
-                <th className="py-2 px-4 border-b text-left">機器名</th>
-                <th className="py-2 px-4 border-b text-left">顧客名</th>
+                <SortableTailwindHeader
+                  field="inspection_date"
+                  label="点検日"
+                  currentSortField={sortField}
+                  isDescending={sortDescending}
+                  onSort={handleSort}
+                />
+                <SortableTailwindHeader
+                  field="inspector_name"
+                  label="点検者名"
+                  currentSortField={sortField}
+                  isDescending={sortDescending}
+                  onSort={handleSort}
+                />
+                <SortableTailwindHeader
+                  field="start_time"
+                  label="点検時間"
+                  currentSortField={sortField}
+                  isDescending={sortDescending}
+                  onSort={handleSort}
+                />
+                <SortableTailwindHeader
+                  field="device_name"
+                  label="機器名"
+                  currentSortField={sortField}
+                  isDescending={sortDescending}
+                  onSort={handleSort}
+                />
+                <SortableTailwindHeader
+                  field="customer_name"
+                  label="顧客名"
+                  currentSortField={sortField}
+                  isDescending={sortDescending}
+                  onSort={handleSort}
+                />
                 <th className="py-2 px-4 border-b text-center">操作</th>
               </tr>
             </thead>
             <tbody>
-              {inspections.map((inspection) => (
+              {sortedInspections.map((inspection) => (
                 <tr key={inspection.id} className="hover:bg-gray-50">
                   <td className="py-2 px-4 border-b">
                     {formatDate(inspection.inspection_date)}

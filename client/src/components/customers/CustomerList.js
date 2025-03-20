@@ -6,6 +6,8 @@ import { customerAPI } from '../../services/api';
 import Loading from '../common/Loading';
 import Alert from '../common/Alert';
 import Modal from '../common/Modal';
+import SortableTableHeader from '../common/SortableTableHeader';
+import { sortArrayByKey } from '../../utils/sortUtils';
 
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
@@ -14,6 +16,10 @@ const CustomerList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState(null);
+  
+  // ソート用の状態
+  const [sortField, setSortField] = useState("id");
+  const [sortDescending, setSortDescending] = useState(false);
 
   // 顧客一覧データの取得
   const fetchCustomers = async () => {
@@ -64,6 +70,15 @@ const CustomerList = () => {
     customer.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // ソートの処理
+  const handleSort = (field, descending) => {
+    setSortField(field);
+    setSortDescending(descending);
+  };
+
+  // ソートされたデータ
+  const sortedCustomers = sortArrayByKey(filteredCustomers, sortField, sortDescending);
+
   // 時刻フォーマット関数
   const formatDate = (dateString) => {
     const options = { 
@@ -110,21 +125,39 @@ const CustomerList = () => {
       </div>
 
       {/* 顧客一覧テーブル */}
-      {filteredCustomers.length > 0 ? (
+      {sortedCustomers.length > 0 ? (
         <div className="card">
           <div className="card-body">
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>顧客名</th>
-                    <th>登録日時</th>
+                    <SortableTableHeader
+                      field="id"
+                      label="ID"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      field="customer_name"
+                      label="顧客名"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      field="created_at"
+                      label="登録日時"
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
                     <th>操作</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCustomers.map((customer) => (
+                  {sortedCustomers.map((customer) => (
                     <tr key={customer.id}>
                       <td>{customer.id}</td>
                       <td>{customer.customer_name}</td>

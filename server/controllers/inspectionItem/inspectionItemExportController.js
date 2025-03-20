@@ -2,7 +2,7 @@
 const asyncHandler = require('express-async-handler');
 const { Parser } = require('json2csv');
 const iconv = require('iconv-lite');
-const { InspectionItem, Device, Customer } = require('../../models');
+const { InspectionItem, Device, Customer, InspectionItemName } = require('../../models');
 
 // @desc    点検項目一覧のCSVエクスポート
 // @route   GET /api/inspection-items/export
@@ -24,16 +24,21 @@ const exportInspectionItemsToCsv = asyncHandler(async (req, res) => {
             attributes: ['id', 'customer_name']
           }
         ]
+      },
+      {
+        model: InspectionItemName,
+        as: 'item_name_master',
+        attributes: ['id', 'name']
       }
     ],
-    order: [['item_name', 'ASC']]
+    order: [[{ model: InspectionItemName, as: 'item_name_master' }, 'name', 'ASC']]
   });
 
   // レスポンス形式を調整（CSVに適した形式に変換）
   const formattedItems = items.map(item => {
     return {
       id: item.id,
-      item_name: item.item_name,
+      item_name: item.item_name_master ? item.item_name_master.name : '',
       device_name: item.device.device_name,
       customer_name: item.device.customer.customer_name,
       created_at: item.created_at,

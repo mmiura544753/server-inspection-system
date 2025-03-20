@@ -6,6 +6,7 @@ const {
   Customer,
   InspectionResult,
   InspectionItem,
+  InspectionItemName,
 } = require("../../models");
 const { Op } = require("sequelize");
 
@@ -83,7 +84,13 @@ const getInspectionById = asyncHandler(async (req, res) => {
           {
             model: InspectionItem,
             as: "inspection_item",
-            attributes: ["id", "item_name"],
+            include: [
+              {
+                model: InspectionItemName,
+                as: "item_name_master",
+                attributes: ["id", "name"],
+              }
+            ],
           },
         ],
       },
@@ -96,7 +103,8 @@ const getInspectionById = asyncHandler(async (req, res) => {
       return {
         id: result.id,
         inspection_item_id: result.inspection_item_id,
-        check_item: result.inspection_item.item_name,
+        // 直接保存されたcheck_itemフィールドを使用
+        check_item: result.check_item,
         status: result.status,
         checked_at: result.checked_at,
         device_id: inspection.device_id,
@@ -215,7 +223,13 @@ const getLatestInspectionByDeviceId = asyncHandler(async (req, res) => {
           {
             model: InspectionItem,
             as: "inspection_item",
-            attributes: ["id", "item_name"],
+            include: [
+              {
+                model: InspectionItemName,
+                as: "item_name_master",
+                attributes: ["id", "name"],
+              }
+            ],
           },
         ],
       },
@@ -232,7 +246,8 @@ const getLatestInspectionByDeviceId = asyncHandler(async (req, res) => {
       return {
         id: result.id,
         inspection_item_id: result.inspection_item_id,
-        check_item: result.inspection_item.item_name,
+        // 直接保存されたcheck_itemフィールドを使用
+        check_item: result.check_item,
         status: result.status,
         checked_at: result.checked_at,
       };

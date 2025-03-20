@@ -6,6 +6,7 @@ const {
   Customer,
   InspectionResult,
   InspectionItem,
+  InspectionItemName,
 } = require("../../models");
 const { sequelize } = require("../../config/db");
 
@@ -92,15 +93,23 @@ const createInspection = asyncHandler(async (req, res) => {
     // 点検結果を作成
     const inspectionResults = [];
     for (const result of results) {
-      // 点検項目の情報を取得
-      const inspectionItem = await InspectionItem.findByPk(result.inspection_item_id);
+      // 点検項目の情報を取得（item_name_masterを含む）
+      const inspectionItem = await InspectionItem.findByPk(result.inspection_item_id, {
+        include: [
+          {
+            model: InspectionItemName,
+            as: 'item_name_master',
+            attributes: ['id', 'name']
+          }
+        ]
+      });
       
       const inspectionResult = await InspectionResult.create(
         {
           inspection_id: inspection.id,
           inspection_item_id: result.inspection_item_id,
           device_id: device_id, // 機器IDを追加
-          check_item: inspectionItem ? inspectionItem.item_name : `点検項目${result.inspection_item_id}`, // 点検項目名を設定
+          check_item: inspectionItem && inspectionItem.item_name_master ? inspectionItem.item_name_master.name : `点検項目${result.inspection_item_id}`, // 点検項目マスタから名前を取得
           status: result.status,
           checked_at: new Date(),
         },
@@ -115,7 +124,13 @@ const createInspection = asyncHandler(async (req, res) => {
             {
               model: InspectionItem,
               as: "inspection_item",
-              attributes: ["id", "item_name"],
+              include: [
+                {
+                  model: InspectionItemName,
+                  as: 'item_name_master',
+                  attributes: ['id', 'name']
+                }
+              ]
             },
           ],
           transaction,
@@ -125,7 +140,7 @@ const createInspection = asyncHandler(async (req, res) => {
       inspectionResults.push({
         id: resultWithItem.id,
         inspection_item_id: resultWithItem.inspection_item_id,
-        check_item: resultWithItem.inspection_item.item_name,
+        check_item: resultWithItem.check_item, // 既に保存した値を使用
         status: resultWithItem.status,
         checked_at: resultWithItem.checked_at,
       });

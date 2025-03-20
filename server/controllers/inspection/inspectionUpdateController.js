@@ -6,6 +6,7 @@ const {
   Customer,
   InspectionResult,
   InspectionItem,
+  InspectionItemName,
 } = require("../../models");
 const { sequelize } = require("../../config/db");
 
@@ -65,7 +66,16 @@ const updateInspection = asyncHandler(async (req, res) => {
   if (results && results.length > 0) {
     for (const result of results) {
       const itemExists = await InspectionItem.findByPk(
-        result.inspection_item_id
+        result.inspection_item_id,
+        {
+          include: [
+            {
+              model: InspectionItemName,
+              as: "item_name_master",
+              attributes: ["id", "name"],
+            }
+          ]
+        }
       );
 
       if (!itemExists) {
@@ -114,37 +124,36 @@ const updateInspection = asyncHandler(async (req, res) => {
       const inspectionResults = [];
 
       for (const result of results) {
+        // 点検項目の情報を取得
+        const inspectionItem = await InspectionItem.findByPk(result.inspection_item_id, {
+          include: [
+            {
+              model: InspectionItemName,
+              as: 'item_name_master',
+              attributes: ['id', 'name']
+            }
+          ]
+        });
+
         const inspectionResult = await InspectionResult.create(
           {
             inspection_id: inspectionId,
             inspection_item_id: result.inspection_item_id,
+            device_id: device_id || inspection.device_id, // 機器IDを追加
+            check_item: inspectionItem && inspectionItem.item_name_master ? inspectionItem.item_name_master.name : `点検項目${result.inspection_item_id}`, // 点検項目マスタから名前を取得
             status: result.status,
             checked_at: new Date(),
           },
           { transaction }
         );
 
-        // 結果データを取得
-        const resultWithItem = await InspectionResult.findByPk(
-          inspectionResult.id,
-          {
-            include: [
-              {
-                model: InspectionItem,
-                as: "inspection_item",
-                attributes: ["id", "item_name"],
-              },
-            ],
-            transaction,
-          }
-        );
-
+        // 結果を直接使用
         inspectionResults.push({
-          id: resultWithItem.id,
-          inspection_item_id: resultWithItem.inspection_item_id,
-          check_item: resultWithItem.inspection_item.item_name,
-          status: resultWithItem.status,
-          checked_at: resultWithItem.checked_at,
+          id: inspectionResult.id,
+          inspection_item_id: inspectionResult.inspection_item_id,
+          check_item: inspectionResult.check_item, // 直接保存されたcheck_itemフィールドを使用
+          status: inspectionResult.status,
+          checked_at: inspectionResult.checked_at,
         });
       }
       // コミット
@@ -210,7 +219,13 @@ const updateInspection = asyncHandler(async (req, res) => {
               {
                 model: InspectionItem,
                 as: "inspection_item",
-                attributes: ["id", "item_name"],
+                include: [
+                  {
+                    model: InspectionItemName,
+                    as: "item_name_master",
+                    attributes: ["id", "name"],
+                  }
+                ],
               },
             ],
           },
@@ -222,7 +237,7 @@ const updateInspection = asyncHandler(async (req, res) => {
         return {
           id: result.id,
           inspection_item_id: result.inspection_item_id,
-          check_item: result.inspection_item.item_name,
+          check_item: result.check_item, // 直接保存されたcheck_itemフィールドを使用
           status: result.status,
           checked_at: result.checked_at,
         };

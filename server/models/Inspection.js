@@ -22,6 +22,15 @@ const Inspection = sequelize.define('Inspection', {
       notNull: { msg: '機器IDは必須です' }
     }
   },
+  // server_id カラムの追加（データベースに存在するため）
+  server_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 1, // デフォルト値を設定
+    validate: {
+      notNull: { msg: 'サーバーIDは必須です' }
+    }
+  },
   inspection_date: {
     type: DataTypes.DATEONLY,
     allowNull: false,
@@ -44,9 +53,19 @@ const Inspection = sequelize.define('Inspection', {
       notEmpty: { msg: '点検者名は必須です' },
       len: { args: [1, 50], msg: '点検者名は50文字以内で入力してください' }
     }
+  },
+  // status フィールドを再追加（データベースに追加されたため）
+  status: {
+    type: DataTypes.ENUM('準備中', '進行中', '完了'),
+    allowNull: false,
+    defaultValue: '完了',
+    validate: {
+      isIn: {
+        args: [['準備中', '進行中', '完了']],
+        msg: '無効な点検ステータスです'
+      }
+    }
   }
-  // statusフィールドはデータベースに存在しないため削除
-  // 後で追加する場合は ALTER TABLE inspections ADD COLUMN status ENUM('準備中', '進行中', '完了') NOT NULL DEFAULT '完了' を実行
 }, {
   tableName: 'inspections',
   timestamps: true,

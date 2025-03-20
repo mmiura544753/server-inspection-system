@@ -108,7 +108,7 @@ export const useInspectionAPI = (
         end_time: endTime,
         inspector_name: "システム管理者", // 実際のアプリケーションでは入力フィールドから取得
         device_id: inspectionItems[0]?.servers[0]?.device_id, // 最初の機器のIDを使用
-        status: "完了", // ステータスを追加
+        // status フィールドはデータベースに存在しないため削除
         results: [],
       };
 

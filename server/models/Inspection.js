@@ -44,18 +44,9 @@ const Inspection = sequelize.define('Inspection', {
       notEmpty: { msg: '点検者名は必須です' },
       len: { args: [1, 50], msg: '点検者名は50文字以内で入力してください' }
     }
-  },
-  status: {
-    type: DataTypes.ENUM('準備中', '進行中', '完了'),
-    allowNull: false,
-    defaultValue: '完了',
-    validate: {
-      isIn: {
-        args: [['準備中', '進行中', '完了']],
-        msg: '無効な点検ステータスです'
-      }
-    }
   }
+  // statusフィールドはデータベースに存在しないため削除
+  // 後で追加する場合は ALTER TABLE inspections ADD COLUMN status ENUM('準備中', '進行中', '完了') NOT NULL DEFAULT '完了' を実行
 }, {
   tableName: 'inspections',
   timestamps: true,

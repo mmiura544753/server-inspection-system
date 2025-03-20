@@ -20,7 +20,7 @@ const createInspection = asyncHandler(async (req, res) => {
     inspector_name,
     device_id,
     results,
-    status = "完了",
+    // status フィールドはデータベースに存在しないため削除
   } = req.body;
 
   // 必須フィールドのチェック
@@ -84,7 +84,7 @@ const createInspection = asyncHandler(async (req, res) => {
         end_time,
         inspector_name,
         device_id,
-        status,
+        // statusフィールドを削除
       },
       { transaction }
     );
@@ -159,7 +159,7 @@ const createInspection = asyncHandler(async (req, res) => {
       device_name: createdInspection.device.device_name,
       customer_id: createdInspection.device.customer.id,
       customer_name: createdInspection.device.customer.customer_name,
-      status: createdInspection.status,
+      // statusフィールドは削除
       results: inspectionResults,
       created_at: createdInspection.created_at,
       updated_at: createdInspection.updated_at,

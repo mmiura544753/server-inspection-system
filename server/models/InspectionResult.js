@@ -43,6 +43,14 @@ const InspectionResult = sequelize.define('InspectionResult', {
       notNull: { msg: '機器IDは必須です' }
     }
   },
+  check_item: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+    defaultValue: '', // 空文字列をデフォルト値として設定
+    validate: {
+      notNull: { msg: '点検項目は必須です' }
+    }
+  },
   status: {
     type: DataTypes.ENUM('正常', '異常'),
     allowNull: false,

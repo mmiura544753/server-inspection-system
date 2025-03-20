@@ -92,11 +92,15 @@ const createInspection = asyncHandler(async (req, res) => {
     // 点検結果を作成
     const inspectionResults = [];
     for (const result of results) {
+      // 点検項目の情報を取得
+      const inspectionItem = await InspectionItem.findByPk(result.inspection_item_id);
+      
       const inspectionResult = await InspectionResult.create(
         {
           inspection_id: inspection.id,
           inspection_item_id: result.inspection_item_id,
           device_id: device_id, // 機器IDを追加
+          check_item: inspectionItem ? inspectionItem.item_name : `点検項目${result.inspection_item_id}`, // 点検項目名を設定
           status: result.status,
           checked_at: new Date(),
         },

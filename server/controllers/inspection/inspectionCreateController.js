@@ -116,33 +116,13 @@ const createInspection = asyncHandler(async (req, res) => {
         { transaction }
       );
 
-      // 結果データを取得
-      const resultWithItem = await InspectionResult.findByPk(
-        inspectionResult.id,
-        {
-          include: [
-            {
-              model: InspectionItem,
-              as: "inspection_item",
-              include: [
-                {
-                  model: InspectionItemName,
-                  as: 'item_name_master',
-                  attributes: ['id', 'name']
-                }
-              ]
-            },
-          ],
-          transaction,
-        }
-      );
-
+      // 作成した結果を直接使用
       inspectionResults.push({
-        id: resultWithItem.id,
-        inspection_item_id: resultWithItem.inspection_item_id,
-        check_item: resultWithItem.check_item, // 既に保存した値を使用
-        status: resultWithItem.status,
-        checked_at: resultWithItem.checked_at,
+        id: inspectionResult.id,
+        inspection_item_id: inspectionResult.inspection_item_id,
+        check_item: inspectionResult.check_item, // 既に保存した値を使用
+        status: inspectionResult.status,
+        checked_at: inspectionResult.checked_at,
       });
     }
 

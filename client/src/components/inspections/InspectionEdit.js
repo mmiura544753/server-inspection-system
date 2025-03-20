@@ -223,102 +223,183 @@ const InspectionEdit = () => {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                               ラックNo.
                             </th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                               ユニット
                             </th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
                               サーバ名
                             </th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                               機種
                             </th>
                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               点検項目
                             </th>
-                            <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                               点検結果
                             </th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {values.results.map((result, index) => (
-                            <tr key={result.id}>
-                              <td className="px-4 py-2 text-sm text-gray-900">
-                                {result.rack_number || "-"}
-                              </td>
-                              <td className="px-4 py-2 text-sm text-gray-900">
-                                {result.unit_position || "-"}
-                              </td>
-                              <td className="px-4 py-2 text-sm text-gray-900">
-                                {result.device_name || "-"}
-                              </td>
-                              <td className="px-4 py-2 text-sm text-gray-900">
-                                {result.model || "-"}
-                              </td>
-                              <td className="px-4 py-2 text-sm text-gray-900">
-                                {result.check_item}
-                              </td>
-                              <td className="px-4 py-2 text-sm text-gray-900">
-                                <div className="flex justify-center space-x-4">
-                                  <Field
-                                    type="radio"
-                                    id={`results.${index}.status.正常`}
-                                    name={`results.${index}.status`}
-                                    value="正常"
-                                    className="hidden"
-                                  />
-                                  <label
-                                    htmlFor={`results.${index}.status.正常`}
-                                    className={`px-4 py-1 rounded-md font-semibold cursor-pointer ${
-                                      values.results[index].status === "正常"
-                                        ? "bg-green-500 text-white"
-                                        : "bg-gray-200 text-gray-600"
-                                    }`}
-                                  >
-                                    正常
-                                  </label>
-                                  
-                                  <Field
-                                    type="radio"
-                                    id={`results.${index}.status.異常`}
-                                    name={`results.${index}.status`}
-                                    value="異常"
-                                    className="hidden"
-                                  />
-                                  <label
-                                    htmlFor={`results.${index}.status.異常`}
-                                    className={`px-4 py-1 rounded-md font-semibold cursor-pointer ${
-                                      values.results[index].status === "異常"
-                                        ? "bg-red-500 text-white"
-                                        : "bg-gray-200 text-gray-600"
-                                    }`}
-                                  >
-                                    異常
-                                  </label>
-                                </div>
-                                <ErrorMessage
-                                  name={`results.${index}.status`}
-                                  component="div"
-                                  className="text-red-500 text-xs mt-1"
-                                />
+                          {(() => {
+                            // 結果をラックNo.と機器情報でグループ化
+                            const groupedResults = [];
+                            let currentGroup = null;
+                            
+                            // まず結果をグループ化
+                            values.results.forEach(result => {
+                              const rackNumber = result.rack_number || '-';
+                              const deviceKey = `${rackNumber}-${result.unit_position || '-'}-${result.device_name || '-'}-${result.model || '-'}`;
+                              
+                              if (!currentGroup || currentGroup.deviceKey !== deviceKey) {
+                                // 新しい機器グループを作成
+                                currentGroup = {
+                                  rackNumber,
+                                  deviceKey,
+                                  device: {
+                                    rack_number: result.rack_number,
+                                    unit_position: result.unit_position,
+                                    device_name: result.device_name,
+                                    model: result.model
+                                  },
+                                  items: []
+                                };
+                                groupedResults.push(currentGroup);
+                              }
+                              
+                              // このグループに結果を追加
+                              currentGroup.items.push({...result, originalIndex: groupedResults.length - 1});
+                            });
+                            
+                            // ラックNo.でのグループ化のためのマップを作成
+                            const rackGroups = {};
+                            groupedResults.forEach(group => {
+                              const rackNumber = group.rackNumber;
+                              if (!rackGroups[rackNumber]) {
+                                rackGroups[rackNumber] = [];
+                              }
+                              rackGroups[rackNumber].push(group);
+                            });
+                            
+                            // JSXを生成
+                            const rows = [];
+                            
+                            Object.entries(rackGroups).forEach(([rackNumber, groups]) => {
+                              // 各ラックグループの最初の行にだけラックNo.を表示
+                              let isFirstInRack = true;
+                              const totalRowsInRack = groups.reduce((total, group) => total + group.items.length, 0);
+                              
+                              groups.forEach(group => {
+                                // 各デバイスグループの最初の行にだけデバイス情報を表示
+                                const deviceRowCount = group.items.length;
                                 
-                                {/* 確認日時は表示しないが、フォームには含める */}
-                                <div className="hidden">
-                                  <DatePicker
-                                    selected={values.results[index].checked_at}
-                                    onChange={(date) => setFieldValue(`results.${index}.checked_at`, date)}
-                                    showTimeSelect
-                                    timeFormat="HH:mm"
-                                    timeIntervals={15}
-                                    dateFormat="yyyy/MM/dd HH:mm"
-                                  />
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
+                                group.items.forEach((result, itemIndex) => {
+                                  const resultIndex = values.results.findIndex(r => r.id === result.id);
+                                  
+                                  const row = (
+                                    <tr key={result.id}>
+                                      {/* ラックNo.は各ラックグループの最初の行にのみ表示 */}
+                                      {isFirstInRack && (
+                                        <td className="px-4 py-2 align-middle" rowSpan={totalRowsInRack}>
+                                          <div>
+                                            <span>ラックNo.{rackNumber}</span>
+                                          </div>
+                                        </td>
+                                      )}
+                                      
+                                      {/* デバイス情報は各デバイスの最初の行にのみ表示 */}
+                                      {itemIndex === 0 && (
+                                        <>
+                                          <td className="px-4 py-2 align-middle" rowSpan={deviceRowCount}>
+                                            {group.device.unit_position || '-'}
+                                          </td>
+                                          <td className="px-4 py-2 align-middle" rowSpan={deviceRowCount}>
+                                            {group.device.device_name || '-'}
+                                          </td>
+                                          <td className="px-4 py-2 align-middle" rowSpan={deviceRowCount}>
+                                            {group.device.model || '-'}
+                                          </td>
+                                        </>
+                                      )}
+                                      
+                                      {/* 点検項目と結果は全ての行に表示 */}
+                                      <td className="px-4 py-2 text-sm text-gray-900">
+                                        {result.check_item}
+                                      </td>
+                                      <td className="px-4 py-2 text-sm text-gray-900">
+                                        <div className="flex justify-center space-x-4">
+                                          <Field
+                                            type="radio"
+                                            id={`results.${resultIndex}.status.正常`}
+                                            name={`results.${resultIndex}.status`}
+                                            value="正常"
+                                            className="hidden"
+                                          />
+                                          <label
+                                            htmlFor={`results.${resultIndex}.status.正常`}
+                                            className={`px-4 py-1 rounded-md font-semibold cursor-pointer ${
+                                              values.results[resultIndex].status === "正常"
+                                                ? "bg-green-500 text-white"
+                                                : "bg-gray-200 text-gray-600"
+                                            }`}
+                                          >
+                                            正常
+                                          </label>
+                                          
+                                          <Field
+                                            type="radio"
+                                            id={`results.${resultIndex}.status.異常`}
+                                            name={`results.${resultIndex}.status`}
+                                            value="異常"
+                                            className="hidden"
+                                          />
+                                          <label
+                                            htmlFor={`results.${resultIndex}.status.異常`}
+                                            className={`px-4 py-1 rounded-md font-semibold cursor-pointer ${
+                                              values.results[resultIndex].status === "異常"
+                                                ? "bg-red-500 text-white"
+                                                : "bg-gray-200 text-gray-600"
+                                            }`}
+                                          >
+                                            異常
+                                          </label>
+                                        </div>
+                                        <ErrorMessage
+                                          name={`results.${resultIndex}.status`}
+                                          component="div"
+                                          className="text-red-500 text-xs mt-1"
+                                        />
+                                        
+                                        {/* 確認日時は表示しないが、フォームには含める */}
+                                        <div className="hidden">
+                                          <DatePicker
+                                            selected={values.results[resultIndex].checked_at}
+                                            onChange={(date) => setFieldValue(`results.${resultIndex}.checked_at`, date)}
+                                            showTimeSelect
+                                            timeFormat="HH:mm"
+                                            timeIntervals={15}
+                                            dateFormat="yyyy/MM/dd HH:mm"
+                                          />
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                  
+                                  rows.push(row);
+                                  
+                                  // 最初の行のフラグを更新
+                                  if (isFirstInRack) {
+                                    isFirstInRack = false;
+                                  }
+                                });
+                              });
+                            });
+                            
+                            return rows;
+                          })()}
                         </tbody>
                       </table>
                     </div>

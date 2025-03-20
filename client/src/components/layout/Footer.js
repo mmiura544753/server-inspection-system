@@ -1,9 +1,9 @@
 // src/components/layout/Footer.js
 import React from "react";
-import { version } from "../../../package.json";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const appVersion = "0.1.0"; // 手動でバージョン番号を設定
 
   return (
     <footer className="app-footer">
@@ -12,7 +12,7 @@ const Footer = () => {
           © {currentYear} Zukosha Co., Ltd. All rights reserved.
         </p>
         <p className="m-0">
-          v{version}
+          v{appVersion}
         </p>
       </div>
     </footer>

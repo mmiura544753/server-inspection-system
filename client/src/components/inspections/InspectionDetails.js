@@ -127,74 +127,127 @@ const InspectionDetails = () => {
           <div className="mt-4">
             <h2 className="h4">点検結果</h2>
             {inspection.results && inspection.results.length > 0 ? (
-              <div className="table-responsive">
-                <table className="table table-hover">
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border border-gray-300">
                   <thead>
-                    <tr>
-                      <th>ラックNo.</th>
-                      <th>ユニット</th>
-                      <th>サーバ名</th>
-                      <th>機種</th>
-                      <th>点検項目</th>
-                      <th>点検結果</th>
+                    <tr className="bg-gray-100">
+                      <th className="px-4 py-2 border-b w-24">ラックNo.</th>
+                      <th className="px-4 py-2 border-b w-28">ユニット</th>
+                      <th className="px-4 py-2 border-b w-40">サーバ名</th>
+                      <th className="px-4 py-2 border-b w-32">機種</th>
+                      <th className="px-4 py-2 border-b">点検項目</th>
+                      <th className="px-4 py-2 text-center border-b w-48">点検結果</th>
                     </tr>
                   </thead>
                   <tbody>
                     {(() => {
-                      // 結果をラックNo.でグループ化
-                      let currentRack = null;
-                      let currentDevice = null;
-                      let currentDeviceKey = null;
+                      // 結果をラックNo.と機器情報でグループ化
+                      const groupedResults = [];
+                      let currentGroup = null;
                       
-                      // 点検作業画面と同様に表示
-                      return inspection.results.map((result, index) => {
-                        const rackNumber = result.rack_number;
-                        const deviceKey = `${result.rack_number}-${result.unit_position}-${result.device_name}-${result.model}`;
+                      // まず結果をグループ化
+                      inspection.results.forEach(result => {
+                        const rackNumber = result.rack_number || '-';
+                        const deviceKey = `${rackNumber}-${result.unit_position || '-'}-${result.device_name || '-'}-${result.model || '-'}`;
                         
-                        const isNewRack = rackNumber !== currentRack;
-                        const isNewDevice = deviceKey !== currentDeviceKey;
-                        
-                        // 新しいラックNoまたは新しい機器情報の場合、更新
-                        if (isNewDevice) {
-                          if (isNewRack) {
-                            currentRack = rackNumber;
-                          }
-                          currentDeviceKey = deviceKey;
-                          currentDevice = {
-                            rack_number: result.rack_number,
-                            unit_position: result.unit_position,
-                            device_name: result.device_name,
-                            model: result.model
+                        if (!currentGroup || currentGroup.deviceKey !== deviceKey) {
+                          // 新しい機器グループを作成
+                          currentGroup = {
+                            rackNumber,
+                            deviceKey,
+                            device: {
+                              rack_number: result.rack_number,
+                              unit_position: result.unit_position,
+                              device_name: result.device_name,
+                              model: result.model
+                            },
+                            items: []
                           };
+                          groupedResults.push(currentGroup);
                         }
                         
-                        return (
-                          <tr key={result.id}>
-                            {/* ラックNo.は同じラックNoが続く場合は表示しない */}
-                            <td className="align-middle">
-                              {isNewRack ? currentDevice.rack_number || '-' : ''}
-                            </td>
-                            {/* 機器情報は新しい機器の場合のみ表示 */}
-                            <td className="align-middle">
-                              {isNewDevice ? currentDevice.unit_position || '-' : ''}
-                            </td>
-                            <td className="align-middle">
-                              {isNewDevice ? currentDevice.device_name || '-' : ''}
-                            </td>
-                            <td className="align-middle">
-                              {isNewDevice ? currentDevice.model || '-' : ''}
-                            </td>
-                            <td>{result.check_item}</td>
-                            <td className="text-center">
-                              <span
-                                className={`badge ${result.status === "正常" ? "bg-success" : "bg-danger"}`}
-                              >
-                                {result.status}
-                              </span>
-                            </td>
-                          </tr>
-                        );
+                        // このグループに結果を追加
+                        currentGroup.items.push(result);
                       });
+                      
+                      // ラックNo.でのグループ化のためのマップを作成
+                      const rackGroups = {};
+                      groupedResults.forEach(group => {
+                        const rackNumber = group.rackNumber;
+                        if (!rackGroups[rackNumber]) {
+                          rackGroups[rackNumber] = [];
+                        }
+                        rackGroups[rackNumber].push(group);
+                      });
+                      
+                      // JSXを生成
+                      const rows = [];
+                      
+                      Object.entries(rackGroups).forEach(([rackNumber, groups]) => {
+                        // 各ラックグループの最初の行にだけラックNo.を表示
+                        let isFirstInRack = true;
+                        const totalRowsInRack = groups.reduce((total, group) => total + group.items.length, 0);
+                        
+                        groups.forEach(group => {
+                          // 各デバイスグループの最初の行にだけデバイス情報を表示
+                          const deviceRowCount = group.items.length;
+                          
+                          group.items.forEach((result, itemIndex) => {
+                            const row = (
+                              <tr key={result.id}>
+                                {/* ラックNo.は各ラックグループの最初の行にのみ表示 */}
+                                {isFirstInRack && (
+                                  <td className="align-middle" rowSpan={totalRowsInRack}>
+                                    <div>
+                                      <span>ラックNo.{rackNumber}</span>
+                                    </div>
+                                  </td>
+                                )}
+                                
+                                {/* デバイス情報は各デバイスの最初の行にのみ表示 */}
+                                {itemIndex === 0 && (
+                                  <>
+                                    <td className="align-middle" rowSpan={deviceRowCount}>
+                                      {group.device.unit_position || '-'}
+                                    </td>
+                                    <td className="align-middle" rowSpan={deviceRowCount}>
+                                      {group.device.device_name || '-'}
+                                    </td>
+                                    <td className="align-middle" rowSpan={deviceRowCount}>
+                                      {group.device.model || '-'}
+                                    </td>
+                                  </>
+                                )}
+                                
+                                {/* 点検項目と結果は全ての行に表示 */}
+                                <td>{result.check_item}</td>
+                                <td className="px-4 py-2 border-b">
+                                  <div className="flex justify-center">
+                                    <span
+                                      className={`px-4 py-1 rounded-md font-semibold ${
+                                        result.status === "正常"
+                                          ? "bg-green-500 text-white"
+                                          : "bg-red-500 text-white"
+                                      }`}
+                                    >
+                                      {result.status}
+                                    </span>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                            
+                            rows.push(row);
+                            
+                            // 最初の行のフラグを更新
+                            if (isFirstInRack) {
+                              isFirstInRack = false;
+                            }
+                          });
+                        });
+                      });
+                      
+                      return rows;
                     })()}
                   </tbody>
                 </table>

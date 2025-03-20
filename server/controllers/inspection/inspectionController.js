@@ -80,19 +80,6 @@ const getInspectionById = asyncHandler(async (req, res) => {
       {
         model: InspectionResult,
         as: "results",
-        include: [
-          {
-            model: InspectionItem,
-            as: "inspection_item",
-            include: [
-              {
-                model: InspectionItemName,
-                as: "item_name_master",
-                attributes: ["id", "name"],
-              }
-            ],
-          },
-        ],
       },
     ],
   });
@@ -219,19 +206,6 @@ const getLatestInspectionByDeviceId = asyncHandler(async (req, res) => {
       {
         model: InspectionResult,
         as: "results",
-        include: [
-          {
-            model: InspectionItem,
-            as: "inspection_item",
-            include: [
-              {
-                model: InspectionItemName,
-                as: "item_name_master",
-                attributes: ["id", "name"],
-              }
-            ],
-          },
-        ],
       },
     ],
     order: [

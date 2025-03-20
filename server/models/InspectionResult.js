@@ -1,6 +1,7 @@
 // server/models/InspectionResult.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
+const InspectionItem = require('./InspectionItem');
 
 // 点検結果モデル
 const InspectionResult = sequelize.define('InspectionResult', {
@@ -63,5 +64,8 @@ const InspectionResult = sequelize.define('InspectionResult', {
   createdAt: 'created_at',
   updatedAt: 'updated_at'
 });
+
+// リレーションシップの定義
+InspectionResult.belongsTo(InspectionItem, { foreignKey: 'inspection_item_id', as: 'inspection_item' });
 
 module.exports = InspectionResult;

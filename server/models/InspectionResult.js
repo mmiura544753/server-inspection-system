@@ -32,6 +32,17 @@ const InspectionResult = sequelize.define('InspectionResult', {
       notNull: { msg: '点検項目IDは必須です' }
     }
   },
+  device_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'devices',
+      key: 'id'
+    },
+    validate: {
+      notNull: { msg: '機器IDは必須です' }
+    }
+  },
   status: {
     type: DataTypes.ENUM('正常', '異常'),
     allowNull: false,

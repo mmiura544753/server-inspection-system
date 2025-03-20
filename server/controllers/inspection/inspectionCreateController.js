@@ -96,6 +96,7 @@ const createInspection = asyncHandler(async (req, res) => {
         {
           inspection_id: inspection.id,
           inspection_item_id: result.inspection_item_id,
+          device_id: device_id, // 機器IDを追加
           status: result.status,
           checked_at: new Date(),
         },

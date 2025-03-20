@@ -89,6 +89,17 @@ const Home = () => {
             </div>
           </div>
         </div>
+        <div className="col-md-3">
+          <div className="card text-center">
+            <div className="card-body">
+              <FaList className="fs-1 text-indigo-600 mb-3" />
+              <h5 className="card-title">点検結果管理</h5>
+              <Link to="/inspections" className="btn btn-sm btn-secondary">
+                一覧を見る
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

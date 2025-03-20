@@ -41,7 +41,7 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
                 return location.servers.flatMap((server, serverIndex) => {
                   return server.items.map((item, itemIndex) => (
                     <tr key={`${locationIndex}-${serverIndex}-${itemIndex}`}>
-                      {/* 最初の項目でのみロケーション名を表示 */}
+                      {/* 最初の項目でのみロケーション名と「全て正常」ボタンを表示 */}
                       {serverIndex === 0 && itemIndex === 0 ? (
                         <td
                           className="px-4 py-2 border-b"
@@ -50,7 +50,22 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
                             0
                           )}
                         >
-                          {location.locationName || "-"}
+                          <div className="flex flex-col space-y-2">
+                            <span>{location.locationName || "-"}</span>
+                            <button
+                              onClick={() => {
+                                // このラックの全サーバーの全項目を正常に設定
+                                location.servers.forEach((srv, srvIdx) => {
+                                  srv.items.forEach((_, itmIdx) => {
+                                    updateResult(locationIndex, srvIdx, itmIdx, true);
+                                  });
+                                });
+                              }}
+                              className="bg-green-100 hover:bg-green-200 text-green-800 text-xs py-1 px-2 rounded"
+                            >
+                              全て正常
+                            </button>
+                          </div>
                         </td>
                       ) : null}
                       {/* 各サーバーの最初の項目でのみユニット位置を表示 */}
@@ -129,7 +144,19 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
                 return (
                   <tr key={`location-${locationIndex}`}>
                     <td className="px-4 py-2 border-b">
-                      {location.locationName || location.rack_number || "-"}
+                      <div className="flex flex-col space-y-2">
+                        <span>{location.locationName || location.rack_number || "-"}</span>
+                        <button
+                          onClick={() => {
+                            // フラットな構造用の全正常設定
+                            location.result = true;
+                            updateResult(locationIndex, 0, 0, true);
+                          }}
+                          className="bg-green-100 hover:bg-green-200 text-green-800 text-xs py-1 px-2 rounded"
+                        >
+                          全て正常
+                        </button>
+                      </div>
                     </td>
                     <td className="px-4 py-2 border-b">
                       {location.unit_position || "-"}

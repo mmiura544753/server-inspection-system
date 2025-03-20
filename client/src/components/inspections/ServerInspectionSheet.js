@@ -67,6 +67,7 @@ const ServerInspectionSheet = () => {
         loadPreviousData={loadPreviousData}
         saveInspectionResults={() => saveInspectionResults(navigate)}
         saveStatus={saveStatus}
+        calculateCompletionRate={calculateCompletionRate}
       />
     </div>
   );

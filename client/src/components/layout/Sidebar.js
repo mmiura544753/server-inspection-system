@@ -16,10 +16,18 @@ const Sidebar = () => {
         <ul>
           <li>
             <NavLink
-              to="/inspections"
+              to="/inspections/new"
               className={({ isActive }) => (isActive ? "sidebar-active" : "")}
             >
               <FaClipboardCheck className="me-2" /> 点検作業
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/inspections"
+              className={({ isActive }) => (isActive ? "sidebar-active" : "")}
+            >
+              <FaList className="me-2" /> 点検結果管理
             </NavLink>
           </li>
           <li>

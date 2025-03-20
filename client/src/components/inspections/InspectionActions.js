@@ -6,24 +6,25 @@ const InspectionActions = ({
   saveInspectionResults,
   saveStatus,
   error,
+  calculateCompletionRate,
 }) => {
+  // 親コンポーネントから完了率を受け取る
+  const completionRate = calculateCompletionRate ? calculateCompletionRate() : 0;
+  const isComplete = completionRate === 100;
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-between">
-        <button
-          className="px-6 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600"
-          onClick={loadPreviousData}
-        >
-          前回の点検データを表示
-        </button>
+      <div className="flex justify-end">
         <button
           className={`px-6 py-2 ${
             saveStatus === "error"
               ? "bg-red-600 hover:bg-red-700"
-              : "bg-indigo-600 hover:bg-indigo-700"
+              : isComplete 
+                ? "bg-indigo-600 hover:bg-indigo-700" 
+                : "bg-gray-400 cursor-not-allowed"
           } text-white rounded-lg shadow`}
           onClick={saveInspectionResults}
-          disabled={saveStatus === "saving"}
+          disabled={saveStatus === "saving" || !isComplete}
         >
           {saveStatus === "saving" ? (
             <>

@@ -1,7 +1,14 @@
 // src/components/inspectionItems/InspectionItemList.js
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaDownload, FaUpload } from "react-icons/fa";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaSearch,
+  FaDownload,
+  FaUpload,
+} from "react-icons/fa";
 import { inspectionItemAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
@@ -198,11 +205,14 @@ const InspectionItemList = () => {
   const filteredItems = items.filter(
     (item) =>
       (item.item_name &&
-        item.item_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        typeof item.item_name === "string" &&
+        item.item_name.includes(searchTerm)) ||
       (item.device_name &&
-        item.device_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        typeof item.device_name === "string" &&
+        item.device_name.includes(searchTerm)) ||
       (item.customer_name &&
-        item.customer_name.toLowerCase().includes(searchTerm.toLowerCase()))
+        typeof item.customer_name === "string" &&
+        item.customer_name.includes(searchTerm))
   );
 
   // 日付フォーマット
@@ -419,13 +429,12 @@ const InspectionItemList = () => {
                     <div>
                       <h6>インポートされた点検項目：</h6>
                       <ul>
-                        {importResult.importedItems
-                          .slice(0, 10)
-                          .map((item) => (
-                            <li key={item.id}>
-                              {item.item_name} ({item.device_name}/{item.customer_name})
-                            </li>
-                          ))}
+                        {importResult.importedItems.slice(0, 10).map((item) => (
+                          <li key={item.id}>
+                            {item.item_name} ({item.device_name}/
+                            {item.customer_name})
+                          </li>
+                        ))}
                         {importResult.importedItems.length > 10 && (
                           <li>
                             ...他 {importResult.importedItems.length - 10} 件

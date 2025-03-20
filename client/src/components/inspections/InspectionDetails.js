@@ -121,10 +121,6 @@ const InspectionDetails = () => {
                 <span className="font-semibold mr-2">点検者:</span>
                 <span>{inspection.inspector_name}</span>
               </div>
-              <div className="mb-2">
-                <span className="font-semibold mr-2">点検ID:</span>
-                <span>{inspection.id}</span>
-              </div>
             </div>
           </div>
 
@@ -145,16 +141,24 @@ const InspectionDetails = () => {
                   </thead>
                   <tbody>
                     {(() => {
-                      // 結果を機器情報でグループ化
+                      // 結果をラックNo.でグループ化
+                      let currentRack = null;
                       let currentDevice = null;
                       let currentDeviceKey = null;
                       
-                      // 同じ機器情報を持つ行をグループ化して表示
+                      // 点検作業画面と同様に表示
                       return inspection.results.map((result, index) => {
+                        const rackNumber = result.rack_number;
                         const deviceKey = `${result.rack_number}-${result.unit_position}-${result.device_name}-${result.model}`;
+                        
+                        const isNewRack = rackNumber !== currentRack;
                         const isNewDevice = deviceKey !== currentDeviceKey;
                         
+                        // 新しいラックNoまたは新しい機器情報の場合、更新
                         if (isNewDevice) {
+                          if (isNewRack) {
+                            currentRack = rackNumber;
+                          }
                           currentDeviceKey = deviceKey;
                           currentDevice = {
                             rack_number: result.rack_number,
@@ -166,21 +170,20 @@ const InspectionDetails = () => {
                         
                         return (
                           <tr key={result.id}>
-                            {isNewDevice ? (
-                              <>
-                                <td className="align-middle">{currentDevice.rack_number || '-'}</td>
-                                <td className="align-middle">{currentDevice.unit_position || '-'}</td>
-                                <td className="align-middle">{currentDevice.device_name || '-'}</td>
-                                <td className="align-middle">{currentDevice.model || '-'}</td>
-                              </>
-                            ) : (
-                              <>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                              </>
-                            )}
+                            {/* ラックNo.は同じラックNoが続く場合は表示しない */}
+                            <td className="align-middle">
+                              {isNewRack ? currentDevice.rack_number || '-' : ''}
+                            </td>
+                            {/* 機器情報は新しい機器の場合のみ表示 */}
+                            <td className="align-middle">
+                              {isNewDevice ? currentDevice.unit_position || '-' : ''}
+                            </td>
+                            <td className="align-middle">
+                              {isNewDevice ? currentDevice.device_name || '-' : ''}
+                            </td>
+                            <td className="align-middle">
+                              {isNewDevice ? currentDevice.model || '-' : ''}
+                            </td>
                             <td>{result.check_item}</td>
                             <td className="text-center">
                               <span

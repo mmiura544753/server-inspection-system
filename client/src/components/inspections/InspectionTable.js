@@ -1,7 +1,18 @@
 // src/components/inspections/InspectionTable.js
-import React from "react";
+import React, { useState } from "react";
+import SortableTableHeader from "../common/SortableTableHeader";
+import { sortArrayByKey } from "../../utils/sortUtils";
 
 const InspectionTable = ({ inspectionItems, updateResult }) => {
+  // ソート用の状態
+  const [sortField, setSortField] = useState(null);
+  const [sortDescending, setSortDescending] = useState(false);
+
+  // ソートの処理
+  const handleSort = (field, descending) => {
+    setSortField(field);
+    setSortDescending(descending);
+  };
   // inspectionItemsが未定義または空の配列の場合の表示
   if (!inspectionItems || inspectionItems.length === 0) {
     return (
@@ -17,6 +28,21 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
 
   // データの構造を確認してログに出力
   console.log("インスペクションテーブルに渡されたデータ:", inspectionItems);
+  
+  // データをソートする
+  const sortedItems = [...inspectionItems];
+  if (sortField) {
+    // フラットな構造の場合は単純にソート
+    if (!sortedItems[0]?.servers) {
+      sortArrayByKey(sortedItems, sortField, sortDescending);
+    } else {
+      // ネストされた構造の場合は、まずlocationNameなどの外側の値でソート
+      if (['locationName', 'rack_number'].includes(sortField)) {
+        sortArrayByKey(sortedItems, sortField, sortDescending);
+      }
+      // item_nameやunit_positionなどのネストされた値でのソートは今回は対応しない
+    }
+  }
 
   // APIから返されたデータ構造に合わせた処理
   return (
@@ -25,16 +51,51 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
-              <th className="px-4 py-2 text-left border-b w-24">ラックNo</th>
-              <th className="px-4 py-2 text-left border-b w-28">ユニット</th>
-              <th className="px-4 py-2 text-left border-b w-40">サーバ名</th>
-              <th className="px-4 py-2 text-left border-b w-32">機種</th>
-              <th className="px-4 py-2 text-left border-b">点検項目</th>
+              <SortableTableHeader
+                field="locationName"
+                label="ラックNo"
+                currentSortField={sortField}
+                isDescending={sortDescending}
+                onSort={handleSort}
+                className="px-4 py-2 border-b w-24"
+              />
+              <SortableTableHeader
+                field="unit_position"
+                label="ユニット"
+                currentSortField={sortField}
+                isDescending={sortDescending}
+                onSort={handleSort}
+                className="px-4 py-2 border-b w-28"
+              />
+              <SortableTableHeader
+                field="id"
+                label="サーバ名"
+                currentSortField={sortField}
+                isDescending={sortDescending}
+                onSort={handleSort}
+                className="px-4 py-2 border-b w-40"
+              />
+              <SortableTableHeader
+                field="model"
+                label="機種"
+                currentSortField={sortField}
+                isDescending={sortDescending}
+                onSort={handleSort}
+                className="px-4 py-2 border-b w-32"
+              />
+              <SortableTableHeader
+                field="item_name"
+                label="点検項目"
+                currentSortField={sortField}
+                isDescending={sortDescending}
+                onSort={handleSort}
+                className="px-4 py-2 border-b"
+              />
               <th className="px-4 py-2 text-center border-b w-48">点検結果</th>
             </tr>
           </thead>
           <tbody>
-            {inspectionItems.map((location, locationIndex) => {
+            {sortedItems.map((location, locationIndex) => {
               // 各ロケーションごとにserversが存在するか確認
               if (location.servers && Array.isArray(location.servers)) {
                 // 通常の階層化されたデータ構造の場合

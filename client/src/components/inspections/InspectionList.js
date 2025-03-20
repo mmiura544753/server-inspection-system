@@ -1,57 +1,12 @@
 // src/components/inspections/InspectionList.js
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { inspectionAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
+import SortableTableHeader from "../common/SortableTableHeader";
 import { formatDate, formatTime } from "../../utils/dateTimeUtils";
 import { sortArrayByKey } from "../../utils/sortUtils";
-
-// TailwindCSSスタイルのソートヘッダーコンポーネント
-const SortableTailwindHeader = ({ 
-  field, 
-  label, 
-  currentSortField, 
-  isDescending, 
-  onSort 
-}) => {
-  // このヘッダーが現在ソートされているかどうか
-  const isSorted = currentSortField === field;
-
-  // クリック時の処理
-  const handleClick = () => {
-    if (isSorted) {
-      // 同じフィールドがすでにソートされている場合は、昇順/降順を切り替え
-      onSort(field, !isDescending);
-    } else {
-      // 新しいフィールドでソートする場合は、デフォルトで昇順
-      onSort(field, false);
-    }
-  };
-
-  // ソートアイコンの選択
-  const getSortIcon = () => {
-    if (!isSorted) {
-      return <FaSort className="ml-1 text-gray-400" />;
-    }
-    return isDescending 
-      ? <FaSortDown className="ml-1 text-blue-500" /> 
-      : <FaSortUp className="ml-1 text-blue-500" />;
-  };
-
-  return (
-    <th 
-      className="py-2 px-4 border-b text-left cursor-pointer select-none"
-      onClick={handleClick}
-    >
-      <div className="flex items-center">
-        {label}
-        {getSortIcon()}
-      </div>
-    </th>
-  );
-};
 
 const InspectionList = () => {
   const [inspections, setInspections] = useState([]);
@@ -116,40 +71,45 @@ const InspectionList = () => {
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
               <tr className="bg-gray-100">
-                <SortableTailwindHeader
+                <SortableTableHeader
                   field="inspection_date"
                   label="点検日"
                   currentSortField={sortField}
                   isDescending={sortDescending}
                   onSort={handleSort}
+                  className="py-2 px-4 border-b text-left"
                 />
-                <SortableTailwindHeader
+                <SortableTableHeader
                   field="inspector_name"
                   label="点検者名"
                   currentSortField={sortField}
                   isDescending={sortDescending}
                   onSort={handleSort}
+                  className="py-2 px-4 border-b text-left"
                 />
-                <SortableTailwindHeader
+                <SortableTableHeader
                   field="start_time"
                   label="点検時間"
                   currentSortField={sortField}
                   isDescending={sortDescending}
                   onSort={handleSort}
+                  className="py-2 px-4 border-b text-left"
                 />
-                <SortableTailwindHeader
+                <SortableTableHeader
                   field="device_name"
                   label="機器名"
                   currentSortField={sortField}
                   isDescending={sortDescending}
                   onSort={handleSort}
+                  className="py-2 px-4 border-b text-left"
                 />
-                <SortableTailwindHeader
+                <SortableTableHeader
                   field="customer_name"
                   label="顧客名"
                   currentSortField={sortField}
                   isDescending={sortDescending}
                   onSort={handleSort}
+                  className="py-2 px-4 border-b text-left"
                 />
                 <th className="py-2 px-4 border-b text-center">操作</th>
               </tr>

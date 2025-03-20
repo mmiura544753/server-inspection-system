@@ -1,7 +1,6 @@
 // server/models/InspectionResult.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
-const InspectionItem = require('./InspectionItem');
 
 // 点検結果モデル
 const InspectionResult = sequelize.define('InspectionResult', {
@@ -30,6 +29,15 @@ const InspectionResult = sequelize.define('InspectionResult', {
     },
     validate: {
       notNull: { msg: '機器IDは必須です' }
+    }
+  },
+  // 点検項目IDへの参照
+  inspection_item_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'inspection_items',
+      key: 'id'
     }
   },
   // 点検時点の項目名を直接保存
@@ -65,7 +73,7 @@ const InspectionResult = sequelize.define('InspectionResult', {
   updatedAt: 'updated_at'
 });
 
-// リレーションシップの定義
-// InspectionItem.jsで相互のアソシエーションを定義しています
+// リレーションシップの定義は index.js で行います
+// 循環参照を避けるため、ここではInspectionItemをrequireしません
 
 module.exports = InspectionResult;

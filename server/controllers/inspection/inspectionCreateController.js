@@ -19,15 +19,15 @@ const createInspection = asyncHandler(async (req, res) => {
     start_time,
     end_time,
     inspector_name,
-    device_id,
+    device_id, // クライアントから送信されるが、今後はinspection_resultsのデータから取得
     status = "完了", // ステータスのデフォルト値
     results,
   } = req.body;
 
   // 必須フィールドのチェック
-  if (!inspection_date || !inspector_name || !device_id) {
+  if (!inspection_date || !inspector_name) {
     res.status(400);
-    throw new Error("必須フィールドが不足しています（inspection_date, inspector_name, device_id）");
+    throw new Error("必須フィールドが不足しています（inspection_date, inspector_name）");
   }
   
   console.log("点検作成リクエスト:", JSON.stringify(req.body, null, 2));
@@ -84,7 +84,6 @@ const createInspection = asyncHandler(async (req, res) => {
         start_time,
         end_time,
         inspector_name,
-        device_id,
         status, // ステータスフィールド
       },
       { transaction }
@@ -108,7 +107,7 @@ const createInspection = asyncHandler(async (req, res) => {
         {
           inspection_id: inspection.id,
           inspection_item_id: result.inspection_item_id,
-          device_id: device_id, // 機器IDを追加
+          // device_id フィールドを削除
           check_item: inspectionItem && inspectionItem.item_name_master ? inspectionItem.item_name_master.name : `点検項目${result.inspection_item_id}`, // 点検項目マスタから名前を取得
           status: result.status,
           checked_at: new Date(),

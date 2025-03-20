@@ -17,16 +17,28 @@ const getInspections = asyncHandler(async (req, res) => {
   const inspections = await Inspection.findAll({
     include: [
       {
-        model: Device,
-        as: "device",
-        attributes: ["id", "device_name", "customer_id"],
+        model: InspectionResult,
+        as: "results",
         include: [
           {
-            model: Customer,
-            as: "customer",
-            attributes: ["id", "customer_name"],
+            model: InspectionItem,
+            as: "inspection_item",
+            include: [
+              {
+                model: Device,
+                as: "device",
+                include: [
+                  {
+                    model: Customer,
+                    as: "customer",
+                    attributes: ["id", "customer_name"],
+                  },
+                ],
+              },
+            ],
           },
         ],
+        limit: 1, // 結果は1つだけ取得（顧客名取得用）
       },
     ],
     order: [
@@ -35,21 +47,21 @@ const getInspections = asyncHandler(async (req, res) => {
     ],
   });
 
-  // レスポンス形式を調整（顧客名を追加）
+  // レスポンス形式を調整
   const formattedInspections = inspections.map((inspection) => {
+    // 最初の結果から関連するデバイスと顧客情報を取得
+    const firstResult = inspection.results && inspection.results.length > 0 ? inspection.results[0] : null;
+    const device = firstResult?.inspection_item?.device || null;
+    const customer = device?.customer || null;
+
     return {
       id: inspection.id,
       inspection_date: inspection.inspection_date,
       start_time: inspection.start_time,
       end_time: inspection.end_time,
       inspector_name: inspection.inspector_name,
-      device_id: inspection.device_id,
-      device_name: inspection.device ? inspection.device.device_name : null,
-      customer_id: inspection.device ? inspection.device.customer_id : null,
-      customer_name:
-        inspection.device && inspection.device.customer
-          ? inspection.device.customer.customer_name
-          : null,
+      customer_id: customer?.id || null,
+      customer_name: customer?.customer_name || null,
       status: inspection.status,
       created_at: inspection.created_at,
       updated_at: inspection.updated_at,
@@ -66,20 +78,33 @@ const getInspectionById = asyncHandler(async (req, res) => {
   const inspection = await Inspection.findByPk(req.params.id, {
     include: [
       {
-        model: Device,
-        as: "device",
-        attributes: ["id", "device_name", "customer_id", "rack_number", "unit_start_position", "unit_end_position", "model"],
-        include: [
-          {
-            model: Customer,
-            as: "customer",
-            attributes: ["id", "customer_name"],
-          },
-        ],
-      },
-      {
         model: InspectionResult,
         as: "results",
+        include: [
+          {
+            model: InspectionItem,
+            as: "inspection_item",
+            include: [
+              {
+                model: Device,
+                as: "device",
+                attributes: ["id", "device_name", "customer_id", "rack_number", "unit_start_position", "unit_end_position", "model"],
+                include: [
+                  {
+                    model: Customer,
+                    as: "customer",
+                    attributes: ["id", "customer_name"],
+                  },
+                ],
+              },
+              {
+                model: InspectionItemName,
+                as: "item_name_master",
+                attributes: ["id", "name"],
+              }
+            ]
+          }
+        ]
       },
     ],
   });
@@ -87,6 +112,7 @@ const getInspectionById = asyncHandler(async (req, res) => {
   if (inspection) {
     // レスポンス形式を調整
     const formattedResults = inspection.results.map((result) => {
+      const device = result.inspection_item?.device || null;
       return {
         id: result.id,
         inspection_item_id: result.inspection_item_id,
@@ -94,16 +120,18 @@ const getInspectionById = asyncHandler(async (req, res) => {
         check_item: result.check_item,
         status: result.status,
         checked_at: result.checked_at,
-        device_id: inspection.device_id,
-        device_name: inspection.device ? inspection.device.device_name : null,
+        device_id: device?.id || null,
+        device_name: device?.device_name || null,
+        customer_id: device?.customer?.id || null,
+        customer_name: device?.customer?.customer_name || null,
         // 追加のデバイス情報
-        rack_number: inspection.device ? inspection.device.rack_number : null,
-        unit_position: inspection.device ? (
-          inspection.device.unit_start_position === inspection.device.unit_end_position || !inspection.device.unit_end_position
-            ? `U${inspection.device.unit_start_position || ''}`
-            : `U${inspection.device.unit_start_position || ''}-U${inspection.device.unit_end_position || ''}`
+        rack_number: device?.rack_number || null,
+        unit_position: device ? (
+          device.unit_start_position === device.unit_end_position || !device.unit_end_position
+            ? `U${device.unit_start_position || ''}`
+            : `U${device.unit_start_position || ''}-U${device.unit_end_position || ''}`
         ) : null,
-        model: inspection.device ? inspection.device.model : null,
+        model: device?.model || null,
       };
     });
 
@@ -113,13 +141,6 @@ const getInspectionById = asyncHandler(async (req, res) => {
       start_time: inspection.start_time,
       end_time: inspection.end_time,
       inspector_name: inspection.inspector_name,
-      device_id: inspection.device_id,
-      device_name: inspection.device ? inspection.device.device_name : null,
-      customer_id: inspection.device ? inspection.device.customer_id : null,
-      customer_name:
-        inspection.device && inspection.device.customer
-          ? inspection.device.customer.customer_name
-          : null,
       status: inspection.status,
       results: formattedResults,
       created_at: inspection.created_at,
@@ -155,9 +176,30 @@ const getInspectionsByDeviceId = asyncHandler(async (req, res) => {
     throw new Error("機器が見つかりません");
   }
 
-  // 指定された機器IDの点検データを検索
-  const inspections = await Inspection.findAll({
+  // 指定された機器に関連する点検項目を取得
+  const inspectionItems = await InspectionItem.findAll({
     where: { device_id: deviceId },
+    attributes: ['id'],
+  });
+
+  const inspectionItemIds = inspectionItems.map(item => item.id);
+
+  // 点検項目に関連する点検結果を検索
+  const inspectionResults = await InspectionResult.findAll({
+    where: { 
+      inspection_item_id: { [Op.in]: inspectionItemIds } 
+    },
+    attributes: ['inspection_id'],
+    group: ['inspection_id'],
+  });
+
+  const inspectionIds = inspectionResults.map(result => result.inspection_id);
+
+  // 関連する点検データを取得
+  const inspections = await Inspection.findAll({
+    where: { 
+      id: { [Op.in]: inspectionIds } 
+    },
     order: [
       ["inspection_date", "DESC"],
       ["created_at", "DESC"],
@@ -207,13 +249,41 @@ const getLatestInspectionByDeviceId = asyncHandler(async (req, res) => {
     throw new Error("機器が見つかりません");
   }
 
-  // 指定された機器IDの最新点検データを検索
-  const latestInspection = await Inspection.findOne({
+  // 指定された機器に関連する点検項目を取得
+  const inspectionItems = await InspectionItem.findAll({
     where: { device_id: deviceId },
+    attributes: ['id'],
+  });
+
+  const inspectionItemIds = inspectionItems.map(item => item.id);
+
+  // 点検項目に関連する点検結果を検索
+  const inspectionResults = await InspectionResult.findAll({
+    where: { 
+      inspection_item_id: { [Op.in]: inspectionItemIds } 
+    },
+    attributes: ['inspection_id'],
+    group: ['inspection_id'],
+  });
+
+  const inspectionIds = inspectionResults.map(result => result.inspection_id);
+
+  // 関連する最新の点検データを取得
+  const latestInspection = await Inspection.findOne({
+    where: { 
+      id: { [Op.in]: inspectionIds } 
+    },
     include: [
       {
         model: InspectionResult,
         as: "results",
+        include: [
+          {
+            model: InspectionItem,
+            as: "inspection_item",
+            where: { device_id: deviceId },
+          }
+        ]
       },
     ],
     order: [

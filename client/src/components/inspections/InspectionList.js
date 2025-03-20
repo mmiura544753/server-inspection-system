@@ -96,14 +96,6 @@ const InspectionList = () => {
                   className="py-2 px-4 border-b text-left"
                 />
                 <SortableTableHeader
-                  field="device_name"
-                  label="機器名"
-                  currentSortField={sortField}
-                  isDescending={sortDescending}
-                  onSort={handleSort}
-                  className="py-2 px-4 border-b text-left"
-                />
-                <SortableTableHeader
                   field="customer_name"
                   label="顧客名"
                   currentSortField={sortField}
@@ -128,7 +120,6 @@ const InspectionList = () => {
                         )}`
                       : "時間未記録"}
                   </td>
-                  <td className="py-2 px-4 border-b">{inspection.device_name}</td>
                   <td className="py-2 px-4 border-b">{inspection.customer_name}</td>
                   <td className="py-2 px-4 border-b text-center">
                     <div className="flex justify-center space-x-2">

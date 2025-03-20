@@ -102,39 +102,29 @@ const InspectionDetails = () => {
         </div>
 
         <div className="card-body">
-          <div className="row mb-4">
-            <div className="col-md-6">
-              <h2 className="h4">基本情報</h2>
-              <table className="table table-bordered">
-                <tbody>
-                  <tr>
-                    <th width="30%">点検ID</th>
-                    <td>{inspection.id}</td>
-                  </tr>
-                  <tr>
-                    <th>点検日</th>
-                    <td>{formatDate(inspection.inspection_date)}</td>
-                  </tr>
-                  <tr>
-                    <th>開始時間</th>
-                    <td>{formatTime(inspection.start_time)}</td>
-                  </tr>
-                  <tr>
-                    <th>終了時間</th>
-                    <td>{formatTime(inspection.end_time)}</td>
-                  </tr>
-                  <tr>
-                    <th>点検者</th>
-                    <td>{inspection.inspector_name}</td>
-                  </tr>
-                  <tr>
-                    <th>登録日時</th>
-                    <td>
-                      {new Date(inspection.created_at).toLocaleString("ja-JP")}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4 border-b pb-2">基本情報</h2>
+            <div className="flex flex-wrap items-center space-x-6">
+              <div className="mb-2">
+                <span className="font-semibold mr-2">点検日:</span>
+                <span>{formatDate(inspection.inspection_date)}</span>
+              </div>
+              <div className="mb-2">
+                <span className="font-semibold mr-2">開始時間:</span>
+                <span>{formatTime(inspection.start_time)}</span>
+              </div>
+              <div className="mb-2">
+                <span className="font-semibold mr-2">終了時間:</span>
+                <span>{formatTime(inspection.end_time)}</span>
+              </div>
+              <div className="mb-2">
+                <span className="font-semibold mr-2">点検者:</span>
+                <span>{inspection.inspector_name}</span>
+              </div>
+              <div className="mb-2">
+                <span className="font-semibold mr-2">点検ID:</span>
+                <span>{inspection.id}</span>
+              </div>
             </div>
           </div>
 
@@ -154,22 +144,56 @@ const InspectionDetails = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {inspection.results.map((result) => (
-                      <tr key={result.id}>
-                        <td>{result.rack_number || '-'}</td>
-                        <td>{result.unit_position || '-'}</td>
-                        <td>{result.device_name || '-'}</td>
-                        <td>{result.model || '-'}</td>
-                        <td>{result.check_item}</td>
-                        <td>
-                          <span
-                            className={`badge ${result.status === "正常" ? "bg-success" : "bg-danger"}`}
-                          >
-                            {result.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {(() => {
+                      // 結果を機器情報でグループ化
+                      const groupedResults = {};
+                      let currentDevice = null;
+                      let currentDeviceKey = null;
+                      
+                      // 同じ機器情報を持つ行をグループ化して表示
+                      return inspection.results.map((result, index) => {
+                        const deviceKey = `${result.rack_number}-${result.unit_position}-${result.device_name}-${result.model}`;
+                        const isNewDevice = deviceKey !== currentDeviceKey;
+                        
+                        if (isNewDevice) {
+                          currentDeviceKey = deviceKey;
+                          currentDevice = {
+                            rack_number: result.rack_number,
+                            unit_position: result.unit_position,
+                            device_name: result.device_name,
+                            model: result.model
+                          };
+                        }
+                        
+                        return (
+                          <tr key={result.id}>
+                            {isNewDevice ? (
+                              <>
+                                <td className="align-middle">{currentDevice.rack_number || '-'}</td>
+                                <td className="align-middle">{currentDevice.unit_position || '-'}</td>
+                                <td className="align-middle">{currentDevice.device_name || '-'}</td>
+                                <td className="align-middle">{currentDevice.model || '-'}</td>
+                              </>
+                            ) : (
+                              <>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                              </>
+                            )}
+                            <td>{result.check_item}</td>
+                            <td className="text-center">
+                              <span
+                                className={`badge ${result.status === "正常" ? "bg-success" : "bg-danger"}`}
+                              >
+                                {result.status}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })()}
                   </tbody>
                 </table>
               </div>

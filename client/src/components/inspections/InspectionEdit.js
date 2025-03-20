@@ -53,10 +53,6 @@ const InspectionEdit = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchInspectionDetails();
-  }, [id, fetchInspectionDetails]);
-
   const fetchInspectionDetails = useCallback(async () => {
     try {
       setLoading(true);
@@ -81,6 +77,10 @@ const InspectionEdit = () => {
       setLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    fetchInspectionDetails();
+  }, [fetchInspectionDetails]);
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {

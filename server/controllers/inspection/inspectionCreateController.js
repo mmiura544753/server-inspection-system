@@ -172,8 +172,10 @@ const createInspection = asyncHandler(async (req, res) => {
 
     res.status(201).json(formattedInspection);
   } catch (error) {
-    // ロールバック
-    await transaction.rollback();
+    // トランザクションがまだアクティブな場合のみロールバック
+    if (transaction && !transaction.finished) {
+      await transaction.rollback();
+    }
     console.error("点検作成エラー:", error);
     throw error;
   }

@@ -26,9 +26,10 @@ import DeviceForm from "./components/devices/DeviceForm";
 import DeviceDetails from "./components/devices/DeviceDetails";
 
 // 点検作業コンポーネント
-// import InspectionList from "./components/inspections/InspectionList";
+import InspectionList from "./components/inspections/InspectionList";
 import ServerInspectionSheet from "./components/inspections/ServerInspectionSheet"; // 新しい点検シートコンポーネント
 import InspectionDetails from "./components/inspections/InspectionDetails";
+import InspectionEdit from "./components/inspections/InspectionEdit";
 
 // 点検項目マスタコンポーネント
 import InspectionItemList from "./components/inspectionItems/InspectionItemList";
@@ -61,7 +62,7 @@ function App() {
               {/* 点検作業関連のルート */}
               <Route
                 path="/inspections"
-                element={<Navigate to="/inspections/new" />}
+                element={<InspectionList />}
               />
               <Route
                 path="/inspections/new"
@@ -69,7 +70,7 @@ function App() {
               />
               <Route
                 path="/inspections/edit/:id"
-                element={<InspectionDetails />}
+                element={<InspectionEdit />}
               />
               <Route path="/inspections/:id" element={<InspectionDetails />} />
               {/* 点検項目マスタ関連のルート */}

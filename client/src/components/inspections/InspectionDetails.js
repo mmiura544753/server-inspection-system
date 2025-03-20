@@ -192,9 +192,14 @@ const InspectionDetails = () => {
         show={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         title="点検削除の確認"
-        onConfirm={() => {
-          // 削除処理。実際のAPIコールは省略（点検一覧ページに任せる）
-          window.location.href = "/inspections";
+        onConfirm={async () => {
+          try {
+            await inspectionAPI.delete(id);
+            window.location.href = "/inspections";
+          } catch (err) {
+            setError("点検の削除に失敗しました。");
+            setShowDeleteModal(false);
+          }
         }}
       >
         <p>点検ID「{inspection.id}」の記録を削除してもよろしいですか？</p>

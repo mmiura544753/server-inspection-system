@@ -1,6 +1,6 @@
 // server/controllers/inspectionItem/inspectionItemController.js
 const asyncHandler = require('express-async-handler');
-const { InspectionItem, Device, Customer } = require('../../models');
+const { InspectionItem, Device, Customer, InspectionItemName } = require('../../models');
 
 // @desc    全点検項目の取得
 // @route   GET /api/inspection-items
@@ -19,16 +19,22 @@ const getInspectionItems = asyncHandler(async (req, res) => {
             attributes: ['id', 'customer_name']
           }
         ]
+      },
+      {
+        model: InspectionItemName,
+        as: 'item_name_master',
+        attributes: ['id', 'name']
       }
     ],
-    order: [['item_name', 'ASC']]
+    order: [[{ model: InspectionItemName, as: 'item_name_master' }, 'name', 'ASC']]
   });
   
   // レスポンス形式を調整
   const formattedItems = items.map(item => {
     return {
       id: item.id,
-      item_name: item.item_name,
+      item_name: item.item_name_master ? item.item_name_master.name : '',
+      item_name_id: item.item_name_id,
       device_id: item.device_id,
       device_name: item.device.device_name,
       customer_id: item.device.customer.id,
@@ -58,6 +64,11 @@ const getInspectionItemById = asyncHandler(async (req, res) => {
             attributes: ['id', 'customer_name']
           }
         ]
+      },
+      {
+        model: InspectionItemName,
+        as: 'item_name_master',
+        attributes: ['id', 'name']
       }
     ]
   });
@@ -66,7 +77,8 @@ const getInspectionItemById = asyncHandler(async (req, res) => {
     // レスポンス形式を調整
     const formattedItem = {
       id: item.id,
-      item_name: item.item_name,
+      item_name: item.item_name_master ? item.item_name_master.name : '',
+      item_name_id: item.item_name_id,
       device_id: item.device_id,
       device_name: item.device.device_name,
       customer_id: item.device.customer.id,
@@ -103,14 +115,22 @@ const getInspectionItemsByDeviceId = asyncHandler(async (req, res) => {
   
   const items = await InspectionItem.findAll({
     where: { device_id: req.params.deviceId },
-    order: [['item_name', 'ASC']]
+    include: [
+      {
+        model: InspectionItemName,
+        as: 'item_name_master',
+        attributes: ['id', 'name']
+      }
+    ],
+    order: [[{ model: InspectionItemName, as: 'item_name_master' }, 'name', 'ASC']]
   });
   
   // レスポンス形式を調整
   const formattedItems = items.map(item => {
     return {
       id: item.id,
-      item_name: item.item_name,
+      item_name: item.item_name_master ? item.item_name_master.name : '',
+      item_name_id: item.item_name_id,
       device_id: device.id,
       device_name: device.device_name,
       customer_id: device.customer.id,

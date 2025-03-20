@@ -146,7 +146,6 @@ const InspectionDetails = () => {
                   <tbody>
                     {(() => {
                       // 結果を機器情報でグループ化
-                      const groupedResults = {};
                       let currentDevice = null;
                       let currentDeviceKey = null;
                       

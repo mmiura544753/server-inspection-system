@@ -1,5 +1,5 @@
 // src/components/inspections/InspectionEdit.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -55,9 +55,9 @@ const InspectionEdit = () => {
 
   useEffect(() => {
     fetchInspectionDetails();
-  }, [id]);
+  }, [id, fetchInspectionDetails]);
 
-  const fetchInspectionDetails = async () => {
+  const fetchInspectionDetails = useCallback(async () => {
     try {
       setLoading(true);
       const data = await inspectionAPI.getById(id);
@@ -80,7 +80,7 @@ const InspectionEdit = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {

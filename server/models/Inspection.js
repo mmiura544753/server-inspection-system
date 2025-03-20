@@ -2,7 +2,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const Device = require('./Device');
-const InspectionResult = require('./InspectionResult');
 
 // 点検モデル
 const Inspection = sequelize.define('Inspection', {
@@ -66,12 +65,7 @@ const Inspection = sequelize.define('Inspection', {
   updatedAt: 'updated_at'
 });
 
-// リレーションシップの定義
-Inspection.belongsTo(Device, { foreignKey: 'device_id', as: 'device' });
-Device.hasMany(Inspection, { foreignKey: 'device_id', as: 'inspections' });
-
-// 点検結果との関連付け
-Inspection.hasMany(InspectionResult, { foreignKey: 'inspection_id', as: 'results' });
-InspectionResult.belongsTo(Inspection, { foreignKey: 'inspection_id', as: 'inspection' });
+// リレーションシップはindex.jsで一元管理します
+// 循環参照を避けるため、InspectionResultの直接参照を削除
 
 module.exports = Inspection;

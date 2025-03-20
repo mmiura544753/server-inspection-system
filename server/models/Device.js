@@ -141,8 +141,7 @@ Device.prototype.getUnitPositionDisplay = function () {
   return `U${this.unit_start_position}-U${this.unit_end_position}`;
 };
 
-// リレーションシップの定義
+// リレーションシップの定義 - 他のすべてのリレーションはindex.jsで管理
 Device.belongsTo(Customer, { foreignKey: "customer_id", as: "customer" });
-Customer.hasMany(Device, { foreignKey: "customer_id", as: "devices" });
 
 module.exports = Device;

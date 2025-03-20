@@ -135,6 +135,7 @@ const createInspection = asyncHandler(async (req, res) => {
     await transaction.commit();
 
     // 作成した点検の詳細情報を取得（関連データ含む）
+    // トランザクションは既にコミットされているため、新しいクエリとして実行
     const createdInspection = await Inspection.findByPk(inspection.id, {
       include: [
         {
@@ -150,7 +151,7 @@ const createInspection = asyncHandler(async (req, res) => {
           ],
         },
       ],
-      transaction,
+      // トランザクションオプションを削除
     });
 
     // レスポンス形式を調整

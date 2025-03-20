@@ -1,7 +1,6 @@
 // server/models/InspectionResult.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
-const InspectionItem = require('./InspectionItem');
 
 // 点検結果モデル
 const InspectionResult = sequelize.define('InspectionResult', {
@@ -21,17 +20,6 @@ const InspectionResult = sequelize.define('InspectionResult', {
       notNull: { msg: '点検IDは必須です' }
     }
   },
-  inspection_item_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: InspectionItem,
-      key: 'id'
-    },
-    validate: {
-      notNull: { msg: '点検項目IDは必須です' }
-    }
-  },
   device_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -43,14 +31,15 @@ const InspectionResult = sequelize.define('InspectionResult', {
       notNull: { msg: '機器IDは必須です' }
     }
   },
+  // 点検時点の項目名を直接保存
   check_item: {
     type: DataTypes.TEXT,
     allowNull: false,
-    defaultValue: '', // 空文字列をデフォルト値として設定
     validate: {
-      notNull: { msg: '点検項目は必須です' }
+      notEmpty: { msg: '点検項目名は必須です' }
     }
   },
+  // 点検結果を直接保存
   status: {
     type: DataTypes.ENUM('正常', '異常'),
     allowNull: false,
@@ -74,8 +63,5 @@ const InspectionResult = sequelize.define('InspectionResult', {
   createdAt: 'created_at',
   updatedAt: 'updated_at'
 });
-
-// リレーションシップの定義
-InspectionResult.belongsTo(InspectionItem, { foreignKey: 'inspection_item_id', as: 'inspection_item' });
 
 module.exports = InspectionResult;

@@ -2,6 +2,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const Device = require('./Device');
+const InspectionItemName = require('./InspectionItemName');
 
 // 点検項目モデル
 const InspectionItem = sequelize.define('InspectionItem', {
@@ -21,12 +22,15 @@ const InspectionItem = sequelize.define('InspectionItem', {
       notNull: { msg: '機器IDは必須です' }
     }
   },
-  item_name: {
-    type: DataTypes.STRING(255),
+  item_name_id: {
+    type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: InspectionItemName,
+      key: 'id'
+    },
     validate: {
-      notEmpty: { msg: '点検項目名は必須です' },
-      len: { args: [1, 255], msg: '点検項目名は255文字以内で入力してください' }
+      notNull: { msg: '点検項目名IDは必須です' }
     }
   }
 }, {
@@ -39,8 +43,8 @@ const InspectionItem = sequelize.define('InspectionItem', {
   indexes: [
     {
       unique: true,
-      fields: ['device_id', 'item_name'],
-      name: 'device_item_unique_constraint'
+      fields: ['device_id', 'item_name_id'],
+      name: 'device_item_name_unique_constraint'
     }
   ]
 });
@@ -48,5 +52,8 @@ const InspectionItem = sequelize.define('InspectionItem', {
 // リレーションシップの定義
 InspectionItem.belongsTo(Device, { foreignKey: 'device_id', as: 'device' });
 Device.hasMany(InspectionItem, { foreignKey: 'device_id', as: 'inspection_items' });
+
+InspectionItem.belongsTo(InspectionItemName, { foreignKey: 'item_name_id', as: 'item_name_master' });
+InspectionItemName.hasMany(InspectionItem, { foreignKey: 'item_name_id', as: 'inspection_items' });
 
 module.exports = InspectionItem;

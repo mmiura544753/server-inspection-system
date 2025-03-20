@@ -9,6 +9,18 @@ import { inspectionAPI } from "../../services/api";
 import Loading from "../common/Loading";
 import Alert from "../common/Alert";
 
+// 同じ日付かどうかを確認するヘルパー関数
+const isSameDay = (date1, date2) => {
+  if (!date1 || !date2) return false;
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  );
+};
+
 // バリデーションスキーマ
 const InspectionSchema = Yup.object().shape({
   inspection_date: Yup.date().required("点検日は必須です"),
@@ -20,7 +32,16 @@ const InspectionSchema = Yup.object().shape({
   results: Yup.array().of(
     Yup.object().shape({
       status: Yup.string().required("ステータスは必須です"),
-      checked_at: Yup.date().required("確認日時は必須です"),
+      checked_at: Yup.date()
+        .required("確認日時は必須です")
+        .test(
+          'same-day',
+          '確認日時は点検日と同じ日付である必要があります',
+          function(value) {
+            const { inspection_date } = this.parent;
+            return isSameDay(value, inspection_date);
+          }
+        ),
     })
   ),
 });
@@ -135,7 +156,22 @@ const InspectionEdit = () => {
                       </label>
                       <DatePicker
                         selected={values.inspection_date}
-                        onChange={(date) => setFieldValue("inspection_date", date)}
+                        onChange={(date) => {
+                          setFieldValue("inspection_date", date);
+                          
+                          // 点検日が変更されたら、すべての確認日時の日付部分を同期する
+                          if (values.results && values.results.length > 0) {
+                            values.results.forEach((result, index) => {
+                              if (result.checked_at) {
+                                const currentTime = new Date(result.checked_at);
+                                const newDate = new Date(date);
+                                newDate.setHours(currentTime.getHours());
+                                newDate.setMinutes(currentTime.getMinutes());
+                                setFieldValue(`results.${index}.checked_at`, newDate);
+                              }
+                            });
+                          }
+                        }}
                         dateFormat="yyyy/MM/dd"
                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                       />

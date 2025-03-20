@@ -2,6 +2,16 @@
 import api from './index';
 
 export const inspectionItemAPI = {
+  // 点検項目名一覧を取得
+  getAllItemNames: async () => {
+    try {
+      const response = await api.get("/inspection-item-names");
+      return response.data;
+    } catch (error) {
+      console.error("点検項目名一覧取得エラー:", error);
+      throw error;
+    }
+  },
   // 点検項目一覧を取得
   getAll: async () => {
     try {

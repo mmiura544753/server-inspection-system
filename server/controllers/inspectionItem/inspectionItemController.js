@@ -38,14 +38,18 @@ const getInspectionItems = asyncHandler(async (req, res) => {
 
   // レスポンス形式を調整
   const formattedItems = items.map((item) => {
+    // デバイスが null の場合があるため、安全にアクセス
+    const device = item.device || {};
+    const customer = device.customer || {};
+    
     return {
       id: item.id,
       item_name: item.item_name_master ? item.item_name_master.name : "",
       item_name_id: item.item_name_id,
       device_id: item.device_id,
-      device_name: item.device.device_name,
-      customer_id: item.device.customer.id,
-      customer_name: item.device.customer.customer_name,
+      device_name: device.device_name || null,
+      customer_id: customer.id || null,
+      customer_name: customer.customer_name || null,
       created_at: item.created_at,
       updated_at: item.updated_at,
     };
@@ -82,14 +86,18 @@ const getInspectionItemById = asyncHandler(async (req, res) => {
 
   if (item) {
     // レスポンス形式を調整
+    // デバイスが null の場合があるため、安全にアクセス
+    const device = item.device || {};
+    const customer = device.customer || {};
+    
     const formattedItem = {
       id: item.id,
       item_name: item.item_name_master ? item.item_name_master.name : "",
       item_name_id: item.item_name_id,
       device_id: item.device_id,
-      device_name: item.device.device_name,
-      customer_id: item.device.customer.id,
-      customer_name: item.device.customer.customer_name,
+      device_name: device.device_name || null,
+      customer_id: customer.id || null,
+      customer_name: customer.customer_name || null,
       created_at: item.created_at,
       updated_at: item.updated_at,
     };

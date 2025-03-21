@@ -14,7 +14,9 @@ const { Op } = require("sequelize");
 // @route   GET /api/inspections
 // @access  Public
 const getInspections = asyncHandler(async (req, res) => {
+  // device_idカラムを明示的に指定せずに取得
   const inspections = await Inspection.findAll({
+    attributes: ['id', 'inspection_date', 'start_time', 'end_time', 'inspector_name', 'status', 'created_at', 'updated_at'],
     include: [
       {
         model: InspectionResult,
@@ -76,6 +78,7 @@ const getInspections = asyncHandler(async (req, res) => {
 // @access  Public
 const getInspectionById = asyncHandler(async (req, res) => {
   const inspection = await Inspection.findByPk(req.params.id, {
+    attributes: ['id', 'inspection_date', 'start_time', 'end_time', 'inspector_name', 'status', 'created_at', 'updated_at'],
     include: [
       {
         model: InspectionResult,
@@ -197,6 +200,7 @@ const getInspectionsByDeviceId = asyncHandler(async (req, res) => {
 
   // 関連する点検データを取得
   const inspections = await Inspection.findAll({
+    attributes: ['id', 'inspection_date', 'start_time', 'end_time', 'inspector_name', 'status', 'created_at', 'updated_at'],
     where: { 
       id: { [Op.in]: inspectionIds } 
     },
@@ -270,6 +274,7 @@ const getLatestInspectionByDeviceId = asyncHandler(async (req, res) => {
 
   // 関連する最新の点検データを取得
   const latestInspection = await Inspection.findOne({
+    attributes: ['id', 'inspection_date', 'start_time', 'end_time', 'inspector_name', 'status', 'created_at', 'updated_at'],
     where: { 
       id: { [Op.in]: inspectionIds } 
     },

@@ -7,7 +7,7 @@ const { sequelize } = require("../../config/db");
 // @access  Public
 const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
   try {
-    // SQLクエリを直接実行 - customer_nameを削除し、ORDER BY句を変更
+    // SQLクエリを直接実行 - item_name_idとInspectionItemNameテーブルを追加
     const query = `
       SELECT 
         c.id as customer_id,
@@ -18,7 +18,7 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
         d.unit_start_position,
         d.unit_end_position,
         ii.id as item_id, 
-        ii.item_name, 
+        iin.name as item_name,
         d.device_type
       FROM 
         inspection_items ii
@@ -26,6 +26,8 @@ const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
         devices d ON ii.device_id = d.id
       JOIN 
         customers c ON d.customer_id = c.id
+      JOIN
+        inspection_item_names iin ON ii.item_name_id = iin.id
       ORDER BY 
         d.rack_number ASC, d.unit_start_position DESC
     `;

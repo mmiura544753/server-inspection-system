@@ -17,9 +17,9 @@ Device.hasMany(InspectionItem, { foreignKey: 'device_id', as: 'inspection_items'
 InspectionItem.belongsTo(InspectionItemName, { foreignKey: 'item_name_id', as: 'item_name_master' });
 InspectionItemName.hasMany(InspectionItem, { foreignKey: 'item_name_id', as: 'inspection_items' });
 
-// Inspection と Device
-Inspection.belongsTo(Device, { foreignKey: 'device_id', as: 'device' });
-Device.hasMany(Inspection, { foreignKey: 'device_id', as: 'inspections' });
+// Inspection と Device (optional)
+Inspection.belongsTo(Device, { foreignKey: 'device_id', as: 'device', constraints: false });
+Device.hasMany(Inspection, { foreignKey: 'device_id', as: 'inspections', constraints: false });
 
 // InspectionResult と InspectionItem
 InspectionResult.belongsTo(InspectionItem, { foreignKey: 'inspection_item_id', as: 'inspection_item' });

@@ -32,20 +32,23 @@ const createInspection = asyncHandler(async (req, res) => {
   
   console.log("点検作成リクエスト:", JSON.stringify(req.body, null, 2));
 
-  // 機器の存在確認
-  const device = await Device.findByPk(device_id, {
-    include: [
-      {
-        model: Customer,
-        as: "customer",
-        attributes: ["id", "customer_name"],
-      },
-    ],
-  });
+  // device_idが指定されている場合のみ機器の存在確認
+  let device = null;
+  if (device_id) {
+    device = await Device.findByPk(device_id, {
+      include: [
+        {
+          model: Customer,
+          as: "customer",
+          attributes: ["id", "customer_name"],
+        },
+      ],
+    });
 
-  if (!device) {
-    res.status(400);
-    throw new Error("指定された機器が存在しません");
+    if (!device) {
+      res.status(400);
+      throw new Error("指定された機器が存在しません");
+    }
   }
 
   // 結果が空でないことを確認
@@ -77,7 +80,7 @@ const createInspection = asyncHandler(async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    // 点検レコードを作成
+    // 点検レコードを作成 (device_id は不要)
     const inspection = await Inspection.create(
       {
         inspection_date,
@@ -85,6 +88,7 @@ const createInspection = asyncHandler(async (req, res) => {
         end_time,
         inspector_name,
         status, // ステータスフィールド
+        device_id: null // 明示的に null を設定
       },
       { transaction }
     );
@@ -130,23 +134,7 @@ const createInspection = asyncHandler(async (req, res) => {
 
     // 作成した点検の詳細情報を取得（関連データ含む）
     // トランザクションは既にコミットされているため、新しいクエリとして実行
-    const createdInspection = await Inspection.findByPk(inspection.id, {
-      include: [
-        {
-          model: Device,
-          as: "device",
-          attributes: ["id", "device_name", "customer_id"],
-          include: [
-            {
-              model: Customer,
-              as: "customer",
-              attributes: ["id", "customer_name"],
-            },
-          ],
-        },
-      ],
-      // トランザクションオプションを削除
-    });
+    const createdInspection = await Inspection.findByPk(inspection.id);
 
     // レスポンス形式を調整
     const formattedInspection = {
@@ -155,10 +143,6 @@ const createInspection = asyncHandler(async (req, res) => {
       start_time: createdInspection.start_time,
       end_time: createdInspection.end_time,
       inspector_name: createdInspection.inspector_name,
-      device_id: createdInspection.device_id,
-      device_name: createdInspection.device.device_name,
-      customer_id: createdInspection.device.customer.id,
-      customer_name: createdInspection.device.customer.customer_name,
       status: createdInspection.status,
       results: inspectionResults,
       created_at: createdInspection.created_at,

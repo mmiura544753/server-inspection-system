@@ -12,13 +12,10 @@ const Inspection = sequelize.define('Inspection', {
   },
   device_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: Device,
       key: 'id'
-    },
-    validate: {
-      notNull: { msg: '機器IDは必須です' }
     }
   },
   // server_idカラムは削除されました

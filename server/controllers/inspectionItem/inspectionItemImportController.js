@@ -76,24 +76,42 @@ const importInspectionItemsFromCsv = asyncHandler(async (req, res) => {
         console.log(`行 ${i+1}/${records.length} の処理中...`);
         
         try {
-          // 点検項目名、機器名、顧客名を取得 (様々なカラム名に対応)
-          const itemName = row['点検項目名'] || row['item_name'] || '';
-          const deviceName = row['機器名'] || row['device_name'] || '';
-          const customerName = row['顧客名'] || row['customer_name'] || '';
+          // 各フィールドを取得 (様々なカラム名に対応)
+          const itemName = row['点検項目'] || row['item_name'] || '';
+          const deviceName = row['サーバ名'] || row['device_name'] || '';
+          const rackNumber = row['ラックNo.'] || row['rack_number'] || '';
+          const unitPosition = row['ユニット'] || row['unit_position'] || '';
+          const model = row['機種'] || row['model'] || '';
+          // 顧客名は機器検索に使用 (サーバーの新規作成時に必要)
+          const customerName = row['顧客名'] || row['customer_name'] || '未分類';
           // CSVからIDを読み取る
           const itemId = row['ID'] || row['id'] || null;
+          
+          // ユニット位置を開始と終了に分解
+          let unitStart = null;
+          let unitEnd = null;
+          
+          if (unitPosition) {
+            // 「～」または「-」で区切られている場合は範囲とみなす
+            if (unitPosition.includes('～') || unitPosition.includes('-')) {
+              const separator = unitPosition.includes('～') ? '～' : '-';
+              const parts = unitPosition.split(separator);
+              unitStart = parseInt(parts[0].trim(), 10) || null;
+              unitEnd = parts.length > 1 ? (parseInt(parts[1].trim(), 10) || null) : null;
+            } else {
+              // 単一値の場合
+              unitStart = parseInt(unitPosition.trim(), 10) || null;
+            }
+          }
           
           console.log(`処理中の行: 項目名="${itemName}", 機器名="${deviceName}", 顧客名="${customerName}", ID=${itemId}`);
           
           // 必須フィールドの確認
           if (!itemName) {
-            throw new Error('点検項目名が不足しています');
+            throw new Error('点検項目が不足しています');
           }
           if (!deviceName) {
-            throw new Error('機器名が不足しています');
-          }
-          if (!customerName) {
-            throw new Error('顧客名が不足しています');
+            throw new Error('サーバ名が不足しています');
           }
           
           // 点検項目名からitem_name_idを取得
@@ -167,6 +185,10 @@ const importInspectionItemsFromCsv = asyncHandler(async (req, res) => {
               device = await Device.create({
                 customer_id: customer.id,
                 device_name: deviceName,
+                model: model || null,
+                rack_number: rackNumber ? parseInt(rackNumber, 10) : null,
+                unit_start_position: unitStart,
+                unit_end_position: unitEnd,
                 device_type: 'サーバ', // デフォルト値
                 hardware_type: '物理' // デフォルト値
               }, { transaction: t });

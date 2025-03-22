@@ -21,7 +21,7 @@ const exportInspectionItemsToCsv = asyncHandler(async (req, res) => {
       {
         model: Device,
         as: "device",
-        attributes: ["id", "device_name", "customer_id"],
+        attributes: ["id", "device_name", "model", "rack_number", "unit_start_position", "unit_end_position", "customer_id"],
         include: [
           {
             model: Customer,
@@ -43,20 +43,32 @@ const exportInspectionItemsToCsv = asyncHandler(async (req, res) => {
 
   // レスポンス形式を調整（CSVに適した形式に変換）
   const formattedItems = items.map((item) => {
+    // ユニット表示の整形
+    let unitPosition = '';
+    if (item.device.unit_start_position) {
+      unitPosition = item.device.unit_end_position 
+        ? `${item.device.unit_start_position}～${item.device.unit_end_position}`
+        : item.device.unit_start_position.toString();
+    }
+    
     return {
       id: item.id,
+      rack_number: item.device.rack_number || '',
+      unit_position: unitPosition,
+      device_name: item.device.device_name || '',
+      model: item.device.model || '',
       item_name: item.item_name_master ? item.item_name_master.name : "",
-      device_name: item.device.device_name,
-      customer_name: item.device.customer.customer_name,
     };
   });
 
   // CSVフィールドの設定 - 日本語のヘッダーを使用
   const fields = [
     { label: "ID", value: "id" },
-    { label: "点検項目名", value: "item_name" },
-    { label: "機器名", value: "device_name" },
-    { label: "顧客名", value: "customer_name" },
+    { label: "ラックNo.", value: "rack_number" },
+    { label: "ユニット", value: "unit_position" },
+    { label: "サーバ名", value: "device_name" },
+    { label: "機種", value: "model" },
+    { label: "点検項目", value: "item_name" },
   ];
 
   // JSON to CSV Parserの設定

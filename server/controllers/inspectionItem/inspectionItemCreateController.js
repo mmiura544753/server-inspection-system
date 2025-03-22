@@ -1,6 +1,6 @@
 // server/controllers/inspectionItem/inspectionItemCreateController.js
 const asyncHandler = require('express-async-handler');
-const { InspectionItem, Device, Customer } = require('../../models');
+const { InspectionItem, Device, Customer, InspectionItemName } = require('../../models');
 
 // @desc    新規点検項目の作成
 // @route   POST /api/inspection-items
@@ -31,11 +31,32 @@ const createInspectionItem = asyncHandler(async (req, res) => {
   }
   
   try {
+    // 点検項目名の取得または作成
+    let itemNameRecord;
+    try {
+      // 既存の点検項目名を検索
+      itemNameRecord = await InspectionItemName.findOne({
+        where: { name: item_name }
+      });
+      
+      // 存在しない場合は新規作成
+      if (!itemNameRecord) {
+        console.log(`新規点検項目名を作成します: ${item_name}`);
+        itemNameRecord = await InspectionItemName.create({
+          name: item_name
+        });
+      }
+    } catch (err) {
+      console.error('点検項目名の取得/作成エラー:', err);
+      res.status(500);
+      throw new Error('点検項目名の処理中にエラーが発生しました');
+    }
+    
     // 重複チェック
     const existingItem = await InspectionItem.findOne({
       where: {
         device_id,
-        item_name
+        item_name_id: itemNameRecord.id
       }
     });
 
@@ -47,7 +68,8 @@ const createInspectionItem = asyncHandler(async (req, res) => {
     // 点検項目を作成
     const item = await InspectionItem.create({
       device_id,
-      item_name
+      item_name_id: itemNameRecord.id,
+      item_name: item_name // レガシーフィールドにも保存
     });
     
     // レスポンス形式を調整

@@ -2,7 +2,7 @@
 import api from './index';
 
 export const inspectionItemAPI = {
-  // 点検項目名一覧を取得
+  // 点検項目名一覧を取得（従来のメソッド - 互換性のために残す）
   getAllItemNames: async () => {
     try {
       const response = await api.get("/inspection-item-names");
@@ -10,6 +10,64 @@ export const inspectionItemAPI = {
     } catch (error) {
       console.error("点検項目名一覧取得エラー:", error);
       throw error;
+    }
+  },
+  
+  // 点検項目名マスタ関連の操作
+  itemNames: {
+    // 点検項目名一覧を取得
+    getAll: async () => {
+      try {
+        const response = await api.get("/inspection-item-names");
+        return response.data;
+      } catch (error) {
+        console.error("点検項目名一覧取得エラー:", error);
+        throw error;
+      }
+    },
+    
+    // 点検項目名を取得
+    getById: async (id) => {
+      try {
+        const response = await api.get(`/inspection-item-names/${id}`);
+        return response.data;
+      } catch (error) {
+        console.error(`点検項目名ID:${id}の取得エラー:`, error);
+        throw error;
+      }
+    },
+    
+    // 点検項目名を作成
+    create: async (data) => {
+      try {
+        const response = await api.post("/inspection-item-names", data);
+        return response.data;
+      } catch (error) {
+        console.error("点検項目名作成エラー:", error);
+        throw error;
+      }
+    },
+    
+    // 点検項目名を更新
+    update: async (id, data) => {
+      try {
+        const response = await api.put(`/inspection-item-names/${id}`, data);
+        return response.data;
+      } catch (error) {
+        console.error(`点検項目名ID:${id}の更新エラー:`, error);
+        throw error;
+      }
+    },
+    
+    // 点検項目名を削除
+    delete: async (id) => {
+      try {
+        const response = await api.delete(`/inspection-item-names/${id}`);
+        return response.data;
+      } catch (error) {
+        console.error(`点検項目名ID:${id}の削除エラー:`, error);
+        throw error;
+      }
     }
   },
   // 点検項目一覧を取得

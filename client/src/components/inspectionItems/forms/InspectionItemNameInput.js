@@ -16,14 +16,12 @@ const InspectionItemNameInput = () => {
       try {
         setLoading(true);
         // 点検項目名マスタから選択肢を取得
-        const data = await inspectionItemAPI.getAllItemNames();
+        const data = await inspectionItemAPI.itemNames.getAll();
         
-        // 重複を排除し、ソートする
-        const uniqueNames = [...new Set(data.map(item => item.name))].sort();
-        
-        const options = uniqueNames.map(name => ({
-          value: name,
-          label: name
+        // オプションとして整形
+        const options = data.map(item => ({
+          value: item.name,
+          label: item.name
         }));
         
         setItemNameOptions(options);

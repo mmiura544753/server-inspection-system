@@ -35,6 +35,10 @@ import InspectionEdit from "./components/inspections/InspectionEdit";
 import InspectionItemList from "./components/inspectionItems/InspectionItemList";
 import InspectionItemForm from "./components/inspectionItems/InspectionItemForm";
 
+// 点検項目名マスタコンポーネント
+import InspectionItemNameList from "./components/inspectionItemNames/InspectionItemNameList";
+import InspectionItemNameForm from "./components/inspectionItemNames/InspectionItemNameForm";
+
 // その他のページ
 import Home from "./components/Home";
 import NotFound from "./components/NotFound";
@@ -85,6 +89,23 @@ function App() {
               <Route
                 path="/inspection-items/edit/:id"
                 element={<InspectionItemForm />}
+              />
+              {/* 点検項目名マスタ関連のルート */}
+              <Route
+                path="/inspection-item-names"
+                element={<Navigate to="/inspection-item-names/list" replace />}
+              />
+              <Route
+                path="/inspection-item-names/list"
+                element={<InspectionItemNameList />}
+              />
+              <Route
+                path="/inspection-item-names/new"
+                element={<InspectionItemNameForm />}
+              />
+              <Route
+                path="/inspection-item-names/edit/:id"
+                element={<InspectionItemNameForm />}
               />
               {/* 404ページ */}
               <Route path="*" element={<NotFound />} />

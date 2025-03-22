@@ -9,6 +9,7 @@ const { updateInspectionItem } = require('./inspectionItemUpdateController');
 const { deleteInspectionItem } = require('./inspectionItemDeleteController');
 const { exportInspectionItemsToCsv } = require('./inspectionItemExportController');
 const { importInspectionItemsFromCsv } = require('./inspectionItemImportController');
+const { getAllInspectionItemNames } = require('./inspectionItemNameController');
 
 // 全ての点検項目コントローラー関数をエクスポート
 module.exports = {
@@ -19,5 +20,6 @@ module.exports = {
   updateInspectionItem,
   deleteInspectionItem,
   exportInspectionItemsToCsv,
-  importInspectionItemsFromCsv
+  importInspectionItemsFromCsv,
+  getAllInspectionItemNames
 };

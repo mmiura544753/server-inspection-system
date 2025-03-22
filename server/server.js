@@ -12,6 +12,7 @@ const customerRoutes = require("./routes/customerRoutes");
 const deviceRoutes = require("./routes/deviceRoutes");
 const inspectionRoutes = require("./routes/inspectionRoutes");
 const inspectionItemRoutes = require("./routes/inspectionItemRoutes");
+const inspectionItemNameRoutes = require("./routes/inspectionItemNameRoutes");
 
 // エラーハンドラーのインポート
 const { notFound, errorHandler } = require("./middleware/errorHandler");
@@ -38,6 +39,7 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/devices", deviceRoutes);
 app.use("/api/inspections", inspectionRoutes);
 app.use("/api/inspection-items", inspectionItemRoutes);
+app.use("/api/inspection-item-names", inspectionItemNameRoutes);
 
 // 基本ルート
 app.get("/", (req, res) => {

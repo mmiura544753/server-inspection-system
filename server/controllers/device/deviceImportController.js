@@ -279,7 +279,7 @@ const importDevicesFromCsv = asyncHandler(async (req, res) => {
               // 新規デバイスを作成
               try {
                 console.log(
-                  `新規デバイス作成: 顧客=${customer.id}, 機器名=${deviceName}, モデル=${model}, ラックNo=${rackNumber}, ユニット位置=${unitPosition}`
+                  `新規デバイス作成: 顧客=${customer.id}, 機器名=${deviceName}, モデル=${model}, ラックNo=${rackNumber}, ユニット開始位置=${unit_start_position}, ユニット終了位置=${unit_end_position}`
                 );
 
                 const device = await Device.create(

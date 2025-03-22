@@ -42,10 +42,11 @@ const InspectionResult = sequelize.define('InspectionResult', {
   },
   // 点検時点の項目名を直接保存
   check_item: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING(255),
     allowNull: false,
     validate: {
-      notEmpty: { msg: '点検項目名は必須です' }
+      notEmpty: { msg: '点検項目名は必須です' },
+      len: { args: [1, 255], msg: '点検項目名は255文字以内で入力してください' }
     }
   },
   // 点検結果を直接保存

@@ -8,11 +8,6 @@ const path = require('path');
 const csv = require('csv-parser');
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 const iconv = require('iconv-lite');
-const fs = require('fs');
-const path = require('path');
-const csv = require('csv-parser');
-const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
-const iconv = require('iconv-lite');
 
 // @desc    点検項目名一覧の取得
 // @route   GET /api/inspection-item-names

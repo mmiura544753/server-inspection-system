@@ -16,7 +16,7 @@ const getInspectionItems = asyncHandler(async (req, res) => {
       {
         model: Device,
         as: "device",
-        attributes: ["id", "device_name", "customer_id"],
+        attributes: ["id", "device_name", "customer_id", "rack_number", "unit_start_position", "unit_end_position", "model"],
         include: [
           {
             model: Customer,
@@ -48,6 +48,10 @@ const getInspectionItems = asyncHandler(async (req, res) => {
       item_name_id: item.item_name_id,
       device_id: item.device_id,
       device_name: device.device_name || null,
+      rack_number: device.rack_number || null,
+      unit_start_position: device.unit_start_position || null,
+      unit_end_position: device.unit_end_position || null,
+      model: device.model || null,
       customer_id: customer.id || null,
       customer_name: customer.customer_name || null,
       created_at: item.created_at,
@@ -67,7 +71,7 @@ const getInspectionItemById = asyncHandler(async (req, res) => {
       {
         model: Device,
         as: "device",
-        attributes: ["id", "device_name", "customer_id"],
+        attributes: ["id", "device_name", "customer_id", "rack_number", "unit_start_position", "unit_end_position", "model"],
         include: [
           {
             model: Customer,
@@ -96,6 +100,10 @@ const getInspectionItemById = asyncHandler(async (req, res) => {
       item_name_id: item.item_name_id,
       device_id: item.device_id,
       device_name: device.device_name || null,
+      rack_number: device.rack_number || null,
+      unit_start_position: device.unit_start_position || null,
+      unit_end_position: device.unit_end_position || null,
+      model: device.model || null,
       customer_id: customer.id || null,
       customer_name: customer.customer_name || null,
       created_at: item.created_at,
@@ -150,6 +158,10 @@ const getInspectionItemsByDeviceId = asyncHandler(async (req, res) => {
       item_name_id: item.item_name_id,
       device_id: device.id,
       device_name: device.device_name,
+      rack_number: device.rack_number || null,
+      unit_start_position: device.unit_start_position || null,
+      unit_end_position: device.unit_end_position || null,
+      model: device.model || null,
       customer_id: device.customer.id,
       customer_name: device.customer.customer_name,
       created_at: item.created_at,

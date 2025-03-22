@@ -2,6 +2,7 @@
 const asyncHandler = require('express-async-handler');
 const { InspectionItemName, InspectionItem } = require('../../models');
 const { sequelize } = require('../../config/db');
+const { Op } = require('sequelize');
 
 // @desc    点検項目名一覧の取得
 // @route   GET /api/inspection-item-names
@@ -120,7 +121,7 @@ const updateInspectionItemName = asyncHandler(async (req, res) => {
     const existingName = await InspectionItemName.findOne({
       where: { 
         name,
-        id: { [sequelize.Op.ne]: id }
+        id: { [Op.ne]: id }
       }
     });
     

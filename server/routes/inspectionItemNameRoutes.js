@@ -6,13 +6,24 @@ const {
   getInspectionItemNameById,
   createInspectionItemName,
   updateInspectionItemName,
-  deleteInspectionItemName
+  deleteInspectionItemName,
+  exportInspectionItemNamesToCsv,
+  importInspectionItemNamesFromCsv
 } = require('../controllers/inspectionItem/inspectionItemNameController');
+const upload = require('../middleware/upload');
 
 // /api/inspection-item-names
 router.route('/')
   .get(getAllInspectionItemNames)
   .post(createInspectionItemName);
+
+// /api/inspection-item-names/export - CSVエクスポート
+router.route('/export')
+  .get(exportInspectionItemNamesToCsv);
+
+// /api/inspection-item-names/import - CSVインポート
+router.route('/import')
+  .post(upload.single('file'), importInspectionItemNamesFromCsv);
 
 // /api/inspection-item-names/:id
 router.route('/:id')

@@ -5,15 +5,41 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// 環境を取得
-const env = process.env.NODE_ENV || 'development';
+// 環境を取得（コマンドライン引数から環境を取得可能に）
+const args = process.argv.slice(2);
+const envArg = args.find(arg => arg.startsWith('--env='));
+const env = envArg ? envArg.split('=')[1] : (process.env.NODE_ENV || 'development');
+
+console.log(`実行環境: ${env}`);
+
 const dbConfig = config[env];
 
 // データベース接続に使用するユーザー情報
 const username = process.env.DB_USER || dbConfig.username;
 const password = process.env.DB_PASSWORD || dbConfig.password; 
 const host = process.env.DB_HOST || dbConfig.host;
-const dbName = process.env.DB_NAME || dbConfig.database;
+
+// 使用するデータベース名を決定（優先順位に基づいて）
+let dbName;
+if (process.env.DB_NAME) {
+  // 明示的に指定されたデータベース名を最優先
+  dbName = process.env.DB_NAME;
+} else {
+  // 環境ごとに設定されたデータベース名
+  switch (env) {
+    case 'development':
+      dbName = process.env.DEV_DB_NAME || dbConfig.database;
+      break;
+    case 'test':
+      dbName = process.env.TEST_DB_NAME || dbConfig.database;
+      break;
+    case 'production':
+      dbName = process.env.PROD_DB_NAME || dbConfig.database;
+      break;
+    default:
+      dbName = dbConfig.database;
+  }
+}
 
 // MariaDBに接続（データベース指定なし）
 const sequelize = new Sequelize('', username, password, {

@@ -13,10 +13,16 @@
     "seed": "npx sequelize-cli db:seed:all",
     "seed:undo": "npx sequelize-cli db:seed:undo:all",
     "db:create": "node ./scripts/createDatabase.js",
-    "db:setup": "npm run db:create && npm run migrate && npm run seed"
+    "db:setup": "npm run db:create && npm run migrate && npm run seed",
+    "db:setup:dev": "cross-env NODE_ENV=development npm run db:create && cross-env NODE_ENV=development npm run migrate && cross-env NODE_ENV=development npm run seed",
+    "db:setup:test": "cross-env NODE_ENV=test npm run db:create && cross-env NODE_ENV=test npm run migrate && cross-env NODE_ENV=test npm run seed",
+    "db:setup:prod": "cross-env NODE_ENV=production npm run db:create && cross-env NODE_ENV=production npm run migrate && cross-env NODE_ENV=production npm run seed",
+    "start:dev": "cross-env NODE_ENV=development nodemon server.js",
+    "start:prod": "cross-env NODE_ENV=production node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",

@@ -2,14 +2,14 @@
   "development": {
     "username": "server_inspector",
     "password": "NCing@000",
-    "database": "server_inspection_db",
+    "database": "server_inspection_dev_db",
     "host": "127.0.0.1",
     "dialect": "mariadb"
   },
   "test": {
     "username": "server_inspector",
     "password": "NCing@000",
-    "database": "server_inspection_db",
+    "database": "server_inspection_test_db",
     "host": "127.0.0.1",
     "dialect": "mariadb"
   },

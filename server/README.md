@@ -28,25 +28,50 @@ cp .env.example .env
 ```
 `.env`ファイルを編集して、データベース接続情報などを設定してください。
 
-4. データベースをセットアップ
+4. データベースをセットアップ（環境ごとに別々のDBを使用）
 ```bash
-# データベースを作成、マイグレーション実行、初期データを投入（一括実行）
+# 開発環境用データベースをセットアップ
+npm run db:setup:dev
+
+# テスト環境用データベースをセットアップ
+npm run db:setup:test
+
+# 本番環境用データベースをセットアップ
+npm run db:setup:prod
+
+# または明示的な環境名を指定せずに現在のNODE_ENV値に基づいてセットアップ
 npm run db:setup
-
-# または個別に実行する場合
-npm run db:create     # データベースの作成
-npm run migrate       # マイグレーションの実行
-npm run seed          # 初期データの投入
 ```
 
-5. サーバーを起動
+5. サーバーを起動（環境ごと）
 ```bash
-# 開発モード（ファイル変更の監視）
-npm run dev
+# 開発環境で起動（開発用DB使用）
+npm run start:dev
 
-# 本番モード
-npm start
+# 本番環境で起動（本番用DB使用）
+npm run start:prod
+
+# または現在の環境設定で起動
+npm run dev  # 開発モード（ファイル変更の監視）
+npm start    # 本番モード
 ```
+
+### 環境とデータベースの切り替え
+
+アプリケーションは環境（NODE_ENV）に基づいて適切なデータベースを自動的に選択します：
+
+- `development`: `DEV_DB_NAME` (`server_inspection_dev_db`)
+- `test`: `TEST_DB_NAME` (`server_inspection_test_db`)
+- `production`: `PROD_DB_NAME` (`server_inspection_db`)
+
+特定のデータベースを強制的に使用したい場合は、`.env`ファイルの`DB_NAME`変数を設定します：
+
+```
+# 環境に関わらず常に特定のDBを使用
+DB_NAME=my_custom_database
+```
+
+この設定は環境別のデータベース設定よりも優先されます。
 
 ## データベース管理
 

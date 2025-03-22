@@ -9,9 +9,31 @@ const { Umzug, SequelizeStorage } = require('umzug');
 const env = process.env.NODE_ENV || 'development';
 const dbConfig = config[env];
 
+// 使用するデータベース名を決定（優先順位に基づいて）
+let databaseName;
+if (process.env.DB_NAME) {
+  // 明示的に指定されたデータベース名を最優先
+  databaseName = process.env.DB_NAME;
+} else {
+  // 環境ごとに設定されたデータベース名
+  switch (env) {
+    case 'development':
+      databaseName = process.env.DEV_DB_NAME || dbConfig.database;
+      break;
+    case 'test':
+      databaseName = process.env.TEST_DB_NAME || dbConfig.database;
+      break;
+    case 'production':
+      databaseName = process.env.PROD_DB_NAME || dbConfig.database;
+      break;
+    default:
+      databaseName = dbConfig.database;
+  }
+}
+
 // データベース接続設定
 const sequelize = new Sequelize(
-  process.env.DB_NAME || dbConfig.database,
+  databaseName,
   process.env.DB_USER || dbConfig.username,
   process.env.DB_PASSWORD || dbConfig.password,
   {
@@ -53,7 +75,7 @@ const umzug = new Umzug({
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log("MariaDBに接続しました");
+    console.log(`MariaDBに接続しました (データベース: ${databaseName}, 環境: ${env})`);
 
     // マイグレーションの自動実行（オプション）
     if (process.env.AUTO_MIGRATE === 'true') {

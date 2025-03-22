@@ -221,11 +221,23 @@ const exportInspectionItemNamesToCsv = asyncHandler(async (req, res) => {
       ]
     });
     
-    // データをCSV形式に変換
+    // データをCSV形式に変換（作成日時と更新日時は除外）
     const records = itemNames.map(item => ({
       id: item.id,
       name: item.name
+      // created_atとupdated_atは意図的に除外
     }));
+    
+    // 最初のレコードをログ出力（デバッグ用）
+    if (records.length > 0) {
+      console.log('エクスポートする最初のレコード:', records[0]);
+      console.log('元のデータ（参考）:', {
+        id: itemNames[0].id,
+        name: itemNames[0].name,
+        created_at: itemNames[0].created_at,
+        updated_at: itemNames[0].updated_at
+      });
+    }
     
     // CSVデータを生成
     const csvContent = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);

@@ -13,23 +13,6 @@ MariaDB [server_inspection_db]> show tables;
 +--------------------------------+
 8 rows in set (0.000 sec)
 
-MariaDB [server_inspection_db]> desc inspections;
-+-----------------+----------------------------------------+------+-----+---------------------+-------------------------------+
-| Field           | Type                                   | Null | Key | Default             | Extra                         |
-+-----------------+----------------------------------------+------+-----+---------------------+-------------------------------+
-| id              | int(11)                                | NO   | PRI | NULL                | auto_increment                |
-| inspection_date | date                                   | NO   |     | NULL                |                               |
-| start_time      | time                                   | YES  |     | NULL                |                               |
-| end_time        | time                                   | YES  |     | NULL                |                               |
-| inspector_name  | varchar(50)                            | NO   |     | NULL                |                               |
-| created_at      | timestamp                              | YES  |     | current_timestamp() |                               |
-| updated_at      | timestamp                              | YES  |     | current_timestamp() | on update current_timestamp() |
-| status          | enum('準備中','進行中','完了')         | NO   |     | 完了                |                               |
-+-----------------+----------------------------------------+------+-----+---------------------+-------------------------------+
-8 rows in set (0.001 sec)
-
-MariaDB [server_inspection_db]> 
-
 MariaDB [server_inspection_db]> desc customers;
 +---------------+--------------+------+-----+---------------------+-------------------------------+
 | Field         | Type         | Null | Key | Default             | Extra                         |
@@ -59,7 +42,20 @@ MariaDB [server_inspection_db]> desc devices;
 +---------------------+----------------------------------------------------------------+------+-----+---------------------+-------------------------------+
 11 rows in set (0.001 sec)
 
-MariaDB [server_inspection_db]> 
+MariaDB [server_inspection_db]> desc inspections;
++-----------------+----------------------------------------+------+-----+---------------------+-------------------------------+
+| Field           | Type                                   | Null | Key | Default             | Extra                         |
++-----------------+----------------------------------------+------+-----+---------------------+-------------------------------+
+| id              | int(11)                                | NO   | PRI | NULL                | auto_increment                |
+| inspection_date | date                                   | NO   |     | NULL                |                               |
+| start_time      | time                                   | YES  |     | NULL                |                               |
+| end_time        | time                                   | YES  |     | NULL                |                               |
+| inspector_name  | varchar(50)                            | NO   |     | NULL                |                               |
+| created_at      | timestamp                              | YES  |     | current_timestamp() |                               |
+| updated_at      | timestamp                              | YES  |     | current_timestamp() | on update current_timestamp() |
+| status          | enum('準備中','進行中','完了')         | NO   |     | 完了                |                               |
++-----------------+----------------------------------------+------+-----+---------------------+-------------------------------+
+8 rows in set (0.001 sec)
 
 MariaDB [server_inspection_db]> desc inspection_item_names;
 +------------+--------------+------+-----+---------------------+-------------------------------+
@@ -87,7 +83,6 @@ MariaDB [server_inspection_db]> desc inspection_items;
 +--------------+--------------+------+-----+---------------------+-------------------------------+
 6 rows in set (0.001 sec)
 
-MariaDB [server_inspection_db]> 
 MariaDB [server_inspection_db]> desc inspection_results;
 +--------------------+-------------------------+------+-----+---------------------+-------------------------------+
 | Field              | Type                    | Null | Key | Default             | Extra                         |
@@ -103,9 +98,3 @@ MariaDB [server_inspection_db]> desc inspection_results;
 | updated_at         | timestamp               | YES  |     | current_timestamp() | on update current_timestamp() |
 +--------------------+-------------------------+------+-----+---------------------+-------------------------------+
 9 rows in set (0.001 sec)
-
-MariaDB [server_inspection_db]> 
-
-
-
-

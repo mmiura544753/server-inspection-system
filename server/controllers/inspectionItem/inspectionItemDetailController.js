@@ -1,40 +1,62 @@
 // server/controllers/inspectionItem/inspectionItemDetailController.js
 const asyncHandler = require("express-async-handler");
-const { sequelize } = require("../../config/db");
+const { InspectionItem, Device, Customer, InspectionItemName } = require("../../models");
 
 // @desc    顧客・機器・点検項目の関連情報を階層化して取得
 // @route   GET /api/inspection-items/all-with-details
 // @access  Public
 const getAllInspectionItemsWithDetails = asyncHandler(async (req, res) => {
   try {
-    // SQLクエリを直接実行 - item_name_idとInspectionItemNameテーブルを追加
-    const query = `
-      SELECT 
-        c.id as customer_id,
-        d.id as device_id, 
-        d.device_name, 
-        d.model,
-        d.rack_number,
-        d.unit_start_position,
-        d.unit_end_position,
-        ii.id as item_id, 
-        iin.name as item_name,
-        d.device_type
-      FROM 
-        inspection_items ii
-      JOIN 
-        devices d ON ii.device_id = d.id
-      JOIN 
-        customers c ON d.customer_id = c.id
-      JOIN
-        inspection_item_names iin ON ii.item_name_id = iin.id
-      ORDER BY 
-        d.rack_number ASC, d.unit_start_position DESC
-    `;
+    // Sequelize ORMを使用して同等のクエリを実行
+    const inspectionItems = await InspectionItem.findAll({
+      attributes: ['id'],
+      include: [
+        {
+          model: Device,
+          as: 'device',
+          attributes: [
+            'id', 
+            'device_name', 
+            'model', 
+            'rack_number', 
+            'unit_start_position', 
+            'unit_end_position',
+            'device_type'
+          ],
+          include: [
+            {
+              model: Customer,
+              as: 'customer',
+              attributes: ['id', 'customer_name']
+            }
+          ]
+        },
+        {
+          model: InspectionItemName,
+          as: 'item_name_master',
+          attributes: ['id', 'name']
+        }
+      ],
+      order: [
+        [{ model: Device, as: 'device' }, 'rack_number', 'ASC'],
+        [{ model: Device, as: 'device' }, 'unit_start_position', 'DESC']
+      ]
+    });
 
-    // クエリを実行
-    const items = await sequelize.query(query, {
-      type: sequelize.QueryTypes.SELECT,
+    // Sequelize結果をSQLクエリ結果と同じ形式に変換
+    const items = inspectionItems.map(item => {
+      return {
+        customer_id: item.device.customer.id,
+        device_id: item.device.id,
+        device_name: item.device.device_name,
+        model: item.device.model,
+        rack_number: item.device.rack_number,
+        unit_start_position: item.device.unit_start_position,
+        unit_end_position: item.device.unit_end_position,
+        item_id: item.id,
+        item_name: item.item_name_master.name,
+        device_type: item.device.device_type
+      };
     });
 
     // データを階層化

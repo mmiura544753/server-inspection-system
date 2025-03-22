@@ -208,16 +208,18 @@ const exportInspectionItemNamesToCsv = asyncHandler(async (req, res) => {
   const encoding = req.query.encoding || 'shift_jis';
   
   try {
-    // すべての点検項目名を取得
+    // すべての点検項目名を取得（作成日時と更新日時は明示的に除外）
     const itemNames = await InspectionItemName.findAll({
+      attributes: ['id', 'name'], // 明示的に必要なカラムのみを指定
       order: [['id', 'ASC']]
     });
     
-    // CSVヘッダーとデータを設定
+    // CSVヘッダーとデータを設定（作成日時と更新日時は明示的に除外）
     const csvStringifier = createCsvStringifier({
       header: [
         { id: 'id', title: 'ID' },
         { id: 'name', title: '点検項目名' }
+        // created_atとupdated_atは意図的に除外
       ]
     });
     

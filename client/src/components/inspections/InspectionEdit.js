@@ -32,17 +32,7 @@ const InspectionSchema = Yup.object().shape({
   results: Yup.array().of(
     Yup.object().shape({
       status: Yup.string().required("ステータスは必須です"),
-      checked_at: Yup.date()
-        .required("確認日時は必須です")
-        // 確認日と点検日の同一性チェックを一時的に無効化
-        /* .test(
-          'same-day',
-          '確認日時は点検日と同じ日付である必要があります',
-          function(value) {
-            const { inspection_date } = this.parent;
-            return isSameDay(value, inspection_date);
-          }
-        ), */
+      checked_at: Yup.date().required("確認日時は必須です"),
     })
   ),
 });
@@ -150,58 +140,7 @@ const InspectionEdit = () => {
             onSubmit={handleSubmit}
             enableReinitialize
           >
-            {({ values, setFieldValue, isSubmitting, errors, touched, handleSubmit: formikHandleSubmit }) => (
-              <>
-                {/* デバッグ情報 */}
-                <div className="bg-gray-100 p-2 mb-4 text-xs">
-                  <details>
-                    <summary>デバッグ情報 (開発用)</summary>
-                    <div>
-                      <p>FormikErrors: {JSON.stringify(errors)}</p>
-                      <p>Touched: {JSON.stringify(touched)}</p>
-                      <p>isSubmitting: {isSubmitting.toString()}</p>
-                      <div className="mt-2">
-                        <button 
-                          type="button" 
-                          className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
-                          onClick={() => {
-                            console.log("手動送信試行", values);
-                            formikHandleSubmit();
-                          }}
-                        >
-                          Formik送信
-                        </button>
-                        <button 
-                          type="button" 
-                          className="bg-orange-500 text-white px-2 py-1 rounded"
-                          onClick={async () => {
-                            try {
-                              console.log("直接API呼び出し");
-                              // APIに送信するデータを整形
-                              const formattedValues = {
-                                ...values,
-                                inspection_date: values.inspection_date.toISOString().split('T')[0],
-                                results: values.results.map(result => ({
-                                  ...result,
-                                  checked_at: result.checked_at.toISOString(),
-                                })),
-                              };
-                              
-                              await inspectionAPI.update(id, formattedValues);
-                              alert("更新成功！");
-                              navigate(`/inspections/${id}`);
-                            } catch (err) {
-                              console.error("直接API呼び出しエラー:", err);
-                              alert("更新失敗: " + (err.message || "詳細不明"));
-                            }
-                          }}
-                        >
-                          直接API呼び出し
-                        </button>
-                      </div>
-                    </div>
-                  </details>
-                </div>
+            {({ values, setFieldValue, isSubmitting }) => (
               <Form>
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold mb-4 border-b pb-2">点検基本情報</h2>
@@ -471,22 +410,8 @@ const InspectionEdit = () => {
                     type="submit"
                     disabled={isSubmitting}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded"
-                    onClick={(e) => {
-                      console.log("保存ボタンがクリックされました");
-                      // 通常のFormik送信処理を妨げない
-                    }}
                   >
                     {isSubmitting ? "保存中..." : "保存"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      console.log("直接送信テスト");
-                      formikHandleSubmit(); // 直接formikの送信ハンドラーを呼び出し
-                    }}
-                    className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
-                  >
-                    直接送信テスト
                   </button>
                   <button
                     type="button"
@@ -497,7 +422,6 @@ const InspectionEdit = () => {
                   </button>
                 </div>
               </Form>
-              </>
             )}
           </Formik>
         </div>

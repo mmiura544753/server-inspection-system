@@ -252,42 +252,64 @@ const exportInspectionItemNamesToCsv = asyncHandler(async (req, res) => {
 // @route   POST /api/inspection-item-names/import
 // @access  Public
 const importInspectionItemNamesFromCsv = asyncHandler(async (req, res) => {
+  console.log("点検項目名インポート処理開始: リクエスト受信");
+  
   if (!req.file) {
+    console.error("エラー: ファイルがアップロードされていません");
     res.status(400);
     throw new Error('CSVファイルを選択してください');
   }
   
-  const filePath = req.file.path;
-  const results = [];
+  // CSVファイルのバッファを取得
+  const buffer = req.file.buffer;
+  console.log(`アップロードされたファイルサイズ: ${buffer.length} バイト`);
   
   try {
     // トランザクション開始
     const t = await sequelize.transaction();
     
     try {
-      // ファイルの内容を読み込む
-      const fileContent = fs.readFileSync(filePath);
+      // Shift-JISエンコードされたファイルをデコード
+      const fileContent = iconv.decode(buffer, 'shift_jis');
+      console.log("ファイルのデコード完了");
       
-      // UTF-8に変換（SJISを想定）
-      const utfContent = iconv.decode(fileContent, 'shift_jis');
-      
-      // 一時的なUTF-8ファイルを作成
-      const tempFilePath = path.join(path.dirname(filePath), `temp_${path.basename(filePath)}`);
-      fs.writeFileSync(tempFilePath, utfContent);
-      
-      // CSVパースの準備
-      const parsePromise = new Promise((resolve, reject) => {
-        const rows = [];
+      // 一時的なCSVパース処理
+      // csvParse = require('csv-parse/sync') のように使える場合
+      let csvData;
+      try {
+        const csvParse = require('csv-parse/sync');
+        csvData = csvParse.parse(fileContent, {
+          columns: true,
+          skip_empty_lines: true,
+          trim: true,
+          relax_column_count: true
+        });
+        console.log(`CSV解析完了: ${csvData.length}行のデータを検出`);
+      } catch (parseError) {
+        console.error("csv-parse/syncが利用できないため、代替手段を使用します", parseError);
         
-        fs.createReadStream(tempFilePath)
-          .pipe(csv())
-          .on('data', (data) => rows.push(data))
-          .on('end', () => resolve(rows))
-          .on('error', (error) => reject(error));
-      });
-      
-      // CSVデータをパース
-      const csvData = await parsePromise;
+        // csv-parserを使った代替処理
+        const { Readable } = require('stream');
+        const parser = csv({
+          columns: true,
+          skip_empty_lines: true,
+          trim: true
+        });
+        
+        const parsePromise = new Promise((resolve, reject) => {
+          const rows = [];
+          parser.on('data', (data) => rows.push(data));
+          parser.on('end', () => resolve(rows));
+          parser.on('error', (error) => reject(error));
+        });
+        
+        // 文字列からストリームを作成してパース
+        const readableStream = Readable.from([fileContent]);
+        readableStream.pipe(parser);
+        
+        csvData = await parsePromise;
+        console.log(`CSV解析完了(代替手段): ${csvData.length}行のデータを検出`);
+      }
       
       // インサート/アップデート用のカウンター
       let created = 0;
@@ -361,10 +383,7 @@ const importInspectionItemNamesFromCsv = asyncHandler(async (req, res) => {
         }
       }
       
-      // 一時ファイルを削除
-      fs.unlinkSync(tempFilePath);
-      
-      // コミット
+      // コミット (一時ファイル削除は不要になった)
       await t.commit();
       
       // レスポンスを返す
@@ -386,12 +405,7 @@ const importInspectionItemNamesFromCsv = asyncHandler(async (req, res) => {
     console.error('点検項目名インポートエラー:', error);
     res.status(500);
     throw new Error('点検項目名のインポートに失敗しました: ' + error.message);
-  } finally {
-    // アップロードされたファイルを削除
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  }
+  } // finallyブロックを削除 (メモリバッファを使用するため、ファイル削除は不要)
 });
 
 module.exports = {

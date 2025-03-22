@@ -11,6 +11,8 @@ const ImportResultModal = ({ show, onClose, loading, result }) => {
       show={show}
       onClose={onClose}
       title={loading ? "インポート処理中..." : "インポート結果"}
+      showCompleteButton={!loading} // 読み込み中でない場合は「完了」ボタンを表示
+      showCancelButton={false} // 「キャンセル」ボタンは表示しない
     >
       <div>
         {loading ? (

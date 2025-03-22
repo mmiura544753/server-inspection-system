@@ -23,7 +23,13 @@ connectDB();
 const app = express();
 
 // ミドルウェア
-app.use(cors());
+app.use(
+  cors({
+    origin: "*", // すべてのオリジンを許可
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 app.use(morgan("dev"));
 

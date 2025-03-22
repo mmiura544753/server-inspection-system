@@ -162,7 +162,28 @@ export function useInspectionItemForm(id) {
     try {
       setSubmitError(null);
 
-      const { customer_id, location, ...submitData } = values;
+      console.log("送信前の値:", values);
+      
+      // 必須フィールドの確認
+      if (!values.device_id) {
+        setSubmitError("機器の選択は必須です");
+        setSubmitting(false);
+        return;
+      }
+      
+      if (!values.item_name) {
+        setSubmitError("点検項目名は必須です");
+        setSubmitting(false);
+        return;
+      }
+      
+      // device_idが文字列型の場合は数値型に変換（APIが数値を期待している場合）
+      const submitData = {
+        device_id: parseInt(values.device_id, 10),
+        item_name: values.item_name,
+      };
+      
+      console.log("送信データ:", submitData);
 
       if (isEditMode) {
         await inspectionItemAPI.update(id, submitData);

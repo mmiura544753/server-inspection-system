@@ -1,7 +1,7 @@
 // server/controllers/inspectionItem/inspectionItemImportController.js
 const asyncHandler = require('express-async-handler');
 const csvParse = require('csv-parse/sync');
-const { InspectionItem, Device, Customer } = require('../../models');
+const { InspectionItem, Device, Customer, InspectionItemName } = require('../../models');
 const { sequelize } = require('../../config/db');
 
 // @desc    CSVからの点検項目一覧のインポート
@@ -51,9 +51,18 @@ const importInspectionItemsFromCsv = asyncHandler(async (req, res) => {
       importedItems: []
     };
     
-    // デバイスとカスタマーのキャッシュ 
+    // デバイス、カスタマー、点検項目名のキャッシュ 
     const deviceCache = {}; // デバイス名 -> デバイスオブジェクト
     const customerCache = {}; // 顧客名 -> 顧客オブジェクト
+    const itemNameCache = {}; // 点検項目名 -> 点検項目名マスタオブジェクト
+    
+    // 事前に全点検項目名マスタを取得してキャッシュ
+    console.log('点検項目名マスタを取得中...');
+    const allItemNames = await InspectionItemName.findAll();
+    allItemNames.forEach(itemName => {
+      itemNameCache[itemName.name] = itemName;
+    });
+    console.log(`${allItemNames.length}件の点検項目名マスタをキャッシュしました`);
     
     // トランザクションを開始
     const t = await sequelize.transaction();
@@ -85,6 +94,30 @@ const importInspectionItemsFromCsv = asyncHandler(async (req, res) => {
           }
           if (!customerName) {
             throw new Error('顧客名が不足しています');
+          }
+          
+          // 点検項目名からitem_name_idを取得
+          let itemNameMaster;
+          if (itemNameCache[itemName]) {
+            // キャッシュから点検項目名マスタを取得
+            itemNameMaster = itemNameCache[itemName];
+            console.log(`キャッシュから点検項目名マスタを使用: ${itemName} (ID: ${itemNameMaster.id})`);
+          } else {
+            // データベースから点検項目名マスタを検索
+            itemNameMaster = await InspectionItemName.findOne({
+              where: { name: itemName }
+            });
+            
+            // 点検項目名マスタが存在しない場合は新規作成
+            if (!itemNameMaster) {
+              console.log(`新規点検項目名マスタ作成: ${itemName}`);
+              itemNameMaster = await InspectionItemName.create({
+                name: itemName
+              }, { transaction: t });
+            }
+            
+            // キャッシュに点検項目名マスタを保存
+            itemNameCache[itemName] = itemNameMaster;
           }
           
           // まず顧客を取得または作成
@@ -153,7 +186,8 @@ const importInspectionItemsFromCsv = asyncHandler(async (req, res) => {
               console.log(`ID=${itemId}の点検項目を更新します: ${itemName}`);
               
               existingItem.device_id = device.id;
-              existingItem.item_name = itemName;
+              existingItem.item_name_id = itemNameMaster.id; // 点検項目名マスタIDを設定
+              existingItem.item_name = itemName; // 旧フィールド互換性のため
               
               await existingItem.save({ transaction: t });
               
@@ -178,11 +212,11 @@ const importInspectionItemsFromCsv = asyncHandler(async (req, res) => {
               });
             }
           } else {
-            // IDがない場合は新規作成 - 重複チェック(device_id + item_name)を行う
+            // IDがない場合は新規作成 - 重複チェック(device_id + item_name_id)を行う
             const existingItem = await InspectionItem.findOne({
               where: {
                 device_id: device.id,
-                item_name: itemName
+                item_name_id: itemNameMaster.id
               }
             });
 
@@ -197,7 +231,8 @@ const importInspectionItemsFromCsv = asyncHandler(async (req, res) => {
               // 最後に、点検項目を作成
               const inspectionItem = await InspectionItem.create({
                 device_id: device.id,
-                item_name: itemName
+                item_name_id: itemNameMaster.id, // 点検項目名マスタIDを設定
+                item_name: itemName // 旧フィールド互換性のため
               }, { transaction: t });
               
               console.log(`点検項目作成完了: ID=${inspectionItem.id}, 名前=${itemName}`);

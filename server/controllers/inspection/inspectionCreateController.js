@@ -144,21 +144,18 @@ const createInspection = asyncHandler(async (req, res) => {
     // コミット
     await transaction.commit();
 
-    // 作成した点検の詳細情報を取得（関連データ含む）
-    // トランザクションは既にコミットされているため、新しいクエリとして実行
-    const createdInspection = await Inspection.findByPk(inspection.id);
-
+    // 点検データは既に保存されているため、直接使用
     // レスポンス形式を調整
     const formattedInspection = {
-      id: createdInspection.id,
-      inspection_date: createdInspection.inspection_date,
-      start_time: createdInspection.start_time,
-      end_time: createdInspection.end_time,
-      inspector_name: createdInspection.inspector_name,
-      status: createdInspection.status,
+      id: inspection.id,
+      inspection_date: inspection.inspection_date,
+      start_time: inspection.start_time,
+      end_time: inspection.end_time,
+      inspector_name: inspection.inspector_name,
+      status: inspection.status,
       results: inspectionResults,
-      created_at: createdInspection.created_at,
-      updated_at: createdInspection.updated_at,
+      created_at: inspection.created_at,
+      updated_at: inspection.updated_at,
     };
 
     res.status(201).json(formattedInspection);

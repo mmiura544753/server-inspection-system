@@ -459,6 +459,8 @@ const DeviceList = () => {
         show={showImportResultModal}
         onClose={() => !importLoading && setShowImportResultModal(false)}
         title={importLoading ? "インポート処理中..." : "インポート結果"}
+        showCompleteButton={!importLoading}
+        showCancelButton={false}
       >
         {importResult && (
           <div>

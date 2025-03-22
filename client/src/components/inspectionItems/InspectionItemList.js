@@ -220,13 +220,13 @@ const InspectionItemList = () => {
         (item.device_name && 
          typeof item.device_name === "string" && 
          item.device_name.toLowerCase().includes(searchTermLower)) ||
-        (item.device?.model && 
-         typeof item.device.model === "string" && 
-         item.device.model.toLowerCase().includes(searchTermLower)) ||
-        (item.device?.rack_number && 
-         item.device.rack_number.toString().includes(searchTerm)) ||
-        (item.device?.unit_start_position && 
-         item.device.unit_start_position.toString().includes(searchTerm))
+        (item.model && 
+         typeof item.model === "string" && 
+         item.model.toLowerCase().includes(searchTermLower)) ||
+        (item.rack_number && 
+         item.rack_number.toString().includes(searchTerm)) ||
+        (item.unit_start_position && 
+         item.unit_start_position.toString().includes(searchTerm))
       );
     }
   );
@@ -395,16 +395,16 @@ const InspectionItemList = () => {
                   {sortedItems.map((item) => (
                     <tr key={item.id}>
                       <td>{item.id}</td>
-                      <td>{item.device?.rack_number || '-'}</td>
+                      <td>{item.rack_number || '-'}</td>
                       <td>
-                        {item.device?.unit_start_position 
-                          ? (item.device.unit_end_position 
-                             ? `${item.device.unit_start_position}～${item.device.unit_end_position}` 
-                             : item.device.unit_start_position)
+                        {item.unit_start_position 
+                          ? (item.unit_end_position 
+                             ? `${item.unit_start_position}～${item.unit_end_position}` 
+                             : item.unit_start_position)
                           : '-'}
                       </td>
                       <td>{item.device_name || '-'}</td>
-                      <td>{item.device?.model || '-'}</td>
+                      <td>{item.model || '-'}</td>
                       <td>{item.item_name}</td>
                       <td>
                         <div className="action-buttons">

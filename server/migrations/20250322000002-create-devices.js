@@ -12,12 +12,8 @@ module.exports = {
       },
       customer_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'customers',
-          key: 'id'
-        },
-        onDelete: 'CASCADE'
+        allowNull: false
+        // 外部キー制約は下部で追加するため、ここでは定義しない
       },
       device_name: {
         type: Sequelize.STRING(100),

@@ -30,12 +30,12 @@ module.exports = {
       collate: 'utf8mb4_general_ci'
     });
 
-    // 一意制約を追加
-    await queryInterface.addIndex('inspection_item_names', {
-      fields: ['name'],
-      unique: true,
-      name: 'name'
-    });
+    // 一意制約は既にテーブル作成時に設定されているため、ここでは追加しない
+    // await queryInterface.addIndex('inspection_item_names', {
+    //   fields: ['name'],
+    //   unique: true,
+    //   name: 'name'
+    // });
   },
 
   async down(queryInterface, Sequelize) {

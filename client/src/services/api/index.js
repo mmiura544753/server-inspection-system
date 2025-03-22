@@ -8,9 +8,7 @@ import { inspectionAPI } from "./inspectionAPI";
 import { inspectionItemAPI } from "./inspectionItemAPI";
 import { inspectionFormAPI } from "./inspectionFormAPI";
 
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://3.115.76.39:5000/api";
-//  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "/api";
 
 // デバッグ用ログ
 console.log("環境変数から読み込まれた API URL:", process.env.REACT_APP_API_URL);

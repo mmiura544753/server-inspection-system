@@ -1,17 +1,27 @@
 // server/config/db.js
 const { Sequelize } = require("sequelize");
+const config = require('./database');
+const path = require('path');
+const fs = require('fs');
+const { Umzug, SequelizeStorage } = require('umzug');
+
+// 環境を取得
+const env = process.env.NODE_ENV || 'development';
+const dbConfig = config[env];
 
 // データベース接続設定
 const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
+  process.env.DB_NAME || dbConfig.database,
+  process.env.DB_USER || dbConfig.username,
+  process.env.DB_PASSWORD || dbConfig.password,
   {
-    host: process.env.DB_HOST,
+    host: process.env.DB_HOST || dbConfig.host,
     port: process.env.DB_PORT || 3306,
     dialect: "mariadb",
     dialectOptions: {
       useUTC: false, // UTCに変換せずにそのまま扱う
+      charset: 'utf8mb4',
+      collate: 'utf8mb4_general_ci'
     },
     logging: process.env.NODE_ENV === "development" ? console.log : false,
     pool: {
@@ -20,21 +30,44 @@ const sequelize = new Sequelize(
       acquire: 30000,
       idle: 10000,
     },
+    define: {
+      timestamps: true,
+      underscored: true,
+      createdAt: 'created_at',
+      updatedAt: 'updated_at'
+    }
   }
 );
 
-// データベース接続テスト
+// Umzugマイグレーションの設定
+const umzug = new Umzug({
+  migrations: {
+    path: path.join(__dirname, '../migrations'),
+    params: [sequelize.getQueryInterface(), Sequelize]
+  },
+  storage: new SequelizeStorage({ sequelize }),
+  logger: console
+});
+
+// データベース接続とマイグレーション
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log("MariaDBに接続しました");
 
-    // 開発環境の場合のみ、モデルと一致するようにテーブルを同期
+    // マイグレーションの自動実行（オプション）
+    if (process.env.AUTO_MIGRATE === 'true') {
+      console.log("マイグレーションを実行しています...");
+      await umzug.up();
+      console.log("マイグレーションが完了しました");
+    }
+
+    // 開発環境の場合のみ、モデルと一致するようにテーブルを同期（非推奨）
     if (
       process.env.NODE_ENV === "development" &&
       process.env.DB_SYNC === "true"
     ) {
-      console.log("データベースのテーブルを同期しています...");
+      console.log("警告: データベースのテーブルを同期しています (本番環境では使用しないでください)");
       await sequelize.sync({ alter: true });
       console.log("データベースの同期が完了しました");
     }
@@ -44,4 +77,35 @@ const connectDB = async () => {
   }
 };
 
-module.exports = { sequelize, connectDB };
+// マイグレーション関数をエクスポート
+const runMigrations = async () => {
+  try {
+    console.log("マイグレーションを実行しています...");
+    await umzug.up();
+    console.log("マイグレーションが完了しました");
+    return true;
+  } catch (error) {
+    console.error("マイグレーションエラー:", error);
+    return false;
+  }
+};
+
+// ロールバック関数をエクスポート
+const rollbackMigration = async () => {
+  try {
+    console.log("最後のマイグレーションをロールバックしています...");
+    await umzug.down();
+    console.log("ロールバックが完了しました");
+    return true;
+  } catch (error) {
+    console.error("ロールバックエラー:", error);
+    return false;
+  }
+};
+
+module.exports = { 
+  sequelize, 
+  connectDB,
+  runMigrations,
+  rollbackMigration 
+};

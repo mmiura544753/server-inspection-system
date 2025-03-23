@@ -1,14 +1,13 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { BrowserRouter as Router } from 'react-router-dom';
 
 // テスト用の共通ラッパー
-// Reactコンポーネントをテストする際に、BrowserRouterなどの必要なプロバイダーでラップする
+// Router依存を避けるため、基本的なレンダリングのみ提供
 const AllTheProviders = ({ children }) => {
   return (
-    <Router>
+    <div data-testid="test-wrapper">
       {children}
-    </Router>
+    </div>
   );
 };
 

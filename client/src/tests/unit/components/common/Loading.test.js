@@ -11,8 +11,8 @@ describe('Loading Component', () => {
     expect(spinnerElement).toBeInTheDocument();
     expect(spinnerElement).toHaveClass('spinner-border');
     
-    // 表示テキストを確認
-    const visibleText = screen.getByText('読み込み中...');
+    // 表示テキストを確認（クラスで特定）
+    const visibleText = screen.getByText('読み込み中...', { selector: '.ms-3' });
     expect(visibleText).toBeInTheDocument();
     
     // 非表示テキストも含まれているか確認

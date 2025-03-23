@@ -82,6 +82,7 @@ const createDevice = asyncHandler(async (req, res) => {
       model: populatedDevice.model,
       rack_number: populatedDevice.rack_number,
       unit_position: populatedDevice.getUnitPositionDisplay(),
+      device_type: populatedDevice.device_type,
       hardware_type: populatedDevice.hardware_type,
       created_at: populatedDevice.created_at,
       updated_at: populatedDevice.updated_at,

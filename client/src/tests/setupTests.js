@@ -7,7 +7,17 @@ import '@testing-library/jest-dom';
 // Fix for React 18+ issues with testing
 global.IS_REACT_ACT_ENVIRONMENT = true;
 
-// Mock Service Worker setup would go here if used for API mocking
+// Mock Service Worker setup
+import { server } from './mocks/server';
+
+// Enable API mocking before tests
+beforeAll(() => server.listen());
+
+// Reset request handlers between tests
+afterEach(() => server.resetHandlers());
+
+// Clean up after all tests
+afterAll(() => server.close());
 
 // Suppress console errors/warnings during tests to keep output clean
 const originalConsoleError = console.error;

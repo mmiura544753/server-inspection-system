@@ -41,7 +41,15 @@ const getDevices = asyncHandler(async (req, res) => {
 // @route   GET /api/devices/:id
 // @access  Public
 const getDeviceById = asyncHandler(async (req, res) => {
-  const device = await Device.findByPk(req.params.id, {
+  const id = req.params.id;
+  
+  // IDが数値として有効かチェック
+  if (isNaN(Number(id))) {
+    res.status(400);
+    throw new Error("無効な機器IDです。数値を指定してください。");
+  }
+
+  const device = await Device.findByPk(id, {
     include: [
       {
         model: Customer,

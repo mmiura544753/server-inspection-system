@@ -12,7 +12,7 @@ export function useInspectionItemForm(id) {
     customer_id: "",
     location: "",
     device_id: "",
-    item_name: "",
+    item_names: [],
   });
   const [customerOptions, setCustomerOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
@@ -133,7 +133,7 @@ export function useInspectionItemForm(id) {
           customer_id: deviceData.customer_id,
           location: deviceData.rack_number ? deviceData.rack_number.toString() : "",
           device_id: data.device_id,
-          item_name: data.item_name,
+          item_names: [data.item_name], // 編集時は既存の項目名を配列に変換
         });
         
         // ロケーションと機器の選択肢を更新
@@ -171,24 +171,37 @@ export function useInspectionItemForm(id) {
         return;
       }
       
-      if (!values.item_name) {
-        setSubmitError("点検項目名は必須です");
+      if (!values.item_names || values.item_names.length === 0) {
+        setSubmitError("少なくとも1つの点検項目名を選択または入力してください");
         setSubmitting(false);
         return;
       }
       
-      // device_idが文字列型の場合は数値型に変換（APIが数値を期待している場合）
-      const submitData = {
-        device_id: parseInt(values.device_id, 10),
-        item_name: values.item_name,
-      };
-      
-      console.log("送信データ:", submitData);
-
+      // 編集モードの場合は単一のアイテムの更新のみ
       if (isEditMode) {
+        // device_idが文字列型の場合は数値型に変換（APIが数値を期待している場合）
+        const submitData = {
+          device_id: parseInt(values.device_id, 10),
+          item_name: values.item_names[0], // 編集モードでは最初の項目のみ使用
+        };
+        
+        console.log("送信データ (編集モード):", submitData);
         await inspectionItemAPI.update(id, submitData);
       } else {
-        await inspectionItemAPI.create(submitData);
+        // 作成モードでは各項目名について個別に作成APIを呼び出す
+        // 並列処理で複数のAPIリクエストを送信
+        const deviceId = parseInt(values.device_id, 10);
+        const promises = values.item_names.map(itemName => {
+          const submitData = {
+            device_id: deviceId,
+            item_name: itemName,
+          };
+          console.log("送信データ (作成モード):", submitData);
+          return inspectionItemAPI.create(submitData);
+        });
+        
+        // すべてのリクエストが完了するのを待つ
+        await Promise.all(promises);
       }
 
       navigate("/inspection-items");

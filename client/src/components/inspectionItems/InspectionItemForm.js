@@ -21,9 +21,13 @@ const InspectionItemSchema = Yup.object().shape({
   customer_id: Yup.number().required("顧客の選択は必須です"),
   location: Yup.string().nullable(),
   device_id: Yup.number().required("機器の選択は必須です"),
-  item_name: Yup.string()
-    .required("点検項目名は必須です")
-    .max(255, "点検項目名は255文字以内で入力してください"),
+  item_names: Yup.array()
+    .min(1, "少なくとも1つの点検項目名を選択または入力してください")
+    .of(
+      Yup.string()
+        .required("点検項目名は必須です")
+        .max(255, "点検項目名は255文字以内で入力してください")
+    ),
 });
 
 const InspectionItemForm = () => {

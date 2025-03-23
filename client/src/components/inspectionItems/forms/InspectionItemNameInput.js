@@ -39,17 +39,36 @@ const InspectionItemNameInput = () => {
   const handleCustomInputToggle = () => {
     setCustomInput(!customInput);
     if (customInput) {
-      setFieldValue('item_name', '');
+      setFieldValue('item_names', []);
+    } else {
+      // 複数選択モードから単一入力モードに切り替える場合、空の文字列配列にする
+      setFieldValue('item_names', []);
     }
+  };
+
+  // テキストエリアに入力された複数行のテキストを配列に変換する関数
+  const handleTextAreaChange = (e) => {
+    const text = e.target.value;
+    // 空行を除外し、トリムした行の配列を作成
+    const lines = text.split('\n').filter(line => line.trim() !== '').map(line => line.trim());
+    setFieldValue('item_names', lines);
+  };
+
+  // 選択された項目を配列として取得する
+  const getMultiSelectText = () => {
+    if (!values.item_names || !Array.isArray(values.item_names)) {
+      return '';
+    }
+    return values.item_names.join('\n');
   };
 
   return (
     <div className="mb-3">
       <label
-        htmlFor="item_name"
+        htmlFor="item_names"
         className="form-label required-label"
       >
-        点検項目名
+        点検項目名（複数選択可能）
       </label>
       
       <div className="d-flex align-items-center mb-2">
@@ -69,27 +88,39 @@ const InspectionItemNameInput = () => {
 
       {customInput ? (
         <Field
-          type="text"
-          id="item_name"
-          name="item_name"
+          as="textarea"
+          id="item_names"
+          name="item_names"
           className="form-control"
-          placeholder="点検項目名を入力"
+          placeholder="点検項目名を入力（1行に1つずつ入力してください）"
+          rows={10}
+          onChange={handleTextAreaChange}
+          value={getMultiSelectText()}
         />
       ) : (
         <Field
-          name="item_name"
+          name="item_names"
         >
           {({ field, meta }) => (
             <Select
               {...field}
-              id="item_name"
+              id="item_names"
               options={itemNameOptions}
               isLoading={loading}
-              placeholder="点検項目名を選択してください"
+              placeholder="点検項目名を選択してください（複数選択可能）"
               className={meta.touched && meta.error ? "is-invalid" : ""}
-              value={itemNameOptions.find(option => option.value === field.value) || null}
-              onChange={(selectedOption) => setFieldValue('item_name', selectedOption ? selectedOption.value : '')}
+              value={itemNameOptions.filter(option => 
+                values.item_names && Array.isArray(values.item_names) && 
+                values.item_names.includes(option.value)
+              )}
+              onChange={(selectedOptions) => {
+                const selectedValues = selectedOptions ? 
+                  selectedOptions.map(option => option.value) : [];
+                setFieldValue('item_names', selectedValues);
+              }}
               isDisabled={loading}
+              isMulti
+              closeMenuOnSelect={false}
               isClearable
               formatCreateLabel={(inputValue) => `「${inputValue}」を新規作成`}
             />
@@ -97,8 +128,12 @@ const InspectionItemNameInput = () => {
         </Field>
       )}
       
+      <small className="form-text text-muted">
+        複数の点検項目を選択または入力できます。選択した点検項目ごとに新しい点検項目が作成されます。
+      </small>
+      
       <ErrorMessage
-        name="item_name"
+        name="item_names"
         component="div"
         className="text-danger"
       />

@@ -8,10 +8,8 @@ import { inspectionAPI } from "./inspectionAPI";
 import { inspectionItemAPI } from "./inspectionItemAPI";
 import { inspectionFormAPI } from "./inspectionFormAPI";
 
-// const API_BASE_URL =
-// process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || "/api";
+// 絶対URLに変更（環境変数または明示的なURL）
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://3.115.76.39:5000/api";
 
 // デバッグ用ログ
 console.log("環境変数から読み込まれた API URL:", process.env.REACT_APP_API_URL);
@@ -25,6 +23,29 @@ const api = axios.create({
   },
   timeout: 120000, // 2分のタイムアウト
 });
+
+// インターセプターを追加して詳細なデバッグを行う
+api.interceptors.request.use(
+  request => {
+    console.log('API リクエスト送信:', request);
+    return request;
+  },
+  error => {
+    console.error('API リクエストエラー:', error);
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  response => {
+    console.log('API レスポンス受信:', response);
+    return response;
+  },
+  error => {
+    console.error('API レスポンスエラー:', error);
+    return Promise.reject(error);
+  }
+);
 
 // 全てのAPIサービスをエクスポート
 export {

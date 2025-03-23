@@ -26,11 +26,18 @@ const app = express();
 // ミドルウェア
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*", // 環境変数のCORS_ORIGINを使用、未設定の場合はすべてのオリジンを許可
+    origin: ["http://3.115.76.39:3000", "http://localhost:3000"], // 両方のオリジンを許可
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+// CORS デバッグログ
+app.use((req, res, next) => {
+  console.log(`リクエスト: ${req.method} ${req.path}`);
+  console.log(`リクエストヘッダー:`, req.headers);
+  next();
+});
 app.use(express.json());
 app.use(morgan("dev"));
 

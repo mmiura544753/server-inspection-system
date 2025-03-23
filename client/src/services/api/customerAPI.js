@@ -5,10 +5,14 @@ export const customerAPI = {
   // 顧客一覧を取得
   getAll: async () => {
     try {
+      console.log("顧客一覧取得開始");
       const response = await api.get("/customers");
+      console.log("顧客一覧取得成功:", response);
+      console.log("レスポンスデータ:", response.data);
       return response.data;
     } catch (error) {
       console.error("顧客一覧取得エラー:", error);
+      console.error("エラー詳細:", error.response || error.message);
       throw error;
     }
   },

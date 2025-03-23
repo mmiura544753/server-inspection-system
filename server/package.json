@@ -48,6 +48,7 @@
     "node-mocks-http": "^1.16.2",
     "nodemon": "^2.0.22",
     "sequelize-mock": "^0.10.2",
+    "sqlite3": "^5.1.7",
     "supertest": "^7.1.0"
   }
 }

@@ -4,11 +4,11 @@ import SortableTableHeader from "../common/SortableTableHeader";
 import { sortArrayByKey } from "../../utils/sortUtils";
 
 const InspectionTable = ({ inspectionItems, updateResult }) => {
-  // ソート用の状態
+  // ソート用の状態（使用しないがコードの互換性のために残す）
   const [sortField, setSortField] = useState(null);
   const [sortDescending, setSortDescending] = useState(false);
 
-  // ソートの処理
+  // ソートの処理（使用しないがコードの互換性のために残す）
   const handleSort = (field, descending) => {
     setSortField(field);
     setSortDescending(descending);
@@ -51,46 +51,11 @@ const InspectionTable = ({ inspectionItems, updateResult }) => {
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
-              <SortableTableHeader
-                field="locationName"
-                label="ラックNo"
-                currentSortField={sortField}
-                isDescending={sortDescending}
-                onSort={handleSort}
-                className="px-4 py-2 border-b w-24"
-              />
-              <SortableTableHeader
-                field="unit_position"
-                label="ユニット"
-                currentSortField={sortField}
-                isDescending={sortDescending}
-                onSort={handleSort}
-                className="px-4 py-2 border-b w-28"
-              />
-              <SortableTableHeader
-                field="id"
-                label="サーバ名"
-                currentSortField={sortField}
-                isDescending={sortDescending}
-                onSort={handleSort}
-                className="px-4 py-2 border-b w-40"
-              />
-              <SortableTableHeader
-                field="model"
-                label="機種"
-                currentSortField={sortField}
-                isDescending={sortDescending}
-                onSort={handleSort}
-                className="px-4 py-2 border-b w-32"
-              />
-              <SortableTableHeader
-                field="item_name"
-                label="点検項目"
-                currentSortField={sortField}
-                isDescending={sortDescending}
-                onSort={handleSort}
-                className="px-4 py-2 border-b"
-              />
+              <th className="px-4 py-2 border-b w-24">ラックNo</th>
+              <th className="px-4 py-2 border-b w-28">ユニット</th>
+              <th className="px-4 py-2 border-b w-40">サーバ名</th>
+              <th className="px-4 py-2 border-b w-32">機種</th>
+              <th className="px-4 py-2 border-b">点検項目</th>
               <th className="px-4 py-2 text-center border-b w-48">点検結果</th>
             </tr>
           </thead>

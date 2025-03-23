@@ -1,6 +1,5 @@
 // src/components/inspectionItems/forms/LocationSelect.js
 import React from 'react';
-import Select from 'react-select';
 
 const LocationSelect = ({ 
   locationOptions, 
@@ -8,40 +7,42 @@ const LocationSelect = ({
   onChange, 
   isDisabled 
 }) => {
+  // 選択された値の取得
+  const selectedValue = value ? value.value : '';
+
+  // セレクトボックスのchangeハンドラ
+  const handleSelectChange = (e) => {
+    const selectedOption = locationOptions.find(option => option.value === e.target.value) || null;
+    onChange(selectedOption);
+  };
+
   return (
     <div className="mb-3">
-      <label htmlFor="location" className="form-label">
+      <label className="form-label d-block" htmlFor="location-select">
         設置ラックNo.
       </label>
       
-      <Select
-        inputId="location"
-        name="location"
-        options={locationOptions}
-        value={value}
-        onChange={onChange}
-        placeholder="設置場所を選択してください"
-        noOptionsMessage={() => isDisabled ? "先に顧客を選択してください" : "設置場所がありません"}
-        isSearchable={true}
-        isClearable={true}
-        isDisabled={isDisabled}
-        classNamePrefix="select"
-        styles={{
-          control: (base, state) => ({
-            ...base,
-            borderColor: state.isFocused ? '#80bdff' : '#ced4da',
-            boxShadow: state.isFocused ? '0 0 0 0.2rem rgba(0, 123, 255, 0.25)' : null,
-            '&:hover': {
-              borderColor: state.isFocused ? '#80bdff' : '#ced4da'
-            }
-          }),
-          option: (base, state) => ({
-            ...base,
-            backgroundColor: state.isSelected ? '#007bff' : state.isFocused ? '#f8f9fa' : null,
-            color: state.isSelected ? 'white' : 'black'
-          })
-        }}
-      />
+      {isDisabled ? (
+        <div className="text-muted">先に顧客を選択してください</div>
+      ) : locationOptions.length === 0 ? (
+        <div className="text-muted">設置場所がありません</div>
+      ) : (
+        <select
+          id="location-select"
+          className="form-select"
+          value={selectedValue}
+          onChange={handleSelectChange}
+          disabled={isDisabled}
+          size={Math.min(10, locationOptions.length)} // 最大10行、それ以下ならその数だけ表示
+          style={{ width: '100%' }}
+        >
+          {locationOptions.map((option, index) => (
+            <option key={index} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      )}
     </div>
   );
 };

@@ -7,7 +7,14 @@ const Header = () => {
     <header className="app-header">
       <nav className="navbar navbar-expand-lg navbar-dark">
         <div className="container-fluid">
-          <Link className="navbar-brand" to="/">
+          <Link className="navbar-brand d-flex align-items-center" to="/">
+            <img 
+              src="/images/logo.png" 
+              alt="サーバー点検システムロゴ" 
+              height="48" 
+              width="48" 
+              className="me-2" 
+            />
             サーバー点検システム
           </Link>
           <button

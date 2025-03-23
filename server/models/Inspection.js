@@ -1,7 +1,6 @@
 // server/models/Inspection.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
-const Device = require('./Device');
 
 // 点検モデル
 const Inspection = sequelize.define('Inspection', {
@@ -9,14 +8,6 @@ const Inspection = sequelize.define('Inspection', {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
-  },
-  device_id: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: Device,
-      key: 'id'
-    }
   },
   // server_idカラムは削除されました
   inspection_date: {

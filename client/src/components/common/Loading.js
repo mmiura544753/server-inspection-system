@@ -3,7 +3,7 @@ import React from 'react';
 
 const Loading = () => {
   return (
-    <div className="loading-spinner">
+    <div className="loading-spinner" data-testid="loading-spinner">
       <div className="spinner-border text-primary" role="status">
         <span className="visually-hidden">読み込み中...</span>
       </div>

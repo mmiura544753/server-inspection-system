@@ -209,16 +209,26 @@ const InspectionItemList = () => {
 
   // 検索フィルター
   const filteredItems = items.filter(
-    (item) =>
-      (item.item_name &&
-        typeof item.item_name === "string" &&
-        item.item_name.includes(searchTerm)) ||
-      (item.device_name &&
-        typeof item.device_name === "string" &&
-        item.device_name.includes(searchTerm)) ||
-      (item.customer_name &&
-        typeof item.customer_name === "string" &&
-        item.customer_name.includes(searchTerm))
+    (item) => {
+      const searchTermLower = searchTerm.toLowerCase();
+      
+      // 各フィールドで検索条件と一致するかチェック
+      return (
+        (item.item_name && 
+         typeof item.item_name === "string" && 
+         item.item_name.toLowerCase().includes(searchTermLower)) ||
+        (item.device_name && 
+         typeof item.device_name === "string" && 
+         item.device_name.toLowerCase().includes(searchTermLower)) ||
+        (item.model && 
+         typeof item.model === "string" && 
+         item.model.toLowerCase().includes(searchTermLower)) ||
+        (item.rack_number && 
+         item.rack_number.toString().includes(searchTerm)) ||
+        (item.unit_start_position && 
+         item.unit_start_position.toString().includes(searchTerm))
+      );
+    }
   );
 
   // ソートの処理
@@ -304,8 +314,8 @@ const InspectionItemList = () => {
           </p>
           <p className="small text-muted mt-2">
             インポート用CSVのフォーマット:
-            点検項目名、機器名、顧客名のカラムが必要です。
-            存在しない顧客名や機器名の場合は自動的に新規作成されます。
+            「ラックNo.」「ユニット」「サーバ名」「機種」「点検項目」のカラムが必要です。
+            存在しないサーバ名の場合は自動的に新規作成されます。
           </p>
         </div>
       </div>
@@ -320,7 +330,7 @@ const InspectionItemList = () => {
             <input
               type="text"
               className="form-control"
-              placeholder="点検項目名、機器名、顧客名で検索..."
+              placeholder="点検項目、サーバ名、機種、ラックNo.、ユニットで検索..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -344,29 +354,36 @@ const InspectionItemList = () => {
                       onSort={handleSort}
                     />
                     <SortableTableHeader
-                      field="item_name"
-                      label="点検項目名"
+                      field="rack_number"
+                      label="ラックNo."
+                      currentSortField={sortField}
+                      isDescending={sortDescending}
+                      onSort={handleSort}
+                    />
+                    <SortableTableHeader
+                      field="unit_position"
+                      label="ユニット"
                       currentSortField={sortField}
                       isDescending={sortDescending}
                       onSort={handleSort}
                     />
                     <SortableTableHeader
                       field="device_name"
-                      label="機器名"
+                      label="サーバ名"
                       currentSortField={sortField}
                       isDescending={sortDescending}
                       onSort={handleSort}
                     />
                     <SortableTableHeader
-                      field="customer_name"
-                      label="顧客名"
+                      field="model"
+                      label="機種"
                       currentSortField={sortField}
                       isDescending={sortDescending}
                       onSort={handleSort}
                     />
                     <SortableTableHeader
-                      field="created_at"
-                      label="作成日"
+                      field="item_name"
+                      label="点検項目"
                       currentSortField={sortField}
                       isDescending={sortDescending}
                       onSort={handleSort}
@@ -378,10 +395,17 @@ const InspectionItemList = () => {
                   {sortedItems.map((item) => (
                     <tr key={item.id}>
                       <td>{item.id}</td>
+                      <td>{item.rack_number || '-'}</td>
+                      <td>
+                        {item.unit_start_position 
+                          ? (item.unit_end_position 
+                             ? `${item.unit_start_position}～${item.unit_end_position}` 
+                             : item.unit_start_position)
+                          : '-'}
+                      </td>
+                      <td>{item.device_name || '-'}</td>
+                      <td>{item.model || '-'}</td>
                       <td>{item.item_name}</td>
-                      <td>{item.device_name}</td>
-                      <td>{item.customer_name}</td>
-                      <td>{formatDate(item.created_at)}</td>
                       <td>
                         <div className="action-buttons">
                           <Link

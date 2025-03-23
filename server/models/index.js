@@ -17,9 +17,8 @@ Device.hasMany(InspectionItem, { foreignKey: 'device_id', as: 'inspection_items'
 InspectionItem.belongsTo(InspectionItemName, { foreignKey: 'item_name_id', as: 'item_name_master' });
 InspectionItemName.hasMany(InspectionItem, { foreignKey: 'item_name_id', as: 'inspection_items' });
 
-// Inspection と Device (optional)
-Inspection.belongsTo(Device, { foreignKey: 'device_id', as: 'device', constraints: false });
-Device.hasMany(Inspection, { foreignKey: 'device_id', as: 'inspections', constraints: false });
+// Inspection と Device の関連付けは行わない
+// 点検と機器の関連は inspection_results テーブルを通じて行う
 
 // InspectionResult と InspectionItem
 InspectionResult.belongsTo(InspectionItem, { foreignKey: 'inspection_item_id', as: 'inspection_item' });

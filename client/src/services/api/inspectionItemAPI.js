@@ -2,14 +2,155 @@
 import api from './index';
 
 export const inspectionItemAPI = {
-  // 点検項目名一覧を取得
+  // 確認作業項目一覧を取得（従来のメソッド - 互換性のために残す）
   getAllItemNames: async () => {
     try {
       const response = await api.get("/inspection-item-names");
       return response.data;
     } catch (error) {
-      console.error("点検項目名一覧取得エラー:", error);
+      console.error("確認作業項目一覧取得エラー:", error);
       throw error;
+    }
+  },
+  
+  // 確認作業項目マスタ関連の操作
+  itemNames: {
+    // 確認作業項目一覧を取得
+    getAll: async () => {
+      try {
+        const response = await api.get("/inspection-item-names");
+        return response.data;
+      } catch (error) {
+        console.error("確認作業項目一覧取得エラー:", error);
+        throw error;
+      }
+    },
+    
+    // 確認作業項目を取得
+    getById: async (id) => {
+      try {
+        const response = await api.get(`/inspection-item-names/${id}`);
+        return response.data;
+      } catch (error) {
+        console.error(`確認作業項目ID:${id}の取得エラー:`, error);
+        throw error;
+      }
+    },
+    
+    // 確認作業項目を作成
+    create: async (data) => {
+      try {
+        const response = await api.post("/inspection-item-names", data);
+        return response.data;
+      } catch (error) {
+        console.error("確認作業項目作成エラー:", error);
+        throw error;
+      }
+    },
+    
+    // 確認作業項目を更新
+    update: async (id, data) => {
+      try {
+        const response = await api.put(`/inspection-item-names/${id}`, data);
+        return response.data;
+      } catch (error) {
+        console.error(`確認作業項目ID:${id}の更新エラー:`, error);
+        throw error;
+      }
+    },
+    
+    // 確認作業項目を削除
+    delete: async (id) => {
+      try {
+        const response = await api.delete(`/inspection-item-names/${id}`);
+        return response.data;
+      } catch (error) {
+        console.error(`確認作業項目ID:${id}の削除エラー:`, error);
+        throw error;
+      }
+    },
+    
+    // 確認作業項目をCSVエクスポート
+    exportToCsv: async (encoding = 'shift_jis') => {
+      try {
+        console.log(`確認作業項目エクスポート開始: エンコーディング=${encoding}`);
+        
+        const response = await api.get(`/inspection-item-names/export`, {
+          params: { encoding },
+          responseType: 'blob'
+        });
+        
+        console.log('確認作業項目エクスポート成功:', response);
+        return response.data;
+      } catch (error) {
+        console.error("確認作業項目エクスポートエラー:", error);
+        
+        if (error.response && error.response.data) {
+          // Blobからテキストを抽出
+          const text = await new Response(error.response.data).text();
+          let errorMsg;
+          try {
+            const json = JSON.parse(text);
+            errorMsg = json.error || json.message || '未知のエラーが発生しました';
+          } catch {
+            errorMsg = text;
+          }
+          console.error("エクスポートエラー詳細:", errorMsg);
+          throw new Error(errorMsg);
+        }
+        
+        throw error;
+      }
+    },
+    
+    // 確認作業項目をCSVからインポート
+    importFromCsv: async (file) => {
+      try {
+        console.log("確認作業項目インポート開始", file);
+        console.log("ファイル名:", file.name);
+        console.log("ファイルサイズ:", file.size);
+        console.log("ファイルタイプ:", file.type);
+        
+        // FormDataの作成
+        const formData = new FormData();
+        formData.append("file", file);
+        
+        // POSTリクエストの実行
+        const response = await api.post("/inspection-item-names/import", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          timeout: 60000, // 60秒タイムアウト
+        });
+        
+        console.log("確認作業項目インポート成功:", response);
+        return response.data;
+      } catch (error) {
+        console.error("確認作業項目インポートエラー:", error);
+        
+        if (error.response && error.response.data) {
+          console.error("エラーレスポンス:", error.response);
+          
+          if (error.response.data instanceof Blob) {
+            // Blobからテキストを抽出
+            const text = await new Response(error.response.data).text();
+            console.error("Blobレスポンスのテキスト:", text);
+            
+            let errorMsg;
+            try {
+              const json = JSON.parse(text);
+              errorMsg = json.error || json.message || "未知のエラーが発生しました";
+            } catch {
+              errorMsg = text;
+            }
+            throw new Error(errorMsg);
+          } else {
+            throw new Error(error.response.data.message || "未知のエラーが発生しました");
+          }
+        }
+        
+        throw error;
+      }
     }
   },
   // 点検項目一覧を取得

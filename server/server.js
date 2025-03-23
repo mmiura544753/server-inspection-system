@@ -12,6 +12,7 @@ const customerRoutes = require("./routes/customerRoutes");
 const deviceRoutes = require("./routes/deviceRoutes");
 const inspectionRoutes = require("./routes/inspectionRoutes");
 const inspectionItemRoutes = require("./routes/inspectionItemRoutes");
+const inspectionItemNameRoutes = require("./routes/inspectionItemNameRoutes");
 
 // エラーハンドラーのインポート
 const { notFound, errorHandler } = require("./middleware/errorHandler");
@@ -25,11 +26,18 @@ const app = express();
 // ミドルウェア
 app.use(
   cors({
-    origin: "*", // すべてのオリジンを許可
+    origin: ["http://3.115.76.39:3000", "http://localhost:3000"], // 両方のオリジンを許可
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+// CORS デバッグログ
+app.use((req, res, next) => {
+  console.log(`リクエスト: ${req.method} ${req.path}`);
+  console.log(`リクエストヘッダー:`, req.headers);
+  next();
+});
 app.use(express.json());
 app.use(morgan("dev"));
 
@@ -38,6 +46,7 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/devices", deviceRoutes);
 app.use("/api/inspections", inspectionRoutes);
 app.use("/api/inspection-items", inspectionItemRoutes);
+app.use("/api/inspection-item-names", inspectionItemNameRoutes);
 
 // 基本ルート
 app.get("/", (req, res) => {

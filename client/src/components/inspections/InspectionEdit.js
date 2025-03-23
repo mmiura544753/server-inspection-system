@@ -32,16 +32,7 @@ const InspectionSchema = Yup.object().shape({
   results: Yup.array().of(
     Yup.object().shape({
       status: Yup.string().required("ステータスは必須です"),
-      checked_at: Yup.date()
-        .required("確認日時は必須です")
-        .test(
-          'same-day',
-          '確認日時は点検日と同じ日付である必要があります',
-          function(value) {
-            const { inspection_date } = this.parent;
-            return isSameDay(value, inspection_date);
-          }
-        ),
+      checked_at: Yup.date().required("確認日時は必須です"),
     })
   ),
 });
@@ -86,6 +77,8 @@ const InspectionEdit = () => {
     try {
       setError(null);
       
+      console.log("送信前の値:", values);
+      
       // APIに送信するデータを整形
       const formattedValues = {
         ...values,
@@ -96,11 +89,13 @@ const InspectionEdit = () => {
         })),
       };
       
+      console.log("APIに送信するデータ:", formattedValues);
+      
       await inspectionAPI.update(id, formattedValues);
       navigate(`/inspections/${id}`);
     } catch (err) {
       console.error(`点検データ更新エラー:`, err);
-      setError("点検データの更新に失敗しました。");
+      setError("点検データの更新に失敗しました: " + (err.message || "詳細不明"));
     } finally {
       setSubmitting(false);
     }

@@ -1,6 +1,6 @@
 // server/controllers/inspectionItem/inspectionItemCreateController.js
 const asyncHandler = require('express-async-handler');
-const { InspectionItem, Device, Customer } = require('../../models');
+const { InspectionItem, Device, Customer, InspectionItemName } = require('../../models');
 
 // @desc    新規点検項目の作成
 // @route   POST /api/inspection-items
@@ -31,23 +31,55 @@ const createInspectionItem = asyncHandler(async (req, res) => {
   }
   
   try {
+    // 点検項目名の取得または作成
+    let itemNameRecord;
+    try {
+      // 既存の点検項目名を検索
+      itemNameRecord = await InspectionItemName.findOne({
+        where: { name: item_name }
+      });
+      
+      // 存在しない場合は新規作成
+      if (!itemNameRecord) {
+        console.log(`新規点検項目名を作成します: ${item_name}`);
+        itemNameRecord = await InspectionItemName.create({
+          name: item_name
+        });
+      }
+    } catch (err) {
+      console.error('点検項目名の取得/作成エラー:', err);
+      res.status(500);
+      throw new Error('点検項目名の処理中にエラーが発生しました');
+    }
+    
     // 重複チェック
     const existingItem = await InspectionItem.findOne({
       where: {
         device_id,
-        item_name
+        item_name_id: itemNameRecord.id
       }
     });
 
     if (existingItem) {
-      res.status(400);
-      throw new Error('同じ機器に対して同じ点検項目名がすでに存在します');
+      // 重複している場合は成功として返す（クライアント側でエラーにならないようにする）
+      return res.status(200).json({
+        id: existingItem.id,
+        item_name: existingItem.item_name,
+        device_id: deviceExists.id,
+        device_name: deviceExists.device_name,
+        customer_id: deviceExists.customer.id,
+        customer_name: deviceExists.customer.customer_name,
+        created_at: existingItem.created_at,
+        updated_at: existingItem.updated_at,
+        duplicate: true // 重複フラグを追加
+      });
     }
 
     // 点検項目を作成
     const item = await InspectionItem.create({
       device_id,
-      item_name
+      item_name_id: itemNameRecord.id,
+      item_name: item_name // レガシーフィールドにも保存
     });
     
     // レスポンス形式を調整

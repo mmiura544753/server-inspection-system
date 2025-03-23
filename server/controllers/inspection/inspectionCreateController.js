@@ -80,15 +80,14 @@ const createInspection = asyncHandler(async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    // 点検レコードを作成 (device_id は不要)
+    // 点検レコードを作成 (device_id は含めない)
     const inspection = await Inspection.create(
       {
         inspection_date,
         start_time,
         end_time,
         inspector_name,
-        status, // ステータスフィールド
-        device_id: null // 明示的に null を設定
+        status // ステータスフィールド
       },
       { transaction }
     );
@@ -103,15 +102,28 @@ const createInspection = asyncHandler(async (req, res) => {
             model: InspectionItemName,
             as: 'item_name_master',
             attributes: ['id', 'name']
+          },
+          {
+            model: Device,
+            as: 'device',
+            attributes: ['id', 'device_name']
           }
         ]
       });
+      
+      // device_idを点検項目から取得
+      const device_id = inspectionItem && inspectionItem.device ? inspectionItem.device.id : null;
+      
+      if (!device_id) {
+        res.status(400);
+        throw new Error(`点検項目ID ${result.inspection_item_id} に関連する機器情報が見つかりません`);
+      }
       
       const inspectionResult = await InspectionResult.create(
         {
           inspection_id: inspection.id,
           inspection_item_id: result.inspection_item_id,
-          // device_id フィールドを削除
+          device_id: device_id, // 点検項目から取得した機器IDを使用
           check_item: inspectionItem && inspectionItem.item_name_master ? inspectionItem.item_name_master.name : `点検項目${result.inspection_item_id}`, // 点検項目マスタから名前を取得
           status: result.status,
           checked_at: new Date(),
@@ -132,21 +144,18 @@ const createInspection = asyncHandler(async (req, res) => {
     // コミット
     await transaction.commit();
 
-    // 作成した点検の詳細情報を取得（関連データ含む）
-    // トランザクションは既にコミットされているため、新しいクエリとして実行
-    const createdInspection = await Inspection.findByPk(inspection.id);
-
+    // 点検データは既に保存されているため、直接使用
     // レスポンス形式を調整
     const formattedInspection = {
-      id: createdInspection.id,
-      inspection_date: createdInspection.inspection_date,
-      start_time: createdInspection.start_time,
-      end_time: createdInspection.end_time,
-      inspector_name: createdInspection.inspector_name,
-      status: createdInspection.status,
+      id: inspection.id,
+      inspection_date: inspection.inspection_date,
+      start_time: inspection.start_time,
+      end_time: inspection.end_time,
+      inspector_name: inspection.inspector_name,
+      status: inspection.status,
       results: inspectionResults,
-      created_at: createdInspection.created_at,
-      updated_at: createdInspection.updated_at,
+      created_at: inspection.created_at,
+      updated_at: inspection.updated_at,
     };
 
     res.status(201).json(formattedInspection);

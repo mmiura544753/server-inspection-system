@@ -197,7 +197,7 @@ const InspectionDetails = () => {
                               <tr key={result.id}>
                                 {/* ラックNo.は各ラックグループの最初の行にのみ表示 */}
                                 {isFirstInRack && (
-                                  <td className="align-middle" rowSpan={totalRowsInRack}>
+                                  <td className="align-middle px-4 py-2 border-b" rowSpan={totalRowsInRack}>
                                     <div>
                                       <span>ラックNo.{rackNumber}</span>
                                     </div>
@@ -207,20 +207,20 @@ const InspectionDetails = () => {
                                 {/* デバイス情報は各デバイスの最初の行にのみ表示 */}
                                 {itemIndex === 0 && (
                                   <>
-                                    <td className="align-middle" rowSpan={deviceRowCount}>
+                                    <td className="align-middle px-4 py-2 border-b" rowSpan={deviceRowCount}>
                                       {group.device.unit_position || '-'}
                                     </td>
-                                    <td className="align-middle" rowSpan={deviceRowCount}>
+                                    <td className="align-middle px-4 py-2 border-b" rowSpan={deviceRowCount}>
                                       {group.device.device_name || '-'}
                                     </td>
-                                    <td className="align-middle" rowSpan={deviceRowCount}>
+                                    <td className="align-middle px-4 py-2 border-b" rowSpan={deviceRowCount}>
                                       {group.device.model || '-'}
                                     </td>
                                   </>
                                 )}
                                 
                                 {/* 点検項目と結果は全ての行に表示 */}
-                                <td>{result.check_item}</td>
+                                <td className="px-4 py-2 border-b">{result.check_item}</td>
                                 <td className="px-4 py-2 border-b">
                                   <div className="flex justify-center">
                                     <span

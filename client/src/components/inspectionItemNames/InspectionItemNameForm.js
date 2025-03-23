@@ -73,7 +73,7 @@ const InspectionItemNameForm = () => {
       <div className="card">
         <div className="card-header">
           <h1 className="h3 mb-0">
-            {isEditMode ? '点検項目名の編集' : '新規点検項目名登録'}
+            {isEditMode ? '確認作業項目の編集' : '新規確認作業項目登録'}
           </h1>
         </div>
         <div className="card-body">
@@ -89,14 +89,14 @@ const InspectionItemNameForm = () => {
               <Form>
                 <div className="mb-3">
                   <label htmlFor="name" className="form-label required-label">
-                    点検項目名
+                    確認作業項目
                   </label>
                   <Field
                     type="text"
                     id="name"
                     name="name"
                     className="form-control"
-                    placeholder="点検項目名を入力"
+                    placeholder="確認作業項目を入力"
                   />
                   <ErrorMessage
                     name="name"
@@ -104,7 +104,7 @@ const InspectionItemNameForm = () => {
                     className="text-danger"
                   />
                   <div className="form-text">
-                    点検項目名は登録後、点検項目作成時に選択できるようになります。
+                    確認作業項目は登録後、点検項目作成時に選択できるようになります。
                   </div>
                 </div>
                 

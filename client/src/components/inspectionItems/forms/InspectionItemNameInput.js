@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Field, ErrorMessage, useFormikContext } from 'formik';
 import { inspectionItemAPI } from '../../../services/api';
+import { FaCheck } from 'react-icons/fa';
 
 const InspectionItemNameInput = () => {
   const [itemNameOptions, setItemNameOptions] = useState([]);
@@ -94,7 +95,7 @@ const InspectionItemNameInput = () => {
         htmlFor="item_names"
         className="form-label required-label"
       >
-        点検項目名（複数選択可能）
+        確認作業項目（複数選択可能）
       </label>
       
       <div className="d-flex align-items-center mb-2 justify-content-between">
@@ -107,7 +108,7 @@ const InspectionItemNameInput = () => {
             onChange={handleCustomInputToggle}
           />
           <label className="form-check-label" htmlFor="customInputCheck">
-            カスタム項目名を入力
+            カスタム確認作業項目を入力
           </label>
         </div>
         
@@ -139,49 +140,74 @@ const InspectionItemNameInput = () => {
           id="item_names"
           name="item_names"
           className="form-control"
-          placeholder="点検項目名を入力（1行に1つずつ入力してください）"
+          placeholder="確認作業項目を入力（1行に1つずつ入力してください）"
           rows={10}
           onChange={handleTextAreaChange}
           value={getMultiSelectText()}
         />
       ) : (
-        <div className="checkbox-list-container border rounded p-3" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+        <div 
+          className="border rounded"
+          style={{ 
+            overflow: 'auto',
+            height: `${Math.min(10, itemNameOptions.length) * 3}rem`, // 10行表示、行間隔を広めに
+          }}
+        >
           {loading ? (
             <div className="text-center p-3">
               <div className="spinner-border text-primary" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
-              <p className="mt-2">点検項目名を読み込み中...</p>
+              <p className="mt-2">確認作業項目を読み込み中...</p>
             </div>
           ) : itemNameOptions.length === 0 ? (
             <div className="alert alert-info">
-              点検項目名が登録されていません。カスタム入力でデータを追加してください。
+              確認作業項目が登録されていません。カスタム入力でデータを追加してください。
             </div>
           ) : (
-            <div className="row">
-              {itemNameOptions.map((option, index) => (
-                <div className="col-md-6 mb-2" key={index}>
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id={`itemCheckbox_${index}`}
-                      checked={values.item_names && values.item_names.includes(option.value)}
-                      onChange={() => handleCheckboxChange(option.value)}
-                    />
-                    <label className="form-check-label" htmlFor={`itemCheckbox_${index}`}>
+            <div className="custom-listbox">
+              {itemNameOptions.map((option, index) => {
+                const isSelected = values.item_names && values.item_names.includes(option.value);
+                return (
+                  <div
+                    key={index}
+                    className={`d-flex align-items-center ${isSelected ? 'bg-light' : ''}`}
+                    style={{ 
+                      padding: '0.7rem 0.75rem',
+                      cursor: 'pointer',
+                      borderBottom: index < itemNameOptions.length - 1 ? '1px solid #e9ecef' : 'none'
+                    }}
+                    onClick={() => handleCheckboxChange(option.value)}
+                  >
+                    <div 
+                      className="me-2 custom-checkbox" 
+                      style={{ 
+                        width: '18px', 
+                        height: '18px', 
+                        border: '1px solid #ced4da',
+                        borderRadius: '3px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: isSelected ? '#0d6efd' : 'white',
+                        color: 'white'
+                      }}
+                    >
+                      {isSelected && <FaCheck size={12} />}
+                    </div>
+                    <div style={{ fontSize: '1rem' }}>
                       {option.label}
-                    </label>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       )}
       
       <small className="form-text text-muted mt-2">
-        複数の点検項目を選択または入力できます。選択した点検項目ごとに新しい点検項目が作成されます。
+        複数の確認作業項目を選択または入力できます。選択した確認作業項目ごとに新しい点検項目が作成されます。
         {!customInput && values.item_names && values.item_names.length > 0 && (
           <div className="mt-2">
             <span className="badge bg-primary">{values.item_names.length}個の項目が選択されています</span>

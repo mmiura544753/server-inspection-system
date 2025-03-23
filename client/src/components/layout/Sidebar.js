@@ -43,7 +43,7 @@ const Sidebar = () => {
               to="/inspection-item-names"
               className={({ isActive }) => (isActive ? "sidebar-active" : "")}
             >
-              <FaList className="me-2" /> 点検項目名マスタ
+              <FaList className="me-2" /> 確認作業項目マスタ
             </NavLink>
           </li>
           <li>

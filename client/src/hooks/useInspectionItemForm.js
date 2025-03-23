@@ -128,7 +128,19 @@ export function useInspectionItemForm(id) {
       );
     }
     
-    const options = filteredDevices.map(device => ({
+    // 同じサーバーが複数表示されるのを防止するため、重複を排除
+    const uniqueDevices = [];
+    const uniqueDeviceNames = new Set();
+    
+    filteredDevices.forEach(device => {
+      // 機器名で重複チェック（モデルは考慮しない）
+      if (!uniqueDeviceNames.has(device.device_name)) {
+        uniqueDeviceNames.add(device.device_name);
+        uniqueDevices.push(device);
+      }
+    });
+    
+    const options = uniqueDevices.map(device => ({
       value: device.id,
       label: device.device_name + (device.model ? ` (${device.model})` : '')
     }));
@@ -209,19 +221,41 @@ export function useInspectionItemForm(id) {
         await inspectionItemAPI.update(id, submitData);
       } else {
         // 作成モードでは各項目名について個別に作成APIを呼び出す
-        // 並列処理で複数のAPIリクエストを送信
+        // 重複エラーがあっても処理を継続するために、エラーハンドリングを追加
         const deviceId = parseInt(values.device_id, 10);
-        const promises = values.item_names.map(itemName => {
+        const results = [];
+        const duplicates = [];
+        
+        // 一つずつ処理して、エラーがあっても継続する
+        for (const itemName of values.item_names) {
           const submitData = {
             device_id: deviceId,
             item_name: itemName,
           };
           console.log("送信データ (作成モード):", submitData);
-          return inspectionItemAPI.create(submitData);
-        });
+          
+          try {
+            const result = await inspectionItemAPI.create(submitData);
+            results.push(result);
+          } catch (error) {
+            // エラーメッセージをチェックして重複の場合は無視する
+            if (error.response && 
+                error.response.data && 
+                error.response.data.message && 
+                error.response.data.message.includes("同じ機器に対して同じ点検項目名がすでに存在します")) {
+              console.log(`重複アイテムをスキップ: ${itemName}`);
+              duplicates.push(itemName);
+            } else {
+              // 重複以外のエラーは再スロー
+              throw error;
+            }
+          }
+        }
         
-        // すべてのリクエストが完了するのを待つ
-        await Promise.all(promises);
+        // 重複があった場合は警告メッセージを表示（オプション）
+        if (duplicates.length > 0) {
+          console.warn(`${duplicates.length}個の項目が既に存在しています。`, duplicates);
+        }
       }
 
       navigate("/inspection-items");

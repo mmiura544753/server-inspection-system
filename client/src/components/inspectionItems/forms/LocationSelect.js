@@ -33,7 +33,7 @@ const LocationSelect = ({
           value={selectedValue}
           onChange={handleSelectChange}
           disabled={isDisabled}
-          size={Math.min(5, locationOptions.length)} // 最大5行、それ以下ならその数だけ表示
+          size={Math.min(10, locationOptions.length)} // 最大10行、それ以下ならその数だけ表示
           style={{ width: '100%' }}
         >
           {locationOptions.map((option, index) => (

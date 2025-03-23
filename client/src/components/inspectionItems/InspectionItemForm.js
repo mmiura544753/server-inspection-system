@@ -128,7 +128,12 @@ const InspectionItemForm = () => {
                   deviceOptions={deviceOptions}
                   value={deviceOptions.find(option => option.value === parseInt(values.device_id, 10) || 0)}
                   onChange={(selectedOption) => {
-                    setFieldValue("device_id", selectedOption ? selectedOption.value : "");
+                    // 選択オプションが存在する場合のみsetFieldValueを実行
+                    if (selectedOption) {
+                      setFieldValue("device_id", selectedOption.value);
+                    } else {
+                      setFieldValue("device_id", "");
+                    }
                   }}
                   isDisabled={!values.customer_id}
                   hasCustomer={!!values.customer_id}

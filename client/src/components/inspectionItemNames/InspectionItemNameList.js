@@ -168,7 +168,7 @@ const InspectionItemNameList = () => {
   return (
     <div className="container-fluid py-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h2">点検項目名マスタ</h1>
+        <h1 className="h2">確認作業項目マスタ</h1>
         <div>
           <button
             onClick={handleExportCSV}
@@ -205,7 +205,7 @@ const InspectionItemNameList = () => {
             onChange={handleFileChange}
           />
           <Link to="/inspection-item-names/new" className="btn btn-primary">
-            <FaPlus className="me-2" /> 新規点検項目名登録
+            <FaPlus className="me-2" /> 新規確認作業項目登録
           </Link>
         </div>
       </div>
@@ -220,11 +220,11 @@ const InspectionItemNameList = () => {
       {/* 説明文 */}
       <div className="card mb-4">
         <div className="card-body">
-          <h5 className="card-title">点検項目名マスタについて</h5>
+          <h5 className="card-title">確認作業項目マスタについて</h5>
           <p>
-            点検項目名マスタは、点検項目で使用される項目名の標準化と一元管理を行うためのものです。
-            新しい点検項目を作成する際は、このマスタに登録された項目名から選択することで、
-            点検項目名の統一性を保ち、データの品質を向上させることができます。
+            確認作業項目マスタは、点検項目で使用される作業項目の標準化と一元管理を行うためのものです。
+            新しい点検項目を作成する際は、このマスタに登録された作業項目から選択することで、
+            確認作業項目の統一性を保ち、データの品質を向上させることができます。
           </p>
         </div>
       </div>
@@ -235,14 +235,14 @@ const InspectionItemNameList = () => {
           <h5 className="card-title">CSVインポート・エクスポートについて</h5>
           <p className="mb-0">
             <strong>CSVエクスポート</strong>:
-            現在の点検項目名一覧をSJIS形式のCSVファイルでダウンロードします。
+            現在の確認作業項目一覧をSJIS形式のCSVファイルでダウンロードします。
           </p>
           <p className="mb-0">
             <strong>CSVインポート</strong>:
-            CSVファイルから点検項目名を一括登録します。ファイル形式はSJISエンコーディングが推奨です。
+            CSVファイルから確認作業項目を一括登録します。ファイル形式はSJISエンコーディングが推奨です。
           </p>
           <p className="small text-muted mt-2">
-            インポート用CSVのフォーマット: ID（更新時のみ）、点検項目名の列が必要です。
+            インポート用CSVのフォーマット: ID（更新時のみ）、確認作業項目の列が必要です。
             IDを指定すると既存データが更新され、指定がない場合は新規作成されます。
           </p>
         </div>
@@ -258,7 +258,7 @@ const InspectionItemNameList = () => {
             <input
               type="text"
               className="form-control"
-              placeholder="点検項目名で検索..."
+              placeholder="確認作業項目で検索..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -283,7 +283,7 @@ const InspectionItemNameList = () => {
                     />
                     <SortableTableHeader
                       field="name"
-                      label="点検項目名"
+                      label="確認作業項目"
                       currentSortField={sortField}
                       isDescending={sortDescending}
                       onSort={handleSort}
@@ -324,8 +324,8 @@ const InspectionItemNameList = () => {
       ) : (
         <div className="alert alert-info">
           {searchTerm
-            ? "検索条件に一致する点検項目名はありません。"
-            : "点検項目名が登録されていません。"}
+            ? "検索条件に一致する確認作業項目はありません。"
+            : "確認作業項目が登録されていません。"}
         </div>
       )}
 
@@ -333,14 +333,14 @@ const InspectionItemNameList = () => {
       <Modal
         show={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        title="点検項目名削除の確認"
+        title="確認作業項目削除の確認"
         onConfirm={handleDeleteConfirm}
       >
         <p>
-          点検項目名「{itemNameToDelete?.name}」を削除してもよろしいですか？
+          確認作業項目「{itemNameToDelete?.name}」を削除してもよろしいですか？
         </p>
         <p className="text-danger">
-          この点検項目名が点検項目で使用されている場合は削除できません。
+          この確認作業項目が点検項目で使用されている場合は削除できません。
         </p>
       </Modal>
     </div>

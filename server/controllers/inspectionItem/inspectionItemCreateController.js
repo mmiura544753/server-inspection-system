@@ -61,8 +61,18 @@ const createInspectionItem = asyncHandler(async (req, res) => {
     });
 
     if (existingItem) {
-      res.status(400);
-      throw new Error('同じ機器に対して同じ点検項目名がすでに存在します');
+      // 重複している場合は成功として返す（クライアント側でエラーにならないようにする）
+      return res.status(200).json({
+        id: existingItem.id,
+        item_name: existingItem.item_name,
+        device_id: deviceExists.id,
+        device_name: deviceExists.device_name,
+        customer_id: deviceExists.customer.id,
+        customer_name: deviceExists.customer.customer_name,
+        created_at: existingItem.created_at,
+        updated_at: existingItem.updated_at,
+        duplicate: true // 重複フラグを追加
+      });
     }
 
     // 点検項目を作成

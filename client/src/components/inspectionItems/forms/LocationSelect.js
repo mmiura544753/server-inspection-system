@@ -1,6 +1,6 @@
 // src/components/inspectionItems/forms/LocationSelect.js
 import React from 'react';
-import Select from 'react-select';
+import { Field } from 'formik';
 
 const LocationSelect = ({ 
   locationOptions, 
@@ -8,40 +8,50 @@ const LocationSelect = ({
   onChange, 
   isDisabled 
 }) => {
+  // 選択された値の取得
+  const selectedValue = value ? value.value : '';
+
+  // ラジオボタンのchangeハンドラ
+  const handleRadioChange = (e) => {
+    const selectedOption = locationOptions.find(option => option.value === e.target.value) || null;
+    onChange(selectedOption);
+  };
+
   return (
     <div className="mb-3">
-      <label htmlFor="location" className="form-label">
+      <label className="form-label d-block">
         設置ラックNo.
       </label>
       
-      <Select
-        inputId="location"
-        name="location"
-        options={locationOptions}
-        value={value}
-        onChange={onChange}
-        placeholder="設置場所を選択してください"
-        noOptionsMessage={() => isDisabled ? "先に顧客を選択してください" : "設置場所がありません"}
-        isSearchable={true}
-        isClearable={true}
-        isDisabled={isDisabled}
-        classNamePrefix="select"
-        styles={{
-          control: (base, state) => ({
-            ...base,
-            borderColor: state.isFocused ? '#80bdff' : '#ced4da',
-            boxShadow: state.isFocused ? '0 0 0 0.2rem rgba(0, 123, 255, 0.25)' : null,
-            '&:hover': {
-              borderColor: state.isFocused ? '#80bdff' : '#ced4da'
-            }
-          }),
-          option: (base, state) => ({
-            ...base,
-            backgroundColor: state.isSelected ? '#007bff' : state.isFocused ? '#f8f9fa' : null,
-            color: state.isSelected ? 'white' : 'black'
-          })
-        }}
-      />
+      <div className="location-list border rounded p-3" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+        {isDisabled ? (
+          <div className="text-muted">先に顧客を選択してください</div>
+        ) : locationOptions.length === 0 ? (
+          <div className="text-muted">設置場所がありません</div>
+        ) : (
+          <div className="row">
+            {locationOptions.map((option, index) => (
+              <div className="col-md-4 mb-2" key={index}>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="location"
+                    id={`location_${index}`}
+                    value={option.value}
+                    checked={selectedValue === option.value}
+                    onChange={handleRadioChange}
+                    disabled={isDisabled}
+                  />
+                  <label className="form-check-label" htmlFor={`location_${index}`}>
+                    {option.label}
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

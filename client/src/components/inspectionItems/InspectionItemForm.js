@@ -12,6 +12,7 @@ import { useInspectionItemForm } from "../../hooks/useInspectionItemForm";
 // フォームコンポーネント
 import CustomerSelect from "./forms/CustomerSelect";
 import LocationSelect from "./forms/LocationSelect";
+import DeviceTypeSelect from "./forms/DeviceTypeSelect";
 import DeviceSelect from "./forms/DeviceSelect";
 import InspectionItemNameInput from "./forms/InspectionItemNameInput";
 import FormActionButtons from "./forms/FormActionButtons";
@@ -20,6 +21,7 @@ import FormActionButtons from "./forms/FormActionButtons";
 const InspectionItemSchema = Yup.object().shape({
   customer_id: Yup.number().required("顧客の選択は必須です"),
   location: Yup.string().nullable(),
+  device_type: Yup.string().nullable(),
   device_id: Yup.number().required("機器の選択は必須です"),
   item_names: Yup.array()
     .min(1, "少なくとも1つの点検項目名を選択または入力してください")
@@ -38,6 +40,7 @@ const InspectionItemForm = () => {
     customerOptions,
     locationOptions,
     deviceOptions,
+    deviceTypeOptions,
     loading,
     error,
     submitError,
@@ -76,12 +79,13 @@ const InspectionItemForm = () => {
                   onChange={(selectedOption) => {
                     setFieldValue("customer_id", selectedOption ? selectedOption.value : "");
                     setFieldValue("location", "");
+                    setFieldValue("device_type", "");
                     setFieldValue("device_id", "");
                     
                     if (selectedOption) {
                       // 顧客IDを数値として渡す
                       updateLocationOptions(parseInt(selectedOption.value, 10));
-                      updateDeviceOptions(parseInt(selectedOption.value, 10), "");
+                      updateDeviceOptions(parseInt(selectedOption.value, 10), "", "");
                     }
                   }}
                   errors={errors.customer_id}
@@ -95,7 +99,27 @@ const InspectionItemForm = () => {
                     setFieldValue("location", selectedOption ? selectedOption.value : "");
                     setFieldValue("device_id", "");
                     
-                    updateDeviceOptions(values.customer_id, selectedOption ? selectedOption.value : "");
+                    updateDeviceOptions(
+                      values.customer_id, 
+                      selectedOption ? selectedOption.value : "",
+                      values.device_type
+                    );
+                  }}
+                  isDisabled={!values.customer_id}
+                />
+
+                <DeviceTypeSelect 
+                  deviceTypeOptions={deviceTypeOptions}
+                  value={values.device_type}
+                  onChange={(deviceType) => {
+                    setFieldValue("device_type", deviceType);
+                    setFieldValue("device_id", "");
+                    
+                    updateDeviceOptions(
+                      values.customer_id, 
+                      values.location,
+                      deviceType
+                    );
                   }}
                   isDisabled={!values.customer_id}
                 />

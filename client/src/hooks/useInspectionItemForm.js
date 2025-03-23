@@ -12,11 +12,13 @@ export function useInspectionItemForm(id) {
     customer_id: "",
     location: "",
     device_id: "",
+    device_type: "", // 機器種別を追加
     item_names: [],
   });
   const [customerOptions, setCustomerOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [deviceOptions, setDeviceOptions] = useState([]);
+  const [deviceTypeOptions, setDeviceTypeOptions] = useState([]); // 機器種別の選択肢
   const [allDevices, setAllDevices] = useState([]);
   
   // ローディング状態
@@ -60,6 +62,15 @@ export function useInspectionItemForm(id) {
         const data = await deviceAPI.getAll();
         setAllDevices(data);
         setDeviceOptions([]);
+        
+        // デバイスタイプの選択肢を抽出
+        const uniqueDeviceTypes = [...new Set(data.map(device => device.device_type).filter(Boolean))];
+        const typeOptions = uniqueDeviceTypes.map(type => ({
+          value: type,
+          label: type
+        }));
+        
+        setDeviceTypeOptions(typeOptions);
       } catch (err) {
         setError("機器データの取得に失敗しました。");
         console.error("機器一覧取得エラー:", err);
@@ -93,8 +104,8 @@ export function useInspectionItemForm(id) {
     setLocationOptions(options);
   }, [allDevices]);
 
-  // 顧客と設置場所に基づいて機器の選択肢を更新する関数
-  const updateDeviceOptions = useCallback((customerId, location) => {
+  // 顧客、設置場所、機器種別に基づいて機器の選択肢を更新する関数
+  const updateDeviceOptions = useCallback((customerId, location, deviceType) => {
     if (!customerId) {
       setDeviceOptions([]);
       return;
@@ -107,6 +118,12 @@ export function useInspectionItemForm(id) {
     if (location) {
       filteredDevices = filteredDevices.filter(device => 
         device.rack_number && device.rack_number.toString() === location
+      );
+    }
+    
+    if (deviceType) {
+      filteredDevices = filteredDevices.filter(device => 
+        device.device_type === deviceType
       );
     }
     
@@ -133,6 +150,7 @@ export function useInspectionItemForm(id) {
           customer_id: deviceData.customer_id,
           location: deviceData.rack_number ? deviceData.rack_number.toString() : "",
           device_id: data.device_id,
+          device_type: deviceData.device_type || "", // デバイスタイプを設定
           item_names: [data.item_name], // 編集時は既存の項目名を配列に変換
         });
         
@@ -140,7 +158,8 @@ export function useInspectionItemForm(id) {
         updateLocationOptions(deviceData.customer_id);
         updateDeviceOptions(
           deviceData.customer_id, 
-          deviceData.rack_number ? deviceData.rack_number.toString() : ""
+          deviceData.rack_number ? deviceData.rack_number.toString() : "",
+          deviceData.device_type
         );
       
         setError(null);
@@ -227,6 +246,7 @@ export function useInspectionItemForm(id) {
     customerOptions,
     locationOptions,
     deviceOptions,
+    deviceTypeOptions,
     loading: loading || customerLoading || deviceLoading,
     error,
     submitError,

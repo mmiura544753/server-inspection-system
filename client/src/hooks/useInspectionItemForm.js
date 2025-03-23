@@ -98,9 +98,8 @@ export function useInspectionItemForm(id) {
       value: location.toString(), // 数値の場合は文字列に変換
       label: `ラックNo.${location}`
     }));
-
-    options.unshift({ value: "", label: "すべての設置場所" });
     
+    // 「すべての設置場所」オプションは削除
     setLocationOptions(options);
   }, [allDevices]);
 
@@ -115,7 +114,9 @@ export function useInspectionItemForm(id) {
       device.customer_id === parseInt(customerId)
     );
     
-    if (location) {
+    // locationがnullの場合は絞り込まない（すべて表示）
+    // 空文字列("")は削除された「すべての設置場所」からの下位互換性のため
+    if (location && location !== "") {
       filteredDevices = filteredDevices.filter(device => 
         device.rack_number && device.rack_number.toString() === location
       );

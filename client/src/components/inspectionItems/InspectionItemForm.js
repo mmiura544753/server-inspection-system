@@ -101,7 +101,7 @@ const InspectionItemForm = () => {
                     
                     updateDeviceOptions(
                       values.customer_id, 
-                      selectedOption ? selectedOption.value : "",
+                      selectedOption ? selectedOption.value : null, // nullに変更
                       values.device_type
                     );
                   }}

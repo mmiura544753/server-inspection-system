@@ -64,7 +64,7 @@ const sequelize = new Sequelize(
 // Umzugマイグレーションの設定
 const umzug = new Umzug({
   migrations: {
-    path: path.join(__dirname, '../migrations'),
+    glob: path.join(__dirname, '../migrations/*.js'),
     params: [sequelize.getQueryInterface(), Sequelize]
   },
   storage: new SequelizeStorage({ sequelize }),

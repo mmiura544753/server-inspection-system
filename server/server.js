@@ -26,7 +26,7 @@ const app = express();
 // ミドルウェア
 app.use(
   cors({
-    origin: "*", // すべてのオリジンを許可
+    origin: process.env.CORS_ORIGIN || "*", // 環境変数のCORS_ORIGINを使用、未設定の場合はすべてのオリジンを許可
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

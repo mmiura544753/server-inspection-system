@@ -60,7 +60,9 @@ const getDeviceById = asyncHandler(async (req, res) => {
       customer_id: device.customer_id,
       model: device.model,
       rack_number: device.rack_number,
-      unit_position: device.unit_position,
+      unit_start_position: device.unit_start_position,
+      unit_end_position: device.unit_end_position,
+      unit_position: device.getUnitPositionDisplay(), // 関数を使用
       device_type: device.device_type,
       hardware_type: device.hardware_type,
       created_at: device.created_at,
@@ -99,7 +101,9 @@ const getDevicesByCustomerId = asyncHandler(async (req, res) => {
       customer_id: customer.id,
       model: device.model,
       rack_number: device.rack_number,
-      unit_position: device.unit_position,
+      unit_start_position: device.unit_start_position,
+      unit_end_position: device.unit_end_position,
+      unit_position: device.getUnitPositionDisplay(), // 関数を使用
       device_type: device.device_type,
       hardware_type: device.hardware_type,
       created_at: device.created_at,

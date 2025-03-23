@@ -26,7 +26,7 @@ const InspectionItemNameInput = () => {
         
         setItemNameOptions(options);
       } catch (err) {
-        console.error("点検項目名の取得エラー:", err);
+        console.error("確認作業項目の取得エラー:", err);
       } finally {
         setLoading(false);
       }

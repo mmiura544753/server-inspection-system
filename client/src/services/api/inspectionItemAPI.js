@@ -2,88 +2,88 @@
 import api from './index';
 
 export const inspectionItemAPI = {
-  // 点検項目名一覧を取得（従来のメソッド - 互換性のために残す）
+  // 確認作業項目一覧を取得（従来のメソッド - 互換性のために残す）
   getAllItemNames: async () => {
     try {
       const response = await api.get("/inspection-item-names");
       return response.data;
     } catch (error) {
-      console.error("点検項目名一覧取得エラー:", error);
+      console.error("確認作業項目一覧取得エラー:", error);
       throw error;
     }
   },
   
-  // 点検項目名マスタ関連の操作
+  // 確認作業項目マスタ関連の操作
   itemNames: {
-    // 点検項目名一覧を取得
+    // 確認作業項目一覧を取得
     getAll: async () => {
       try {
         const response = await api.get("/inspection-item-names");
         return response.data;
       } catch (error) {
-        console.error("点検項目名一覧取得エラー:", error);
+        console.error("確認作業項目一覧取得エラー:", error);
         throw error;
       }
     },
     
-    // 点検項目名を取得
+    // 確認作業項目を取得
     getById: async (id) => {
       try {
         const response = await api.get(`/inspection-item-names/${id}`);
         return response.data;
       } catch (error) {
-        console.error(`点検項目名ID:${id}の取得エラー:`, error);
+        console.error(`確認作業項目ID:${id}の取得エラー:`, error);
         throw error;
       }
     },
     
-    // 点検項目名を作成
+    // 確認作業項目を作成
     create: async (data) => {
       try {
         const response = await api.post("/inspection-item-names", data);
         return response.data;
       } catch (error) {
-        console.error("点検項目名作成エラー:", error);
+        console.error("確認作業項目作成エラー:", error);
         throw error;
       }
     },
     
-    // 点検項目名を更新
+    // 確認作業項目を更新
     update: async (id, data) => {
       try {
         const response = await api.put(`/inspection-item-names/${id}`, data);
         return response.data;
       } catch (error) {
-        console.error(`点検項目名ID:${id}の更新エラー:`, error);
+        console.error(`確認作業項目ID:${id}の更新エラー:`, error);
         throw error;
       }
     },
     
-    // 点検項目名を削除
+    // 確認作業項目を削除
     delete: async (id) => {
       try {
         const response = await api.delete(`/inspection-item-names/${id}`);
         return response.data;
       } catch (error) {
-        console.error(`点検項目名ID:${id}の削除エラー:`, error);
+        console.error(`確認作業項目ID:${id}の削除エラー:`, error);
         throw error;
       }
     },
     
-    // 点検項目名をCSVエクスポート
+    // 確認作業項目をCSVエクスポート
     exportToCsv: async (encoding = 'shift_jis') => {
       try {
-        console.log(`点検項目名エクスポート開始: エンコーディング=${encoding}`);
+        console.log(`確認作業項目エクスポート開始: エンコーディング=${encoding}`);
         
         const response = await api.get(`/inspection-item-names/export`, {
           params: { encoding },
           responseType: 'blob'
         });
         
-        console.log('点検項目名エクスポート成功:', response);
+        console.log('確認作業項目エクスポート成功:', response);
         return response.data;
       } catch (error) {
-        console.error("点検項目名エクスポートエラー:", error);
+        console.error("確認作業項目エクスポートエラー:", error);
         
         if (error.response && error.response.data) {
           // Blobからテキストを抽出
@@ -103,10 +103,10 @@ export const inspectionItemAPI = {
       }
     },
     
-    // 点検項目名をCSVからインポート
+    // 確認作業項目をCSVからインポート
     importFromCsv: async (file) => {
       try {
-        console.log("点検項目名インポート開始", file);
+        console.log("確認作業項目インポート開始", file);
         console.log("ファイル名:", file.name);
         console.log("ファイルサイズ:", file.size);
         console.log("ファイルタイプ:", file.type);
@@ -123,10 +123,10 @@ export const inspectionItemAPI = {
           timeout: 60000, // 60秒タイムアウト
         });
         
-        console.log("点検項目名インポート成功:", response);
+        console.log("確認作業項目インポート成功:", response);
         return response.data;
       } catch (error) {
-        console.error("点検項目名インポートエラー:", error);
+        console.error("確認作業項目インポートエラー:", error);
         
         if (error.response && error.response.data) {
           console.error("エラーレスポンス:", error.response);

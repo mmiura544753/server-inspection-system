@@ -164,7 +164,7 @@ export function useInspectionItemForm(id) {
           location: deviceData.rack_number ? deviceData.rack_number.toString() : "",
           device_id: data.device_id,
           device_type: deviceData.device_type || "", // デバイスタイプを設定
-          item_names: [data.item_name], // 編集時は既存の項目名を配列に変換
+          item_names: [data.item_name], // 編集時は既存の確認作業項目を配列に変換
         });
         
         // ロケーションと機器の選択肢を更新
@@ -204,7 +204,7 @@ export function useInspectionItemForm(id) {
       }
       
       if (!values.item_names || values.item_names.length === 0) {
-        setSubmitError("少なくとも1つの点検項目名を選択または入力してください");
+        setSubmitError("少なくとも1つの確認作業項目を選択または入力してください");
         setSubmitting(false);
         return;
       }
@@ -214,7 +214,7 @@ export function useInspectionItemForm(id) {
         // device_idが文字列型の場合は数値型に変換（APIが数値を期待している場合）
         const submitData = {
           device_id: parseInt(values.device_id, 10),
-          item_name: values.item_names[0], // 編集モードでは最初の項目のみ使用
+          item_name: values.item_names[0], // 編集モードでは最初の確認作業項目のみ使用
         };
         
         console.log("送信データ (編集モード):", submitData);

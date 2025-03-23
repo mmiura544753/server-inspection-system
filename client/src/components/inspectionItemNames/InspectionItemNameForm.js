@@ -10,8 +10,8 @@ import { inspectionItemAPI } from '../../services/api';
 // バリデーションスキーマ
 const ItemNameSchema = Yup.object().shape({
   name: Yup.string()
-    .required('点検項目名は必須です')
-    .max(255, '点検項目名は255文字以内で入力してください')
+    .required('確認作業項目は必須です')
+    .max(255, '確認作業項目は255文字以内で入力してください')
 });
 
 const InspectionItemNameForm = () => {
@@ -33,8 +33,8 @@ const InspectionItemNameForm = () => {
         setItemName(data);
         setError(null);
       } catch (err) {
-        console.error(`点検項目名ID:${id}の取得エラー:`, err);
-        setError('点検項目名の取得に失敗しました');
+        console.error(`確認作業項目ID:${id}の取得エラー:`, err);
+        setError('確認作業項目の取得に失敗しました');
       } finally {
         setLoading(false);
       }
@@ -59,8 +59,8 @@ const InspectionItemNameForm = () => {
       // 一覧画面に戻る
       navigate('/inspection-item-names');
     } catch (err) {
-      console.error(`点検項目名${isEditMode ? '更新' : '作成'}エラー:`, err);
-      setError(err.response?.data?.message || `点検項目名の${isEditMode ? '更新' : '作成'}に失敗しました`);
+      console.error(`確認作業項目${isEditMode ? '更新' : '作成'}エラー:`, err);
+      setError(err.response?.data?.message || `確認作業項目の${isEditMode ? '更新' : '作成'}に失敗しました`);
     } finally {
       setSubmitting(false);
     }

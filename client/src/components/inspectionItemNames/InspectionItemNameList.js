@@ -40,8 +40,8 @@ const InspectionItemNameList = () => {
       setItemNames(data);
       setError(null);
     } catch (err) {
-      console.error('点検項目名取得エラー:', err);
-      setError('点検項目名の取得に失敗しました');
+      console.error('確認作業項目取得エラー:', err);
+      setError('確認作業項目の取得に失敗しました');
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ const InspectionItemNameList = () => {
       await inspectionItemAPI.itemNames.delete(itemNameToDelete.id);
       
       // 成功メッセージ表示
-      setSuccessMessage(`点検項目名「${itemNameToDelete.name}」を削除しました`);
+      setSuccessMessage(`確認作業項目「${itemNameToDelete.name}」を削除しました`);
       
       // データを再取得
       fetchItemNames();
@@ -75,8 +75,8 @@ const InspectionItemNameList = () => {
       setShowDeleteModal(false);
       setItemNameToDelete(null);
     } catch (err) {
-      console.error('点検項目名削除エラー:', err);
-      setError(err.response?.data?.message || '点検項目名の削除に失敗しました');
+      console.error('確認作業項目削除エラー:', err);
+      setError(err.response?.data?.message || '確認作業項目の削除に失敗しました');
       setShowDeleteModal(false);
     }
   };
@@ -94,14 +94,14 @@ const InspectionItemNameList = () => {
       link.href = url;
       link.setAttribute(
         "download",
-        `inspection_item_names_${new Date().toISOString().split("T")[0]}.csv`
+        `confirmation_work_items_${new Date().toISOString().split("T")[0]}.csv`
       );
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (err) {
-      setExportError("点検項目名のエクスポートに失敗しました。");
-      console.error("点検項目名エクスポートエラー:", err);
+      setExportError("確認作業項目のエクスポートに失敗しました。");
+      console.error("確認作業項目エクスポートエラー:", err);
     }
   };
 
@@ -266,7 +266,7 @@ const InspectionItemNameList = () => {
         </div>
       </div>
 
-      {/* 点検項目名一覧 */}
+      {/* 確認作業項目一覧 */}
       {sortedItemNames.length > 0 ? (
         <div className="card">
           <div className="card-body">

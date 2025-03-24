@@ -2,84 +2,83 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const { exec } = require('child_process');
+const { promisify } = require('util');
+const execAsync = promisify(exec);
 
-// フォントをダウンロードする関数
-function downloadFont(url, outputPath) {
-  console.log(`Downloading font from ${url} to ${outputPath}...`);
-  
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(outputPath);
-    
-    https.get(url, (response) => {
-      // リダイレクトをチェック
-      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-        console.log(`Redirecting to ${response.headers.location}`);
-        downloadFont(response.headers.location, outputPath)
-          .then(resolve)
-          .catch(reject);
-        return;
-      }
-      
-      if (response.statusCode !== 200) {
-        reject(new Error(`HTTP status code ${response.statusCode}`));
-        return;
-      }
-      
-      response.pipe(file);
-      
-      file.on('finish', () => {
-        file.close();
-        console.log(`Successfully downloaded ${outputPath}`);
-        resolve(outputPath);
-      });
-    }).on('error', (err) => {
-      fs.unlink(outputPath, () => {}); // エラー時は部分的にダウンロードされたファイルを削除
-      console.error(`Download error: ${err.message}`);
-      reject(err);
-    });
-  });
-}
-
+// ダウンロードディレクトリ
+const downloadsDir = path.join(__dirname, 'downloads');
 // フォントの保存先ディレクトリ
 const fontsDir = __dirname;
 
-// ダウンロードが必要なフォントとURL
-const fonts = [
-  {
-    name: 'ipaexg.ttf', // IPAex ゴシック
-    url: 'https://moji.or.jp/wp-content/ipafont/IPAexfont/ipaexg00401.zip'
-  },
-  {
-    name: 'ipaexm.ttf', // IPAex 明朝
-    url: 'https://moji.or.jp/wp-content/ipafont/IPAexfont/ipaexm00401.zip'
-  }
-];
-
-// フォントをダウンロード
-async function downloadFonts() {
-  console.log('Starting font downloads...');
+// IPAフォントのZIPファイルをダウンロードする関数
+async function downloadIPAFonts() {
+  console.log('IPAフォントのダウンロード処理を開始します...');
   
-  for (const font of fonts) {
-    const outputPath = path.join(fontsDir, font.name);
-    
-    // 既にファイルが存在するかチェック
-    if (fs.existsSync(outputPath)) {
-      console.log(`${font.name} already exists, skipping...`);
-      continue;
-    }
-    
-    try {
-      await downloadFont(font.url, outputPath);
-    } catch (error) {
-      console.error(`Failed to download ${font.name}: ${error.message}`);
-    }
+  // ダウンロードディレクトリの確認・作成
+  if (!fs.existsSync(downloadsDir)) {
+    fs.mkdirSync(downloadsDir, { recursive: true });
   }
   
-  console.log('Font download completed.');
+  // IPAexフォントのダウンロードURL
+  const ipaexURL = 'https://moji.or.jp/wp-content/ipafont/IPAexfont/IPAexfont00401.zip';
+  const zipPath = path.join(downloadsDir, 'IPAexfont.zip');
+  
+  // wgetコマンドを使用してダウンロード
+  console.log(`IPAexフォントをダウンロード中: ${ipaexURL}`);
+  
+  try {
+    // ファイルの存在確認
+    if (fs.existsSync(zipPath)) {
+      console.log('ZIPファイルは既に存在します。スキップします。');
+    } else {
+      // wget -O を使ってファイルをダウンロード
+      await execAsync(`wget -O ${zipPath} ${ipaexURL}`);
+      console.log('ZIPファイルのダウンロードが完了しました。');
+    }
+    
+    // 解凍先ディレクトリ
+    const extractDir = path.join(downloadsDir, 'extracted');
+    if (!fs.existsSync(extractDir)) {
+      fs.mkdirSync(extractDir, { recursive: true });
+    }
+    
+    // unzipコマンドを使用して解凍
+    await execAsync(`unzip -o ${zipPath} -d ${extractDir}`);
+    console.log('ZIPファイルの解凍が完了しました。');
+    
+    // IPAexゴシックとIPAex明朝をフォントディレクトリにコピー
+    const ipaexgPath = path.join(extractDir, 'IPAexfont00401/ipaexg.ttf');
+    const ipaexmPath = path.join(extractDir, 'IPAexfont00401/ipaexm.ttf');
+    
+    // コピー先のパス
+    const destIpaexgPath = path.join(fontsDir, 'ipaexg.ttf');
+    const destIpaexmPath = path.join(fontsDir, 'ipaexm.ttf');
+    
+    if (fs.existsSync(ipaexgPath)) {
+      fs.copyFileSync(ipaexgPath, destIpaexgPath);
+      console.log(`IPAexゴシックフォントをコピーしました: ${destIpaexgPath}`);
+    } else {
+      console.error('IPAexゴシックフォントが見つかりません。');
+    }
+    
+    if (fs.existsSync(ipaexmPath)) {
+      fs.copyFileSync(ipaexmPath, destIpaexmPath);
+      console.log(`IPAex明朝フォントをコピーしました: ${destIpaexmPath}`);
+    } else {
+      console.error('IPAex明朝フォントが見つかりません。');
+    }
+    
+    console.log('フォントのダウンロードと設定が完了しました。');
+    return true;
+  } catch (error) {
+    console.error('フォントダウンロード中にエラーが発生しました:', error);
+    return false;
+  }
 }
 
 // スクリプト実行
-downloadFonts().catch(err => {
+downloadIPAFonts().catch(err => {
   console.error('An error occurred during font download:', err);
   process.exit(1);
 });

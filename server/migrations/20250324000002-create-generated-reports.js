@@ -37,7 +37,7 @@ module.exports = {
         comment: '生成されたPDFファイルのパス'
       },
       status: {
-        type: Sequelize.ENUM('draft', 'completed'),
+        type: Sequelize.ENUM('draft', 'processing', 'completed', 'failed'),
         defaultValue: 'draft',
         allowNull: false
       },

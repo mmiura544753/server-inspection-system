@@ -143,7 +143,11 @@ class PDFGenerator {
       // テンプレートとデータを結合
       const mergedData = TemplateEngine.mergeTemplateWithData(template, renderData);
 
-            // PDFドキュメントの作成
+            // 日本語フォントのパスを取得
+      const ipaexgPath = path.join(__dirname, '../../fonts/ipaexg.ttf');
+      const ipaexmPath = path.join(__dirname, '../../fonts/ipaexm.ttf');
+      
+      // PDFドキュメントの作成
       const doc = new PDFDocument({ 
         size: 'A4', 
         margin: 50,
@@ -156,14 +160,23 @@ class PDFGenerator {
         }
       });
       
-      // 標準フォントを使用
-      doc.font('Helvetica');
+      // IPAexゴシックフォントを登録して使用
+      if (fs.existsSync(ipaexgPath) && fs.existsSync(ipaexmPath)) {
+        doc.registerFont('IPAexGothic', ipaexgPath);
+        doc.registerFont('IPAexGothic-Bold', ipaexgPath);
+        doc.registerFont('IPAexMincho', ipaexmPath);
+        doc.font('IPAexGothic');
+        console.log('IPAexフォントを使用します');
+      } else {
+        console.warn('IPAexフォントが見つかりません。デフォルトフォントを使用します。');
+        doc.font('Helvetica');
+      }
       const stream = fs.createWriteStream(outputPath);
       
       doc.pipe(stream);
       
       // レポートの生成
-      this._renderPDF(doc, mergedData);
+      await this._renderPDF(doc, mergedData);
       
       // ドキュメントの終了
       doc.end();
@@ -188,22 +201,27 @@ class PDFGenerator {
    * @param {PDFDocument} doc - PDFドキュメント
    * @param {Object} data - レンダリングデータ
    */
-  static _renderPDF(doc, data) {
-    // ヘッダー
-    this._renderHeader(doc, data);
-    
-    // セクション
-    for (const section of data.sections) {
-      // ページの残りスペースをチェック
-      if (doc.y > doc.page.height - 150) {
-        doc.addPage();
+  static async _renderPDF(doc, data) {
+    try {
+      // ヘッダー
+      this._renderHeader(doc, data);
+      
+      // セクション
+      for (const section of data.sections) {
+        // ページの残りスペースをチェック
+        if (doc.y > doc.page.height - 150) {
+          doc.addPage();
+        }
+        
+        await this._renderSection(doc, section);
       }
       
-      this._renderSection(doc, section);
+      // フッター
+      this._renderFooter(doc, data.footer);
+    } catch (error) {
+      console.error('レンダリングエラー:', error);
+      throw error;
     }
-    
-    // フッター
-    this._renderFooter(doc, data.footer);
   }
   
   /**
@@ -214,13 +232,13 @@ class PDFGenerator {
   static _renderHeader(doc, data) {
     // タイトル
     doc.fontSize(20)
-       .font('Helvetica-Bold')
+       .font('IPAexGothic-Bold')
        .text(data.title, { align: 'center' })
        .moveDown();
     
     // 顧客情報
     doc.fontSize(12)
-       .font('Helvetica')
+       .font('IPAexGothic')
        .text(`顧客名: ${data.customerName}`)
        .text(`期間: ${data.reportPeriod}`)
        .text(`報告日: ${new Date(data.reportDate).toLocaleDateString('ja-JP')}`)
@@ -238,10 +256,10 @@ class PDFGenerator {
    * @param {PDFDocument} doc - PDFドキュメント
    * @param {Object} section - セクションデータ
    */
-  static _renderSection(doc, section) {
+  static async _renderSection(doc, section) {
     // セクションタイトル
     doc.fontSize(14)
-       .font('Helvetica-Bold')
+       .font('IPAexGothic-Bold')
        .text(section.title, { underline: true })
        .moveDown();
     
@@ -252,7 +270,7 @@ class PDFGenerator {
         break;
       
       case 'results_table':
-        this._renderResultsTableSection(doc, section.content);
+        await this._renderResultsTableSection(doc, section.content);
         break;
       
       case 'issues':
@@ -298,7 +316,7 @@ class PDFGenerator {
    */
   static _renderSummarySection(doc, content) {
     doc.fontSize(12)
-       .font('Helvetica')
+       .font('IPAexGothic')
        .text(`点検実施件数: ${content.inspectionCount}件`)
        .text(`点検実施日: ${content.date}`)
        .text(`点検担当者: ${content.inspectorNames}`)
@@ -308,48 +326,73 @@ class PDFGenerator {
   /**
    * 結果テーブルセクションをレンダリング
    */
-  static _renderResultsTableSection(doc, content) {
+  static async _renderResultsTableSection(doc, content) {
     const { rows } = content;
     
     if (!rows || rows.length === 0) {
       doc.fontSize(12)
-         .font('Helvetica')
+         .font('IPAexGothic')
          .text('点検結果データがありません')
          .moveDown();
       return;
     }
     
-    // テーブルヘッダー
-    const tableTop = doc.y;
-    const tableLeft = 50;
-    doc.fontSize(10);
+    // シンプルなテーブル描画
+    let yPos = doc.y + 10;
+    const xPos = [50, 170, 370, 430];
+    const colWidths = [120, 200, 60, 120];
     
     // ヘッダー行
-    doc.font('Helvetica-Bold')
-       .text('機器', tableLeft, tableTop)
-       .text('点検項目', tableLeft + 150, tableTop)
-       .text('結果', tableLeft + 300, tableTop)
-       .text('備考', tableLeft + 350, tableTop)
-       .moveDown();
+    doc.font('IPAexGothic-Bold').fontSize(10);
+    doc.text('機器', xPos[0], yPos, { width: colWidths[0] });
+    doc.text('点検項目', xPos[1], yPos, { width: colWidths[1] });
+    doc.text('結果', xPos[2], yPos, { width: colWidths[2], align: 'center' });
+    doc.text('備考', xPos[3], yPos, { width: colWidths[3] });
     
-    // 結果行
-    let rowTop = doc.y;
+    // 区切り線
+    yPos += 15;
+    doc.moveTo(xPos[0], yPos).lineTo(xPos[0] + 500, yPos).stroke();
+    yPos += 5;
+    
+    // データ行
+    doc.font('IPAexGothic').fontSize(9);
     for (const row of rows) {
-      doc.font('Helvetica')
-         .text(row.device, tableLeft, rowTop, { width: 140 })
-         .text(row.item, tableLeft + 150, rowTop, { width: 140 })
-         .text(row.status, tableLeft + 300, rowTop)
-         .text(row.remarks || '', tableLeft + 350, rowTop, { width: 140 });
-      
-      rowTop = doc.y + 5;
-      
-      // ページの残りスペースをチェック
-      if (rowTop > doc.page.height - 100) {
-        doc.addPage();
-        doc.font('NotoSansJP-Bold')
-           .text('結果テーブル (続き):', 50, 50)
-           .moveDown();
-        rowTop = doc.y;
+      try {
+        // 固定の行の高さを使用
+        const lineHeight = 15;
+        const rowHeight = lineHeight * 2; // 2行分のスペース
+        
+        // 新しいページが必要かチェック
+        if (yPos + rowHeight > doc.page.height - 50) {
+          doc.addPage();
+          yPos = 50;
+          
+          // 新しいページにヘッダーを追加
+          doc.font('IPAexGothic-Bold').fontSize(10);
+          doc.text('機器', xPos[0], yPos, { width: colWidths[0] });
+          doc.text('点検項目', xPos[1], yPos, { width: colWidths[1] });
+          doc.text('結果', xPos[2], yPos, { width: colWidths[2], align: 'center' });
+          doc.text('備考', xPos[3], yPos, { width: colWidths[3] });
+          
+          // 区切り線
+          yPos += 15;
+          doc.moveTo(xPos[0], yPos).lineTo(xPos[0] + 500, yPos).stroke();
+          yPos += 5;
+          doc.font('IPAexGothic').fontSize(9);
+        }
+        
+        // データをレンダリング
+        doc.text(row.device || '不明', xPos[0], yPos, { width: colWidths[0] });
+        doc.text(row.item || '不明', xPos[1], yPos, { width: colWidths[1] });
+        doc.text(row.status || '不明', xPos[2], yPos, { width: colWidths[2], align: 'center' });
+        doc.text(row.remarks || '', xPos[3], yPos, { width: colWidths[3] });
+        
+        // 次の行の位置
+        yPos += rowHeight;
+      } catch (error) {
+        console.error('行のレンダリングエラー:', error);
+        // エラーが発生しても続行
+        yPos += 20;
       }
     }
   }
@@ -362,51 +405,84 @@ class PDFGenerator {
     
     if (!issues || issues.length === 0) {
       doc.fontSize(12)
-         .font('NotoSansJP')
+         .font('IPAexGothic')
          .text('異常項目はありません')
          .moveDown();
       return;
     }
     
-    // テーブルヘッダー
-    const tableTop = doc.y;
-    const tableLeft = 50;
-    doc.fontSize(10);
-    
-    // ヘッダー行
-    doc.font('Helvetica-Bold')
-       .text('機器', tableLeft, tableTop)
-       .text('点検項目', tableLeft + 150, tableTop)
-       .text('日時', tableLeft + 300, tableTop)
-       .text('点検者', tableLeft + 400, tableTop)
-       .moveDown();
-    
-    // 結果行
-    let rowTop = doc.y;
-    for (const issue of issues) {
-      doc.font('Helvetica')
-         .text(issue.device, tableLeft, rowTop, { width: 140 })
-         .text(issue.item, tableLeft + 150, rowTop, { width: 140 })
-         .text(issue.date, tableLeft + 300, rowTop, { width: 90 })
-         .text(issue.inspector, tableLeft + 400, rowTop, { width: 90 });
+    try {
+      // テーブルのレイアウト調整
+      const colStart = [50, 180, 330, 430];
+      const colWidths = [120, 140, 90, 80];
+      const lineHeight = 20;
       
-      rowTop = doc.y + 5;
+      // ヘッダー行
+      const tableTop = doc.y;
+      doc.fontSize(10).font('IPAexGothic-Bold');
+      doc.text('機器', colStart[0], tableTop);
+      doc.text('点検項目', colStart[1], tableTop);
+      doc.text('日時', colStart[2], tableTop);
+      doc.text('点検者', colStart[3], tableTop);
       
-      // 備考がある場合
-      if (issue.note && issue.note !== '---') {
-        doc.font('Helvetica-Oblique')
-           .text(`備考: ${issue.note}`, tableLeft + 20, rowTop, { width: 450 });
-        rowTop = doc.y + 10;
+      // 区切り線
+      doc.y += 15;
+      doc.moveTo(50, doc.y).lineTo(530, doc.y).stroke();
+      doc.y += 10;
+      
+      // 結果行
+      doc.fontSize(9).font('IPAexGothic');
+      for (const issue of issues) {
+        const startY = doc.y;
+        
+        // 各列のテキストを描画
+        doc.text(issue.device || '不明', colStart[0], startY, { width: colWidths[0] });
+        doc.text(issue.item || '不明', colStart[1], startY, { width: colWidths[1] });
+        doc.text(issue.date || '不明', colStart[2], startY, { width: colWidths[2] });
+        doc.text(issue.inspector || '不明', colStart[3], startY, { width: colWidths[3] });
+        
+        // 最大の高さを計算（heightOfStringが利用できない場合のフォールバック）
+        let endY;
+        try {
+          endY = Math.max(
+            startY + (doc.heightOfString ? doc.heightOfString(issue.device || '不明', { width: colWidths[0] }) : 15),
+            startY + (doc.heightOfString ? doc.heightOfString(issue.item || '不明', { width: colWidths[1] }) : 15),
+            startY + (doc.heightOfString ? doc.heightOfString(issue.date || '不明', { width: colWidths[2] }) : 15),
+            startY + (doc.heightOfString ? doc.heightOfString(issue.inspector || '不明', { width: colWidths[3] }) : 15)
+          );
+        } catch (e) {
+          // フォールバック値として固定高さを使用
+          endY = startY + 25;
+        }
+        
+        doc.y = endY + 5;
+        
+        // 備考がある場合
+        if (issue.note && issue.note !== '---') {
+          doc.text(`備考: ${issue.note}`, colStart[0] + 20, doc.y, { width: 460 });
+          doc.y += 10;
+        }
+        
+        // 項目間の区切り線
+        doc.moveTo(50, doc.y).lineTo(530, doc.y).stroke().dash(1, { space: 1 });
+        doc.y += 10;
+        
+        // ページの残りスペースをチェック
+        if (doc.y > doc.page.height - 100) {
+          doc.addPage();
+          doc.fontSize(10).font('IPAexGothic-Bold')
+            .text('異常項目 (続き):', 50, 50)
+            .moveDown();
+          doc.fontSize(9).font('IPAexGothic');
+        }
       }
-      
-      // ページの残りスペースをチェック
-      if (rowTop > doc.page.height - 100) {
-        doc.addPage();
-        doc.font('Helvetica-Bold')
-           .text('異常項目 (続き):', 50, 50)
-           .moveDown();
-        rowTop = doc.y;
-      }
+    } catch (error) {
+      console.error('異常項目セクションエラー:', error);
+      // エラーが発生してもとりあえず続行
+      doc.font('IPAexGothic')
+        .fontSize(10)
+        .text('異常項目データの表示中にエラーが発生しました', { color: 'red' })
+        .moveDown();
     }
   }
   
@@ -415,7 +491,7 @@ class PDFGenerator {
    */
   static _renderMonthlySummarySection(doc, content) {
     doc.fontSize(12)
-       .font('Courier')
+       .font('IPAexGothic')
        .text(`対象期間: ${content.period}`)
        .text(`点検合計件数: ${content.totalInspections}件`)
        .text(`検出された異常: ${content.totalIssues}件`)
@@ -424,13 +500,13 @@ class PDFGenerator {
     // 機器別サマリーがある場合
     if (content.deviceSummary && content.deviceSummary.length > 0) {
       doc.fontSize(11)
-         .font('Helvetica-Bold')
+         .font('IPAexGothic-Bold')
          .text('機器別点検件数:')
          .moveDown(0.5);
       
       for (const item of content.deviceSummary) {
         doc.fontSize(10)
-           .font('Helvetica')
+           .font('IPAexGothic')
            .text(`${item.device}: ${item.count}件`, { indent: 20 });
       }
       
@@ -446,7 +522,7 @@ class PDFGenerator {
     
     if (!dailyCounts || dailyCounts.length === 0) {
       doc.fontSize(12)
-         .font('Courier')
+         .font('IPAexGothic')
          .text('日別点検データがありません')
          .moveDown();
       return;
@@ -458,7 +534,7 @@ class PDFGenerator {
     doc.fontSize(10);
     
     // ヘッダー行
-    doc.font('Courier-Bold')
+    doc.font('IPAexGothic-Bold')
        .text('日付', tableLeft, tableTop)
        .text('点検数', tableLeft + 150, tableTop)
        .moveDown();
@@ -474,7 +550,7 @@ class PDFGenerator {
         day: '2-digit'
       });
       
-      doc.font('Courier')
+      doc.font('IPAexGothic')
          .text(japaneseDate, tableLeft, rowTop)
          .text(item.count.toString(), tableLeft + 150, rowTop);
       
@@ -483,7 +559,7 @@ class PDFGenerator {
       // ページの残りスペースをチェック
       if (rowTop > doc.page.height - 100) {
         doc.addPage();
-        doc.font('Courier-Bold')
+        doc.font('IPAexGothic-Bold')
            .text('日別点検数 (続き):', 50, 50)
            .moveDown();
         rowTop = doc.y;
@@ -499,7 +575,7 @@ class PDFGenerator {
     
     if (!issueDevices || issueDevices.length === 0) {
       doc.fontSize(12)
-         .font('Courier')
+         .font('IPAexGothic')
          .text('異常検出機器データがありません')
          .moveDown();
       return;
@@ -511,7 +587,7 @@ class PDFGenerator {
     doc.fontSize(10);
     
     // ヘッダー行
-    doc.font('Courier-Bold')
+    doc.font('IPAexGothic-Bold')
        .text('機器名', tableLeft, tableTop)
        .text('異常件数', tableLeft + 200, tableTop)
        .text('異常項目', tableLeft + 300, tableTop)
@@ -520,7 +596,7 @@ class PDFGenerator {
     // データ行
     let rowTop = doc.y;
     for (const device of issueDevices) {
-      doc.font('Courier')
+      doc.font('IPAexGothic')
          .text(device.device, tableLeft, rowTop, { width: 190 })
          .text(device.count.toString(), tableLeft + 200, rowTop)
          .text(device.items, tableLeft + 300, rowTop, { width: 240 });
@@ -530,7 +606,7 @@ class PDFGenerator {
       // ページの残りスペースをチェック
       if (rowTop > doc.page.height - 100) {
         doc.addPage();
-        doc.font('Courier-Bold')
+        doc.font('IPAexGothic-Bold')
            .text('異常検出機器 (続き):', 50, 50)
            .moveDown();
         rowTop = doc.y;
@@ -546,7 +622,7 @@ class PDFGenerator {
     
     if (!issueTrends || issueTrends.length === 0) {
       doc.fontSize(12)
-         .font('Courier')
+         .font('IPAexGothic')
          .text('異常傾向データがありません')
          .moveDown();
       return;
@@ -558,7 +634,7 @@ class PDFGenerator {
     doc.fontSize(10);
     
     // ヘッダー行
-    doc.font('Courier-Bold')
+    doc.font('IPAexGothic-Bold')
        .text('点検項目', tableLeft, tableTop)
        .text('異常件数', tableLeft + 250, tableTop)
        .moveDown();
@@ -566,7 +642,7 @@ class PDFGenerator {
     // データ行
     let rowTop = doc.y;
     for (const trend of issueTrends) {
-      doc.font('Courier')
+      doc.font('IPAexGothic')
          .text(trend.item, tableLeft, rowTop, { width: 240 })
          .text(trend.count.toString(), tableLeft + 250, rowTop);
       
@@ -575,7 +651,7 @@ class PDFGenerator {
       // ページの残りスペースをチェック
       if (rowTop > doc.page.height - 100) {
         doc.addPage();
-        doc.font('Courier-Bold')
+        doc.font('IPAexGothic-Bold')
            .text('異常傾向 (続き):', 50, 50)
            .moveDown();
         rowTop = doc.y;
@@ -591,23 +667,23 @@ class PDFGenerator {
     
     if (!recommendations || recommendations.length === 0) {
       doc.fontSize(12)
-         .font('Courier')
+         .font('IPAexGothic')
          .text('推奨メンテナンス項目はありません')
          .moveDown();
       return;
     }
     
     doc.fontSize(11)
-       .font('Courier')
+       .font('IPAexGothic')
        .text('以下のメンテナンスを推奨します:')
        .moveDown();
     
     let itemCount = 1;
     for (const rec of recommendations) {
       doc.fontSize(11)
-         .font('Courier-Bold')
+         .font('IPAexGothic-Bold')
          .text(`${itemCount}. ${rec.target}`, { continued: true })
-         .font('Courier')
+         .font('IPAexGothic')
          .text(` (${rec.type === 'device' ? '機器' : '点検項目'})`)
          .fontSize(10)
          .text(`原因: ${rec.reason}`, { indent: 20 })
@@ -619,7 +695,7 @@ class PDFGenerator {
       // ページの残りスペースをチェック
       if (doc.y > doc.page.height - 100) {
         doc.addPage();
-        doc.font('Courier-Bold')
+        doc.font('IPAexGothic-Bold')
            .text('推奨メンテナンス (続き):', 50, 50)
            .moveDown();
       }
@@ -631,7 +707,7 @@ class PDFGenerator {
    */
   static _renderNotesSection(doc, content) {
     doc.fontSize(11)
-       .font('Courier')
+       .font('IPAexGothic')
        .text(content.notes)
        .moveDown();
   }
@@ -645,7 +721,7 @@ class PDFGenerator {
     const currentPage = doc.page.pageNumber;
     
     doc.fontSize(8)
-       .font('Helvetica')
+       .font('IPAexGothic')
        .text(
          `${footer.text} - 作成日: ${new Date().toLocaleDateString('ja-JP')} - ページ ${currentPage}`,
          50,

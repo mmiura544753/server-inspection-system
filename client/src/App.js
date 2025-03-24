@@ -9,6 +9,8 @@ import {
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./App.css";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // レイアウトコンポーネント
 import Header from "./components/layout/Header";
@@ -38,6 +40,10 @@ import InspectionItemForm from "./components/inspectionItems/InspectionItemForm"
 // 点検項目名マスタコンポーネント
 import InspectionItemNameList from "./components/inspectionItemNames/InspectionItemNameList";
 import InspectionItemNameForm from "./components/inspectionItemNames/InspectionItemNameForm";
+
+// レポートコンポーネント
+import ReportList from "./components/reports/ReportList";
+import ReportGenerate from "./components/reports/ReportGenerate";
 
 // その他のページ
 import Home from "./components/Home";
@@ -107,12 +113,16 @@ function App() {
                 path="/inspection-item-names/edit/:id"
                 element={<InspectionItemNameForm />}
               />
+              {/* レポート関連のルート */}
+              <Route path="/reports" element={<ReportList />} />
+              <Route path="/reports/generate" element={<ReportGenerate />} />
               {/* 404ページ */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
         </div>
         <Footer />
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </Router>
   );

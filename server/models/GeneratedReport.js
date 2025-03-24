@@ -51,12 +51,12 @@ const GeneratedReport = sequelize.define('GeneratedReport', {
     allowNull: true
   },
   status: {
-    type: DataTypes.ENUM('draft', 'completed'),
+    type: DataTypes.ENUM('draft', 'processing', 'completed', 'failed'),
     defaultValue: 'draft',
     allowNull: false,
     validate: {
       isIn: {
-        args: [['draft', 'completed']],
+        args: [['draft', 'processing', 'completed', 'failed']],
         msg: '無効なステータスです'
       }
     }

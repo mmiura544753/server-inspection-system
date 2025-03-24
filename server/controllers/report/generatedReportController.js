@@ -1,120 +1,88 @@
 // server/controllers/report/generatedReportController.js
+const asyncHandler = require('express-async-handler');
+const fs = require('fs');
+const path = require('path');
 const { GeneratedReport, Customer, ReportTemplate } = require('../../models');
 
-// 生成されたレポート一覧を取得
-const getGeneratedReports = async (req, res, next) => {
-  try {
-    const reports = await GeneratedReport.findAll({
-      include: [
-        { model: Customer, as: 'customer', attributes: ['id', 'name'] },
-        { model: ReportTemplate, as: 'template', attributes: ['id', 'name', 'type'] }
-      ],
-      order: [['created_at', 'DESC']]
-    });
-    
-    res.status(200).json({
-      success: true,
-      data: reports
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+/**
+ * @desc    全レポート取得
+ * @route   GET /api/reports
+ * @access  Public
+ */
+const getAllReports = asyncHandler(async (req, res) => {
+  const reports = await GeneratedReport.findAll({
+    order: [['created_at', 'DESC']],
+    include: [
+      {
+        model: Customer,
+        as: 'customer',
+        attributes: ['id', 'customer_name']
+      },
+      {
+        model: ReportTemplate,
+        as: 'template',
+        attributes: ['id', 'name', 'type']
+      }
+    ]
+  });
 
-// 特定の生成レポート詳細を取得
-const getGeneratedReportById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    
-    const report = await GeneratedReport.findByPk(id, {
-      include: [
-        { model: Customer, as: 'customer', attributes: ['id', 'name'] },
-        { model: ReportTemplate, as: 'template', attributes: ['id', 'name', 'type'] }
-      ]
-    });
-    
-    if (!report) {
-      return res.status(404).json({
-        success: false,
-        error: 'レポートが見つかりません'
-      });
-    }
-    
-    res.status(200).json({
-      success: true,
-      data: report
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  res.json(reports);
+});
 
-// 顧客ごとの生成レポート一覧を取得
-const getReportsByCustomer = async (req, res, next) => {
-  try {
-    const { customerId } = req.params;
-    
-    // 顧客の存在確認
-    const customer = await Customer.findByPk(customerId);
-    
-    if (!customer) {
-      return res.status(404).json({
-        success: false,
-        error: '顧客が見つかりません'
-      });
-    }
-    
-    const reports = await GeneratedReport.findAll({
-      where: { customer_id: customerId },
-      include: [
-        { model: Customer, as: 'customer', attributes: ['id', 'name'] },
-        { model: ReportTemplate, as: 'template', attributes: ['id', 'name', 'type'] }
-      ],
-      order: [['created_at', 'DESC']]
-    });
-    
-    res.status(200).json({
-      success: true,
-      data: reports
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+/**
+ * @desc    レポート詳細取得
+ * @route   GET /api/reports/:id
+ * @access  Public
+ */
+const getReportById = asyncHandler(async (req, res) => {
+  const report = await GeneratedReport.findByPk(req.params.id, {
+    include: [
+      {
+        model: Customer,
+        as: 'customer',
+        attributes: ['id', 'customer_name']
+      },
+      {
+        model: ReportTemplate,
+        as: 'template',
+        attributes: ['id', 'name', 'type']
+      }
+    ]
+  });
 
-// レポートタイプごとの生成レポート一覧を取得
-const getReportsByType = async (req, res, next) => {
-  try {
-    const { type } = req.params;
-    
-    if (!['monthly', 'daily'].includes(type)) {
-      return res.status(400).json({
-        success: false,
-        error: '無効なレポートタイプです'
-      });
-    }
-    
-    const reports = await GeneratedReport.findAll({
-      where: { report_type: type },
-      include: [
-        { model: Customer, as: 'customer', attributes: ['id', 'name'] },
-        { model: ReportTemplate, as: 'template', attributes: ['id', 'name', 'type'] }
-      ],
-      order: [['created_at', 'DESC']]
-    });
-    
-    res.status(200).json({
-      success: true,
-      data: reports
-    });
-  } catch (error) {
-    next(error);
+  if (!report) {
+    res.status(404);
+    throw new Error('レポートが見つかりません');
   }
-};
+
+  res.json(report);
+});
+
+/**
+ * @desc    レポート削除
+ * @route   DELETE /api/reports/:id
+ * @access  Public
+ */
+const deleteReport = asyncHandler(async (req, res) => {
+  const report = await GeneratedReport.findByPk(req.params.id);
+
+  if (!report) {
+    res.status(404);
+    throw new Error('レポートが見つかりません');
+  }
+
+  // ファイルが存在する場合は削除
+  if (report.file_path && fs.existsSync(report.file_path)) {
+    fs.unlinkSync(report.file_path);
+  }
+
+  await report.destroy();
+
+  res.json({ message: 'レポートが削除されました' });
+});
 
 module.exports = {
-  getGeneratedReports,
-  getGeneratedReportById,
-  getReportsByCustomer,
-  getReportsByType
+  getAllReports,
+  getReportById,
+  deleteReport
 };

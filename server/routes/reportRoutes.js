@@ -1,27 +1,26 @@
 // server/routes/reportRoutes.js
 const express = require('express');
 const router = express.Router();
-const reportController = require('../controllers/report');
+const reportGenerationController = require('../controllers/report/reportGenerationController');
+const generatedReportController = require('../controllers/report/generatedReportController');
+const reportTemplateController = require('../controllers/report/reportTemplateController');
 
-// レポートテンプレートルート
-router.get('/templates', reportController.getReportTemplates);
-router.get('/templates/:id', reportController.getReportTemplateById);
-router.get('/templates/type/:type', reportController.getReportTemplatesByType);
-router.post('/templates', reportController.createReportTemplate);
-router.put('/templates/:id', reportController.updateReportTemplate);
-router.delete('/templates/:id', reportController.deleteReportTemplate);
+// レポート一覧取得
+router.get('/', generatedReportController.getAllReports);
 
-// 生成されたレポートルート
-router.get('/generated', reportController.getGeneratedReports);
-router.get('/generated/:id', reportController.getGeneratedReportById);
-router.get('/generated/customer/:customerId', reportController.getReportsByCustomer);
-router.get('/generated/type/:type', reportController.getReportsByType);
-router.post('/generated', reportController.createGeneratedReport);
-router.put('/generated/:id', reportController.updateGeneratedReport);
-router.delete('/generated/:id', reportController.deleteGeneratedReport);
+// レポートテンプレート一覧取得
+router.get('/templates', reportTemplateController.getAllTemplates);
 
-// レポートPDF生成・ダウンロードルート
-router.post('/generate/:reportId', reportController.generateReportPDF);
-router.get('/download/:reportId', reportController.downloadReportPDF);
+// レポート生成
+router.post('/generate', reportGenerationController.generateReport);
+
+// 生成されたレポートの詳細取得
+router.get('/:id', generatedReportController.getReportById);
+
+// レポートダウンロード
+router.get('/download/:id', reportGenerationController.downloadReport);
+
+// レポート削除
+router.delete('/:id', generatedReportController.deleteReport);
 
 module.exports = router;

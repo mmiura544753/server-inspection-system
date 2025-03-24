@@ -1,0 +1,25 @@
+{
+  "name": "日次点検レポート",
+  "type": "daily",
+  "sections": [
+    {
+      "title": "点検概要",
+      "type": "summary"
+    },
+    {
+      "title": "機器点検結果",
+      "type": "results_table"
+    },
+    {
+      "title": "異常検出項目",
+      "type": "issues"
+    },
+    {
+      "title": "備考",
+      "type": "notes"
+    }
+  ],
+  "footer": {
+    "text": "サーバー点検システム - 日次点検レポート"
+  }
+}

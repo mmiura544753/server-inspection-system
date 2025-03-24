@@ -1,0 +1,33 @@
+{
+  "name": "月次点検サマリーレポート",
+  "type": "monthly",
+  "sections": [
+    {
+      "title": "月次点検概要",
+      "type": "monthly_summary"
+    },
+    {
+      "title": "日別点検実施状況",
+      "type": "daily_counts"
+    },
+    {
+      "title": "異常検出機器一覧",
+      "type": "issue_devices"
+    },
+    {
+      "title": "異常項目の傾向",
+      "type": "issue_trends"
+    },
+    {
+      "title": "推奨メンテナンス項目",
+      "type": "recommendations"
+    },
+    {
+      "title": "備考",
+      "type": "notes"
+    }
+  ],
+  "footer": {
+    "text": "サーバー点検システム - 月次点検サマリーレポート"
+  }
+}

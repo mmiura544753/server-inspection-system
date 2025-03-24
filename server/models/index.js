@@ -5,6 +5,8 @@ const InspectionItemName = require('./InspectionItemName');
 const InspectionItem = require('./InspectionItem');
 const Inspection = require('./Inspection');
 const InspectionResult = require('./InspectionResult');
+const ReportTemplate = require('./ReportTemplate');
+const GeneratedReport = require('./GeneratedReport');
 
 // リレーションシップの定義
 // Device と Customer のリレーションシップは Device.js で既に定義されているので、ここではスキップ
@@ -32,6 +34,9 @@ Inspection.hasMany(InspectionResult, { foreignKey: 'inspection_id', as: 'results
 InspectionResult.belongsTo(Device, { foreignKey: 'device_id', as: 'result_device' });
 Device.hasMany(InspectionResult, { foreignKey: 'device_id', as: 'inspection_results' });
 
+// GeneratedReport と Customer の関連は GeneratedReport.js で定義済み
+// GeneratedReport と ReportTemplate の関連は GeneratedReport.js で定義済み
+
 // すべてのモデルをエクスポート
 module.exports = {
   Customer,
@@ -39,5 +44,7 @@ module.exports = {
   InspectionItemName,
   InspectionItem,
   Inspection,
-  InspectionResult
+  InspectionResult,
+  ReportTemplate,
+  GeneratedReport
 };

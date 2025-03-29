@@ -3,6 +3,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FaUsers, FaServer, FaClipboardCheck, FaList } from "react-icons/fa";
 
+// テスト用にデータテスト属性を追加
+
 const Home = () => {
   return (
     <div className="container py-4">

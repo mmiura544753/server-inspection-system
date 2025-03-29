@@ -1,6 +1,6 @@
 // src/components/devices/DeviceDetails.js
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash, FaArrowLeft } from "react-icons/fa";
 import { deviceAPI } from "../../services/api";
 import Loading from "../common/Loading";
@@ -9,6 +9,7 @@ import Modal from "../common/Modal";
 
 const DeviceDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [device, setDevice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -146,9 +147,15 @@ const DeviceDetails = () => {
         show={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         title="機器削除の確認"
-        onConfirm={() => {
-          // 削除処理。実際のAPIコールは省略（機器一覧ページに任せる）
-          window.rack_number.href = "/devices";
+        onConfirm={async () => {
+          try {
+            await deviceAPI.delete(id);
+            navigate("/devices");
+          } catch (err) {
+            setError("機器の削除に失敗しました。");
+            console.error(`機器ID:${id}の削除エラー:`, err);
+            setShowDeleteModal(false);
+          }
         }}
       >
         <p>機器「{device.device_name}」を削除してもよろしいですか？</p>

@@ -60,7 +60,8 @@ describe('CustomerForm Component', () => {
       });
 
       // フォーム送信
-      fireEvent.click(screen.getByRole('button', { name: /保存する/i }));
+      const saveButton = screen.getByText('保存する');
+      fireEvent.click(saveButton);
 
       // API呼び出しと画面遷移を確認
       await waitFor(() => {
@@ -121,7 +122,8 @@ describe('CustomerForm Component', () => {
       });
 
       // フォーム送信
-      fireEvent.click(screen.getByRole('button', { name: /保存する/i }));
+      const saveButton = screen.getByText('保存する');
+      fireEvent.click(saveButton);
 
       // API呼び出しと画面遷移を確認
       await waitFor(() => {
@@ -143,7 +145,8 @@ describe('CustomerForm Component', () => {
     );
 
     // 空のまま送信
-    fireEvent.click(screen.getByRole('button', { name: /保存する/i }));
+    const saveButton = screen.getByText('保存する');
+    fireEvent.click(saveButton);
 
     // バリデーションエラーが表示されることを確認
     await waitFor(() => {
@@ -171,8 +174,9 @@ describe('CustomerForm Component', () => {
       target: { value: 'テスト顧客C' },
     });
 
-    // フォーム送信
-    fireEvent.click(screen.getByRole('button', { name: /保存する/i }));
+    // フォーム送信 - テキストで直接ボタンを見つける
+    const saveButton = screen.getByText('保存する');
+    fireEvent.click(saveButton);
 
     // エラーメッセージが表示されることを確認
     await waitFor(() => {

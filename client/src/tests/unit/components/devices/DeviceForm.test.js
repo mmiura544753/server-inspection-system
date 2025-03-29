@@ -110,7 +110,7 @@ describe('DeviceForm Component', () => {
       );
 
       // 初期ローディング表示を確認
-      expect(screen.getByText('読み込み中...')).toBeInTheDocument();
+      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
 
       // データロード後のフォーム表示を確認
       await waitFor(() => {

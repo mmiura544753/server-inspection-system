@@ -160,7 +160,7 @@ describe("CustomerList Component", () => {
     fireEvent.click(screen.getByText("顧客名"));
 
     // ソートが適用されたことを確認（実際のソート結果のテストはsortUtils.jsのテストで行う）
-    expect(screen.getByText("顧客名")).toHaveAttribute("aria-sort");
+    expect(screen.getByRole("columnheader", { name: /顧客名/ })).toHaveAttribute("aria-sort");
   });
 
   it("displays empty state message when no customers are found", async () => {

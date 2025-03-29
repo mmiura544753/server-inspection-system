@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '../../../utils/test-utils';
 import '@testing-library/jest-dom';
 import DeviceDetails from '../../../../components/devices/DeviceDetails';
 import { deviceAPI } from '../../../../services/api';

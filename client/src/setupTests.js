@@ -4,9 +4,17 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 import { act } from 'react'; // React から act をインポート
+import { configure } from '@testing-library/react';
+
+// React Testing Libraryの設定
+configure({
+  testIdAttribute: 'data-testid',
+  asyncUtilTimeout: 5000
+});
 
 // React 18のテスト互換性設定
-// React 18のcreateRootをモック
+// React 18のcreateRootをモック - 現在はv14以降のReact Testing Libraryでは不要になりました
+// 互換性のために残しておきます
 jest.mock('react-dom/client', () => {
   return {
     createRoot: jest.fn((container) => {

@@ -27,7 +27,8 @@ describe('CustomerList Component', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('読み込み中...')).toBeInTheDocument();
+//    expect(screen.getByText('読み込み中...')).toBeInTheDocument();
+     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
   });
 
   it('renders customer list when API returns data', async () => {

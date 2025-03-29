@@ -22,28 +22,14 @@ const render = (ui, options = {}) => {
     ReactDOM.render(ui, container);
   });
   
+  // Testing Library のクエリ関数を取得
+  const queries = testingLibrary.within(container);
+
   return {
     container,
-    // テスト用のヘルパー関数
-    getByTestId: (id) => container.querySelector(`[data-testid="${id}"]`),
-    getByText: (text) => {
-      const elements = Array.from(container.querySelectorAll('*'))
-        .filter(el => el.textContent.includes(text));
-      if (elements.length === 0) throw new Error(`Element with text "${text}" not found`);
-      return elements[0];
-    },
-    queryByText: (text) => {
-      const elements = Array.from(container.querySelectorAll('*'))
-        .filter(el => el.textContent.includes(text));
-      return elements.length ? elements[0] : null;
-    },
-    getByRole: (role, options = {}) => {
-      const elements = Array.from(container.querySelectorAll(`[role="${role}"], ${role}`))
-        .filter(el => !options.name || el.textContent.match(options.name));
-      if (elements.length === 0) throw new Error(`Element with role "${role}" not found`);
-      return elements[0]; // 最初の一致を返す
-    },
-    // Testing Libraryからのその他のメソッド
+    // Testing Library から取得したクエリ関数
+    ...queries,
+    // Testing Library からのその他のメソッド
     ...testingLibrary,
     // DOM操作のためのヘルパー
     unmount: () => {
@@ -60,5 +46,23 @@ const render = (ui, options = {}) => {
   };
 };
 
+// カスタムフックをテストするためのユーティリティ
+const renderHook = (hookFn) => {
+  const result = { current: null };
+  
+  // テスト用のコンポーネント
+  function TestComponent() {
+    result.current = hookFn();
+    return null;
+  }
+  
+  const utils = render(<TestComponent />);
+  
+  return {
+    result,
+    ...utils
+  };
+};
+
 // 必要な関数をエクスポート
-export { render, screen, fireEvent, waitFor };
+export { render, screen, fireEvent, waitFor, renderHook, act };

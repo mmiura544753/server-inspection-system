@@ -7,6 +7,14 @@ import '@testing-library/jest-dom';
 // Fix for React 18+ issues with testing
 global.IS_REACT_ACT_ENVIRONMENT = true;
 
+// Polyfill for TextEncoder/TextDecoder which is required by MSW
+if (typeof TextEncoder === 'undefined') {
+  global.TextEncoder = require('util').TextEncoder;
+}
+if (typeof TextDecoder === 'undefined') {
+  global.TextDecoder = require('util').TextDecoder;
+}
+
 // Mock Service Worker setup
 import { server } from './mocks/server';
 

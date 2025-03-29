@@ -3,3 +3,7 @@
 
 期待する動作:
 機器のステータスを目視で確認しログに記録する
+
+npm testはclaudeは実行しないこと。
+npm run testはclaudeは実行しないこと
+

@@ -226,7 +226,7 @@ describe('inspectionAPI', () => {
       console.log = originalConsoleLog;
     });
     
-    it('エラーが発生した場合、エラーをスローする', async () => {
+    it('エラーが発生した場合（response.dataありの場合）、エラーをスローする', async () => {
       // 入力データ
       const input = { 
         inspection_date: '2023-01-04',
@@ -234,7 +234,7 @@ describe('inspectionAPI', () => {
         inspection_items: []
       };
       
-      // エラーレスポンス
+      // エラーレスポンス（response.dataあり）
       const mockError = new Error('点検作成エラー');
       mockError.response = {
         data: {
@@ -253,6 +253,83 @@ describe('inspectionAPI', () => {
       
       // 関数実行時にエラーをキャッチ
       await expect(inspectionAPI.create(input)).rejects.toThrow(mockError);
+      
+      // 検証
+      expect(api.post).toHaveBeenCalledWith('/inspections', input);
+      expect(console.log).toHaveBeenCalledWith('APIに送信する点検データ:', expect.any(String));
+      expect(console.error).toHaveBeenCalledWith(
+        '点検作成エラー:',
+        mockError.response.data
+      );
+      
+      // コンソールログとエラーを元に戻す
+      console.log = originalConsoleLog;
+      console.error = originalConsoleError;
+    });
+    
+    it('エラーが発生した場合（messageのみの場合）、エラーをスローする', async () => {
+      // 入力データ
+      const input = { 
+        inspection_date: '2023-01-04',
+        device_id: 2,
+        inspection_items: []
+      };
+      
+      // エラーレスポンス（message のみ）
+      const mockError = new Error('ネットワークエラー');
+      // response は設定しない
+      
+      // モック関数の戻り値を設定
+      api.post.mockRejectedValueOnce(mockError);
+      
+      // コンソールログとエラーをモック
+      const originalConsoleLog = console.log;
+      const originalConsoleError = console.error;
+      console.log = jest.fn();
+      console.error = jest.fn();
+      
+      // 関数実行時にエラーをキャッチ
+      await expect(inspectionAPI.create(input)).rejects.toThrow(mockError);
+      
+      // 検証
+      expect(api.post).toHaveBeenCalledWith('/inspections', input);
+      expect(console.log).toHaveBeenCalledWith('APIに送信する点検データ:', expect.any(String));
+      expect(console.error).toHaveBeenCalledWith(
+        '点検作成エラー:',
+        mockError.message
+      );
+      
+      // コンソールログとエラーを元に戻す
+      console.log = originalConsoleLog;
+      console.error = originalConsoleError;
+    });
+    
+    it('エラーが発生した場合（エラーオブジェクトそのものの場合）、エラーをスローする', async () => {
+      // 入力データ
+      const input = { 
+        inspection_date: '2023-01-04',
+        device_id: 2,
+        inspection_items: []
+      };
+      
+      // エラーレスポンス（オブジェクトそのもの - messageプロパティなし）
+      // Error型に変換して確実にthrowされるようにする
+      const mockErrorObj = { status: 500, errorCode: 'INTERNAL_SERVER_ERROR' };
+      const mockError = new Error();
+      mockError.status = 500; 
+      mockError.errorCode = 'INTERNAL_SERVER_ERROR';
+      
+      // モック関数の戻り値を設定
+      api.post.mockRejectedValueOnce(mockError);
+      
+      // コンソールログとエラーをモック
+      const originalConsoleLog = console.log;
+      const originalConsoleError = console.error;
+      console.log = jest.fn();
+      console.error = jest.fn();
+      
+      // 関数実行時にエラーをキャッチ
+      await expect(inspectionAPI.create(input)).rejects.toThrow();
       
       // 検証
       expect(api.post).toHaveBeenCalledWith('/inspections', input);

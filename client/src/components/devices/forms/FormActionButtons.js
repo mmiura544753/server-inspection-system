@@ -7,10 +7,9 @@ import PropTypes from "prop-types";
 /**
  * フォームの送信・キャンセルボタンを表示するコンポーネント
  * 
- * @param {Object} props コンポーネントのプロパティ
- * @param {boolean} props.isSubmitting 送信中かどうか
+ * @param {boolean} isSubmitting 送信中かどうか
  */
-const FormActionButtons = ({ isSubmitting }) => {
+const FormActionButtons = ({ isSubmitting = false }) => {
   return (
     <div className="mt-4 d-flex justify-content-between">
       <Link to="/devices" className="btn btn-secondary">
@@ -32,10 +31,6 @@ const FormActionButtons = ({ isSubmitting }) => {
 
 FormActionButtons.propTypes = {
   isSubmitting: PropTypes.bool
-};
-
-FormActionButtons.defaultProps = {
-  isSubmitting: false
 };
 
 export default FormActionButtons;

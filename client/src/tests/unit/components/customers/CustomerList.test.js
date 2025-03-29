@@ -29,7 +29,7 @@ describe("CustomerList Component", () => {
       </MemoryRouter>
     );
 
-    // expect(screen.getByText('読み込み中...')).toBeInTheDocument();
+    //    expect(screen.getByText('読み込み中...')).toBeInTheDocument();
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
   });
 

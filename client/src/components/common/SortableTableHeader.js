@@ -1,10 +1,10 @@
 // src/components/common/SortableTableHeader.js
-import React from 'react';
-import { FaSortUp, FaSortDown, FaSort } from 'react-icons/fa';
+import React from "react";
+import { FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
 
 /**
  * ソート可能なテーブルヘッダーコンポーネント
- * 
+ *
  * @param {Object} props
  * @param {string} props.field - ソートするフィールド名
  * @param {string} props.label - 表示ラベル
@@ -13,16 +13,23 @@ import { FaSortUp, FaSortDown, FaSort } from 'react-icons/fa';
  * @param {Function} props.onSort - ソート変更時のコールバック関数
  * @param {string} props.className - 追加のCSSクラス
  */
-const SortableTableHeader = ({ 
-  field, 
-  label, 
-  currentSortField, 
-  isDescending, 
+const SortableTableHeader = ({
+  field,
+  label,
+  currentSortField,
+  isDescending,
   onSort,
-  className = ''
+  className = "",
 }) => {
   // このヘッダーが現在ソートされているかどうか
   const isSorted = currentSortField === field;
+
+  // aria-sort属性の値を決定
+  const ariaSort = isSorted
+    ? isDescending
+      ? "descending"
+      : "ascending"
+    : undefined;
 
   // クリック時の処理
   const handleClick = () => {
@@ -40,15 +47,19 @@ const SortableTableHeader = ({
     if (!isSorted) {
       return <FaSort className="ms-1 text-gray-400" />;
     }
-    return isDescending 
-      ? <FaSortDown className="ms-1 text-primary" /> 
-      : <FaSortUp className="ms-1 text-primary" />;
+    return isDescending ? (
+      <FaSortDown className="ms-1 text-primary" />
+    ) : (
+      <FaSortUp className="ms-1 text-primary" />
+    );
   };
 
   return (
-    <th 
+    <th
       className={`${className} cursor-pointer select-none`}
       onClick={handleClick}
+      aria-sort={ariaSort}
+      role="columnheader"
     >
       <div className="d-flex align-items-center">
         {label}

@@ -33,11 +33,11 @@ app.use(
   })
 );
 // CORS デバッグログ
-app.use((req, res, next) => {
-  console.log(`リクエスト: ${req.method} ${req.path}`);
-  console.log(`リクエストヘッダー:`, req.headers);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(`リクエスト: ${req.method} ${req.path}`);
+//   console.log(`リクエストヘッダー:`, req.headers);
+//   next();
+// });
 app.use(express.json());
 app.use(morgan("dev"));
 

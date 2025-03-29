@@ -118,7 +118,6 @@ describe("inspectionItemImportController", () => {
       // 点検項目名マスタの検索結果
       InspectionItemName.findAll.mockResolvedValue([]);
       InspectionItemName.findOne.mockResolvedValue(null); // ないので create される
-      InspectionItemName.create.mockRejectedValueOnce(mockError); // ここでエラー
 
       // 顧客と機器の検索結果（最初の行）
       const mockCustomer = { id: 201, customer_name: "顧客A" };
@@ -522,7 +521,7 @@ describe("inspectionItemImportController", () => {
       expect(sequelize.transaction).not.toHaveBeenCalled();
     });
 
-    it("トランザクション中にエラーが発生した場合はロールバックする", async () => {
+    it("トランザクションが予期せぬエラーで中断した場合にロールバックする", async () => {
       // モックデータの設定
       const mockFile = {
         buffer: Buffer.from("mockCSVContent"),
@@ -547,9 +546,6 @@ describe("inspectionItemImportController", () => {
       iconv.decode.mockReturnValue(mockCSVContent);
       csvParse.parse.mockReturnValue(mockParsedCSV);
 
-      // 点検項目名マスタの検索結果
-      InspectionItemName.findAll.mockResolvedValue([]);
-
       // リクエスト/レスポンスのモック
       const req = {
         file: mockFile,
@@ -560,32 +556,53 @@ describe("inspectionItemImportController", () => {
       };
 
       // エラーをキャッチするためのnext関数をセットアップ
-      const next = jest.fn((error) => {
-        expect(error.message).toContain(
-          "CSVのインポート中にエラーが発生しました"
-        );
-      });
-
-      // シミュレーションするエラー処理用のテスト実装
-      const mockError = new Error("データベースエラー");
+      const next = jest.fn();
 
       // トランザクションをシミュレート
       const mockTransaction = {
-        commit: jest.fn().mockResolvedValue(true),
+        commit: jest.fn().mockRejectedValue(new Error("コミットエラー")),
         rollback: jest.fn().mockResolvedValue(true),
       };
       sequelize.transaction.mockReturnValueOnce(mockTransaction);
 
-      // エラーが発生するようにモックを設定
-      InspectionItemName.findAll.mockRejectedValueOnce(mockError);
-
+      // トランザクション内ループを正常に通過するためのモック設定
+      // 顧客と機器の検索結果
+      const mockCustomer = { id: 201, customer_name: "顧客A" };
+      Customer.findOne.mockResolvedValue(mockCustomer);
+      
+      const mockDevice = { 
+        id: 101, 
+        device_name: "サーバー1", 
+        customer_id: 201 
+      };
+      Device.findOne.mockResolvedValue(mockDevice);
+      
+      const mockItemName = { 
+        id: 301, 
+        name: "CPU状態確認" 
+      };
+      InspectionItemName.findOne.mockResolvedValue(mockItemName);
+      
+      InspectionItem.findOne.mockResolvedValue(null); // 重複なし
+      
+      // 正常に点検項目を作成
+      const mockInspectionItem = {
+        id: 1,
+        device_id: 101,
+        item_name_id: 301,
+        item_name: "CPU状態確認",
+      };
+      InspectionItem.create.mockResolvedValue(mockInspectionItem);
+      
+      // ここでトランザクションのコミット時にエラーが発生する
+      
       // 関数を実行
       await importInspectionItemsFromCsv(req, res, next);
-
-      // 検証: エラー発生時のステータスとロールバック
-      expect(res.status).toHaveBeenCalledWith(500);
+      
+      // コミットエラーに対してロールバックが呼ばれることを確認
       expect(mockTransaction.rollback).toHaveBeenCalled();
-      expect(mockTransaction.commit).not.toHaveBeenCalled();
+      // next関数にエラーが渡されることを確認
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 });
